@@ -7,7 +7,7 @@
 #include "lcd.h"
 
 uint8_t step();
-uint8_t stepUpdate(void);
+uint8_t stepUpdateError(void);
 uint8_t stepUpdateDir(void);
 uint8_t stepUpdateDelay(void);
 uint8_t optimizeStepper();
@@ -46,6 +46,10 @@ void runTimerStart(void);
 void runTimerStop(void);
 void runTimerResume(void);
 
+uint16_t calcExitTime(void);
+uint16_t calcEnterTime(void);
+
+
 void dispStatus(void);
 void dispComplete (void);
 
@@ -72,9 +76,9 @@ void dispComplete (void);
 #define PAUSEDURATION 2
 
 #define EXIT_DROP_TIME 0x78A8 //0.2s
-#define ENTER_DROP_TIME 0x5000
-#define DROP_ERROR 49
-#define DROP_OFFSET 10
+#define RUNNING_EXIT_DROP_TIME 0x5000
+#define ENTER_DROP_TIME 0x8000
+#define RUNNING_ENTER_DROP_TIME 0x6000
 #define DROP_REGION 22
 #define DROP_ERROVF 160
 

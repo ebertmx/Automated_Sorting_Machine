@@ -16,12 +16,7 @@ volatile char PAUSEFLAG = 0;
 uint8_t Parts[PARTS_SIZE];
 volatile uint8_t countPart =0;
 volatile uint8_t countSort =0;
-volatile uint8_t DropError = 30;
-extern volatile int8_t NextDir;
 
-volatile uint8_t CurPosition = 50;
-volatile int8_t Dir = 1;
-volatile int16_t CurError = 0;
 
 volatile uint16_t adcValue = 1023;
 volatile uint16_t adcPart =1023;
@@ -43,7 +38,8 @@ volatile uint16_t EXTime_s=0;
 extern volatile uint8_t Steps2Acc;
 extern volatile uint16_t CurDelay;
 extern volatile uint8_t accSteps;
-
+extern volatile uint8_t CurPosition;
+extern volatile int16_t CurError;
 
 
 int main(int argc, char *argv[]){
@@ -67,7 +63,7 @@ int main(int argc, char *argv[]){
 	EICRA |= _BV(ISC21);// | _BV(ISC20);//EX
 	EICRA |= _BV(ISC31) | _BV(ISC30);//HE
 	
-	PCICR |= _BV(PCIE1);
+	PCICR |= _BV(PCIE1);//RAMPDOWN
 	PCMSK1 |= _BV(PCINT9);
 
 
@@ -100,7 +96,7 @@ int main(int argc, char *argv[]){
 	runTimerStart();//Start System Timer
 	
 
-	STANDBY:
+STANDBY:
 	//Handle Specific Processes and Display Data
 	while (1)
 	{	
@@ -135,34 +131,37 @@ int main(int argc, char *argv[]){
 	
 	
 	
-	DISABLE:
+DISABLE:
 	brakeMotor();
+	
+	while((PIND & 0x01) == 0x00);
 	stepStop();
 	runTimerStop();
-
 	uint8_t INTState = EIMSK;
 	EIMSK = 0x01;
 	PCMSK1 &= ~_BV(PCINT9);
 	
-	while((PIND & 0x01) == 0x00);
 	stopMotor();
 	stepRes();
 	dispStatus();
 	while(!ENABLE)
 	{
 	}
-	while((PIND & 0x01) == 0x00);
 	
+	while((PIND & 0x01) == 0x00);
 	EIMSK = INTState;
 	PCMSK1 |= _BV(PCINT9);
 	runTimerResume();
 	stepStart();
 	runTimerResume();
-	goto STANDBY;
+	
+goto STANDBY;
 	
 	
-	SHUTDOWN:
 	
+	
+	
+SHUTDOWN:
 	cli();
 	PORTB = 0x00;
 	PORTA = 0x00;
@@ -228,6 +227,22 @@ ISR(INT1_vect){
 }//OR
 
 
+
+
+uint16_t calcEnterTime(void)
+{
+	
+	return 1;
+}
+
+uint16_t calcExitTime(void)
+{
+	
+	return 1;
+}
+
+
+
 //EX ISR //376 - 471 cycles
 ISR(INT2_vect){
 	
@@ -235,33 +250,36 @@ ISR(INT2_vect){
 	if(!EXFLAG)
 	{//Part is entering EX
 
-			if(debounce(2, 0, NOISECHECK)){
-		
+			if(debounce(2, 0, NOISECHECK))
+			{
 				EXFLAG =1;//Part is at EX
 				EIMSK &= ~_BV(INT2);
 				EICRA |= _BV(ISC20);// Rising Edge
 				EIMSK |= _BV(INT2); //Enable Interrupt
 				
-				enterTime  = (CurDelay - MINDELAY)/2 * (Steps2Acc - accSteps) + (abs(CurError)- DROP_REGION - (Steps2Acc - accSteps))*MINDELAY;
+				stepUpdateError();
+				enterTime  = (CurDelay - MINDELAY)/2 * (Steps2Acc - accSteps) 
+								+ (abs(CurError)- DROP_REGION - (Steps2Acc - accSteps))*MINDELAY;
 				
-				//enterdropTime = ENTER_DROP_TIME;
-				
-				if(enterTime>enterdropTime)
-				{		
-						brakeMotor();//Turn motor on	
+				if(MOTORFLAG)
+				{
+					if(enterTime>ENTER_DROP_TIME)
+					{
+						brakeMotor();//brake motor
+					}
+				}else
+				{
+					if(enterTime>RUNNING_ENTER_DROP_TIME)
+					{
+						brakeMotor();//brake motor
+					}	
 				}
-				
-				
-				//if(abs(CurError)>DROP_REGION){
-				//	brakeMotor();
-				//}
-		
 				EXTime_s = runTime_d;
 			}//LO
 	}else
 	{//Part is leaving EX
-		if(debounce(2,1, NOISECHECK) && ((runTime_d - EXTime_s)>SORTTIME)	){
-
+		if(debounce(2,1, NOISECHECK) && ((runTime_d - EXTime_s)>SORTTIME)	)
+		{
 				EXFLAG = 0;
 				EIMSK &= ~_BV(INT2);
 				EICRA &= ~(_BV(ISC20));	//Turn on falling edge
@@ -270,26 +288,42 @@ ISR(INT2_vect){
 				if(countSort<countPart)
 				{
 					countSort+=1;//go to next part immediately
+					TARGETFLAG =0;
 				}
 				
-				exitTime  = (CurDelay - MINDELAY)/2 * (Steps2Acc - accSteps)
-				 + ((DROP_REGION - abs(CurPosition - Parts[countSort-1])) - (Steps2Acc - accSteps))*MINDELAY;
-				
-					
-				if(exitTime<exitdropTime)
-				{
-					//LCDWriteString("P");
-					PAUSEFLAG = 1;
-				}
 				if(abs(CurError)>DROP_REGION){
+					brakeMotor();
 					SLIPFLAG = 1;
-				}	
+				}else
+				{
+						exitTime  = (CurDelay - MINDELAY)/2 * (Steps2Acc - accSteps) 
+									+ (DROP_REGION - (CurPosition - Parts[countSort-1]) - (Steps2Acc - accSteps))*MINDELAY;				
+						
+						if(MOTORFLAG)
+						{
+							if(exitTime<RUNNING_EXIT_DROP_TIME)
+							{
+								PAUSEFLAG = 1;
+								exitdropTime = RUNNING_EXIT_DROP_TIME;
+							}
+						}else
+						{
+							if(exitTime<EXIT_DROP_TIME)
+							{
+								PAUSEFLAG = 1;
+								exitdropTime = EXIT_DROP_TIME;
+							}
+						}
+					
+				}
+				
+				
+			
+				
 		}//HI
 	}
 	EIFR |= _BV(INT2);
 }//EX
-
-
 
 
 
@@ -299,32 +333,25 @@ ISR(TIMER3_COMPA_vect){
 //CONTROL STEPPER
 
 	step();//step towards target
+	stepUpdateError(); //calculate the stepper position error
 	
-	if(!SLIPFLAG)
+	if(PAUSEFLAG)
 	{
-		CurError = Parts[countSort] - CurPosition;
-	
-	}else
-	{
-		CurError = Parts[countSort-1] - CurPosition;
-		if(abs(CurError)<DROP_REGION)
+		
+		exitTime  = (CurDelay - MINDELAY)/2 * (Steps2Acc - accSteps)
+					+ (DROP_REGION - (CurPosition - Parts[countSort-1]) - (Steps2Acc - accSteps))*MINDELAY;
+		
+		exitdropTime -=CurDelay;
+		
+		if(exitTime>exitdropTime)
 		{
-			SLIPFLAG = 0;
+			exitdropTime =EXIT_DROP_TIME;
+			PAUSEFLAG = 0;
 		}
 	}
 	
-	
-	if(abs(CurError)>100)
-	{
-		CurError = CurError - 200;
-	}else if(CurError<-100)
-	{
-		CurError = CurError + 200;
-	}
-		
-
-	stepUpdateDir();
-	stepUpdateDelay();
+	stepUpdateDir(); //update the stepper direction
+	stepUpdateDelay(); //update the stepper speed
 //CONTROL STEPPER
 
 	
@@ -334,25 +361,27 @@ ISR(TIMER3_COMPA_vect){
 	if(!MOTORFLAG){//If motor is OFF
 		
 		if(abs(CurError)> DROP_REGION){
-			enterTime  = (CurDelay - MINDELAY)/2 * (Steps2Acc - accSteps) + (abs(CurError)- DROP_REGION - (Steps2Acc - accSteps))*MINDELAY;
-			if(enterTime<enterdropTime)
-			{				
-				runMotor();//Turn motor on
+			enterTime  = (CurDelay - MINDELAY)/2 * (Steps2Acc - accSteps) 
+							+ (abs(CurError)- DROP_REGION - (Steps2Acc - accSteps))*MINDELAY;
+			if(SLIPFLAG)
+			{
+				if(enterTime<RUNNING_ENTER_DROP_TIME)
+				{				
+					runMotor();//Turn motor on
+				}
+			}else
+			{
+				if(enterTime<ENTER_DROP_TIME)
+				{
+					runMotor();//Turn motor on
+				}
 			}
 			
 		}else
 		{
 			runMotor();
 		}
-	}else 
-	{
-		if((abs(CurError)>DROP_REGION) && EXFLAG)
-		{
-			brakeMotor();
-		}
-		
 	}
-
 //CONTROL MOTOR	
 
 }//stepTimer

@@ -1,11 +1,5 @@
 #include "main.h"
 
-//CONSTANTS
-// const uint16_t MAXACC = 0x0080;//0x00D0;
-// const uint16_t MINDELAY	=0x0380;//0x02A4;
-// const uint16_t MAXDELAY = 0x0A00;//0x0A00;
-// const uint16_t JERKSTEPS = 4;
-
 //GLOBALS
 volatile uint8_t Steps2Acc= 50;
 volatile uint8_t accSteps= 0;
@@ -14,18 +8,14 @@ volatile uint8_t StepsDelta = 0;
 volatile uint16_t CurDelay = 0;
 volatile uint8_t countPause= 0;
 
+volatile int8_t Dir = 1;
+volatile int8_t NextDir = 1;
+volatile uint8_t CurPosition = 50;
+volatile int16_t CurError = 0;
+
 //L1,L2		//L1,L4		//L4,L3		//L2,L3
 volatile int8_t StepStates[] = {0b11011000,0b10111000,0b10110100, 0b11010100};
 volatile int8_t CurState = 0;
-
-
-//EXTERNALS
-extern volatile uint8_t CurPosition;
-extern volatile int16_t CurError;
-extern volatile int8_t Dir;
-volatile int8_t NextDir = 1;
-extern volatile uint16_t exitTime;
-extern volatile uint16_t exitdropTime;
 
 
 //EXTERNAL GLOBAL
@@ -35,6 +25,9 @@ extern volatile char HALLSENSOR;//Needs to be false
 extern volatile char DECELFLAG;
 extern volatile char EXFLAG;
 extern volatile char PAUSEFLAG;
+extern volatile char TARGETFLAG;
+extern volatile char SLIPFLAG;
+
 
 uint8_t step(void){
 	CurState = CurState + Dir;//Update CurState based on Direction
@@ -54,17 +47,57 @@ uint8_t step(void){
 }//step
 
 
+
+uint8_t stepUpdateError(void)
+{
+	if(SLIPFLAG)
+	{
+		CurError = Parts[countSort-1] - CurPosition;
+		if(abs(CurError)<DROP_REGION)
+		{
+			SLIPFLAG = 0;
+		}
+	}else
+	{
+		CurError = Parts[countSort] - CurPosition;
+	}
+	
+	
+	if(abs(CurError)>100)
+	{
+		CurError = CurError - 200;
+	}else if(CurError<-100)
+	{
+		CurError = CurError + 200;
+	}
+	
+	if(CurError == 0)
+	{
+		TARGETFLAG = 1;
+	}
+	return 1;
+}
+
+
+
+
+
+
+
+
+
+
 uint8_t stepUpdateDir(void){
 	//if(!DECELFLAG){
 		if(CurError == 0)
 		{
-			if(CurDelay!= MAXDELAY){
-				//DECELFLAG = 1;
-				return 0;
+			if(CurDelay == MAXDELAY){
+				Dir = 0;
+				return 1;	
 			}else
 			{
-				Dir = 0;
-				return 1;
+				DECELFLAG = 1;
+				return 0;
 			}
 		}else if(CurError>118)
 		{//target is more than 100 steps CW
@@ -84,8 +117,7 @@ uint8_t stepUpdateDir(void){
 			}
 		}else
 		{//Calculate closest direction
-			NextDir = (CurError>0) - (CurError<0);
-			
+			NextDir = (CurError>0) - (CurError<0);	
 		}
 
 		//Set Direction or Decelerate
@@ -113,27 +145,9 @@ uint8_t stepUpdateDir(void){
 
 uint8_t stepUpdateDelay(void)
 {
-	if(PAUSEFLAG)
-	{	
-		
-		exitTime  = (CurDelay - MINDELAY)/2 * (Steps2Acc - accSteps)
-		+ ((DROP_REGION - abs(CurPosition - Parts[countSort-1])) - (Steps2Acc - accSteps))*MINDELAY;
-		
-		exitdropTime -=CurDelay;
-		
-		if(exitTime<exitdropTime){
-			DECELFLAG = 1;
-		}else
-		{
-				
-			//LCDWriteString("R");
-			exitdropTime =EXIT_DROP_TIME;
-			DECELFLAG = 0;
-			PAUSEFLAG = 0;	
-		}
-	}
 	
-	if((Steps2Acc >= abs(CurError) && !EXFLAG) || DECELFLAG)
+	
+	if(TARGETFLAG || DECELFLAG || PAUSEFLAG)
 	{
 
 		CurDelay = CurDelay + CurAcc[accSteps];
