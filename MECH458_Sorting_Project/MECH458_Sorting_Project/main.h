@@ -35,6 +35,7 @@ uint8_t classify(uint16_t reflectVal);
 
 
 uint8_t debounce(uint8_t pin, uint8_t level, uint8_t checkNum);
+uint8_t debouncePINJ(uint8_t pin, uint8_t level, uint8_t checkNum);
 uint8_t getregion(uint8_t pos);
 
 
@@ -46,6 +47,7 @@ void runTimerStop(void);
 void runTimerResume(void);
 
 void dispStatus(void);
+void dispComplete (void);
 
 #define HI_Reflect 1010
 #define B_Reflect 950
@@ -61,7 +63,7 @@ void dispStatus(void);
 #define PARTS_SIZE 100
 
 
-#define MAXACC 0x00D8
+#define MAXACC 0x00E0
 #define MINDELAY 0x02A8
 #define MAXDELAY 0x0A00
 #define JERKSTEPS 4
@@ -69,15 +71,16 @@ void dispStatus(void);
 
 #define PAUSEDURATION 2
 
-#define DROP_TIME 0x61A8 //0.2s
+#define EXIT_DROP_TIME 0x78A8 //0.2s
+#define ENTER_DROP_TIME 0x5000
 #define DROP_ERROR 49
 #define DROP_OFFSET 10
-#define DROP_REGION 20
+#define DROP_REGION 22
 #define DROP_ERROVF 160
 
-#define MOTOR_START_SPEED 200
-#define MOTOR_SPEED 160
-#define MOTOR_SLOW_SPEED 120
+#define MOTOR_START_SPEED 230
+#define MOTOR_SPEED 180
+#define MOTOR_SLOW_SPEED 150
 #define MOTOR_MAX_SPEED 250
 #define MOTOR_MIN_SPEED 40
 
@@ -91,9 +94,11 @@ void dispStatus(void);
 
 
 #define PARTTIME 5
-#define SORTTIME 0
+#define SORTTIME 5
 
-#define RAMPDOWN_DELAY 8000;
+
+#define REFRESH_PERIOD 100
+#define RAMPDOWN_DELAY 4000
 
 
 #endif

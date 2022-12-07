@@ -5,9 +5,10 @@
 extern uint8_t Parts[PARTS_SIZE];
 extern volatile uint8_t countSort;
 extern volatile int16_t CurError;
-
+extern volatile uint16_t runTime_d;
 
 void testStep(void){
+	runTimerStart();//Start System Timer
 	Parts[0] = 50;
 	Parts[1] = 100;
 	Parts[2] = 50;
@@ -23,13 +24,17 @@ void testStep(void){
 	Parts[12] = 50;
 	
 	for(int i=0; i<12; i++){
-		while(abs(CurError) >20){
+		while(abs(CurError)>10){
 			dispStatus();
 			mTimer(10);
 		}
 		countSort+=1;
-		mTimer(100);
+		mTimer(10);
+		//while(abs(CurError)=<10);
 	}
+	runTimerStop();
+	LCDClear();
+	LCDWriteInt(runTime_d, 4);
 }
 
 

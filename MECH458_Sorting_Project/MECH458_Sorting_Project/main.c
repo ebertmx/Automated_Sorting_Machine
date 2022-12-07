@@ -2,6 +2,7 @@
 //FLAGS
 volatile char HALLSENSOR=0;
 volatile char ENABLE=1;
+volatile char RAMPDOWN=0;
 volatile char EXFLAG=0;
 volatile char ORFLAG = 1;
 volatile char MOTORFLAG = 0;
@@ -10,15 +11,13 @@ volatile char DECELFLAG = 0;
 volatile char SLIPFLAG = 0;
 volatile char TARGETFLAG = 0;
 volatile char PAUSEFLAG = 0;
+
 //GLOBALS
 uint8_t Parts[PARTS_SIZE];
 volatile uint8_t countPart =0;
 volatile uint8_t countSort =0;
 volatile uint8_t DropError = 30;
 extern volatile int8_t NextDir;
-volatile int8_t DoubleDir = 1;
-volatile int16_t NextError = 0;
-volatile uint8_t NextDropError = 0;
 
 volatile uint8_t CurPosition = 50;
 volatile int8_t Dir = 1;
@@ -31,48 +30,19 @@ volatile uint16_t adcDisp =1023;
 volatile uint16_t countADC=0;
 
 volatile uint16_t runTime_d =0;
-volatile uint16_t startTime_d =0;
+volatile uint16_t refreshTime =0;
+volatile uint16_t rampTime_d =0;
 volatile uint16_t exitTime =0;
 volatile uint16_t enterTime =0;
-
-volatile uint16_t exitdropTime =DROP_TIME + 0x1000;
-volatile uint16_t enterdropTime =DROP_TIME-0x1000;
-
+volatile uint16_t exitdropTime = EXIT_DROP_TIME;
+volatile uint16_t enterdropTime = ENTER_DROP_TIME;
 volatile uint16_t ORTime_s=0;
 volatile uint16_t EXTime_s=0;
 
 //EXTERNALS
 extern volatile uint8_t Steps2Acc;
-extern volatile uint8_t countB;
-extern volatile uint8_t countW;
-extern volatile uint8_t countS;
-extern volatile uint8_t countA;
 extern volatile uint16_t CurDelay;
 extern volatile uint8_t accSteps;
-
-void dispStatus(void){
-	LCDClear();
-	LCDWriteIntXY(0, 0, countSort, 2);
-	LCDWriteStringXY(2,0,"/");
-	LCDWriteIntXY(3,0, countPart, 2);
-	LCDWriteStringXY(5,0, "(");
-	LCDWriteIntXY(6,0, countB, 1);
-	LCDWriteIntXY(7,0, countA, 1);
-	LCDWriteIntXY(8,0, countW, 1);
-	LCDWriteIntXY(9,0, countS, 1);
-	LCDWriteStringXY(10,0, ")");
-	LCDWriteStringXY(12,0, "T");
-	LCDWriteIntXY(14,0, runTime_d/1000, 2);
-	
-
-	LCDWriteIntXY(0, 1, CurPosition, 3);
-	LCDWriteStringXY(3,1, ">");
-	LCDWriteIntXY(4, 1, Parts[countSort], 3);
-	LCDWriteStringXY(8, 1,"D" );
-	LCDWriteIntXY(9, 1, CurDelay/122, 2);//delay in ms
-	LCDWriteIntXY(12, 1, adcDisp, 4);
-
-}
 
 
 
@@ -89,21 +59,21 @@ int main(int argc, char *argv[]){
 	DDRB = 0xFF; //OUTPUT
 	DDRC = 0xFF; //OUTPUT
 	DDRD = 0x00;//INPUT
+	DDRJ &= ~_BV(PINJ0);
 	
 	//EXT INTERRUPTS
 	EICRA |= _BV(ISC01);//PAUSE
 	EICRA |= _BV(ISC11) |_BV(ISC10);//OR
 	EICRA |= _BV(ISC21);// | _BV(ISC20);//EX
 	EICRA |= _BV(ISC31) | _BV(ISC30);//HE
-	//EIMSK |= 0x0F; //Enable INT[0-3]
+	
+	PCICR |= _BV(PCIE1);
+	PCMSK1 |= _BV(PCINT9);
 
 
 	ADC_Init();
 	mTimer_init();
 	stepTimer_init();
-
-	
-	//brakeMotor();
 	InitLCD(LS_BLINK|LS_ULINE);
 	LCDClear();
 	
@@ -114,59 +84,97 @@ int main(int argc, char *argv[]){
 	
 	stepCalibrate();
 	mTimer(2000);
-	
-	//stepStart();//Activate the stepper motor
 	//testStep();
 	//while(1);
-	cli();
-	EIMSK |= 0x0F;
+	//cli();
+	EIMSK |= 0x07;
 	EIMSK &= ~(0x08);
 	Motor_init();
-	sei();
+	//sei();
 	
 	//MAIN OPERATION
 	countPart=0;
 	countSort = 0;
 
-	//stepStart();//Activate the stepper motor
 	startMotor();//Start Belt
 	runTimerStart();//Start System Timer
 	
 
 	STANDBY:
 	//Handle Specific Processes and Display Data
-
-	
-	
-	while (ENABLE==1)
+	while (1)
 	{	
-		dispStatus();
-		mTimer(20);//Refresh Rate		
+				
+		if(ENABLE)
+		{
+			if((runTime_d-refreshTime)>REFRESH_PERIOD)
+			{
+				dispStatus();
+				refreshTime = runTime_d;	
+			}
+			
+		}else
+		{
+			goto DISABLE;
+		}
+
+
+		if(RAMPDOWN)
+		{
+			if(countSort != countPart)
+			{
+				rampTime_d = runTime_d;	
+				
+			}else if((runTime_d-rampTime_d)>RAMPDOWN_DELAY)
+			{
+				goto SHUTDOWN;
+			}
+		}
+				
 	}//while ENABLE
 	
 	
 	
-	//Pause
-	if(ENABLE ==0){
-		brakeMotor();
-		runTimerStop();
-		cli();
-		while((PIND & 0x01) == 0x00);
-		stepRes();
+	DISABLE:
+	brakeMotor();
+	stepStop();
+	runTimerStop();
 
-		while(!ENABLE){
-			if(debounce(0,0,BOUNCECHECK)){
-
-				while((PIND & 0x01) == 0x00);
-				ENABLE = 1;
-			}
-		}//wait for ENABLE
-		runTimerResume();
-		sei();
-		//EIMSK =intrSTATE;//set interrupt to saved state	
+	uint8_t INTState = EIMSK;
+	EIMSK = 0x01;
+	PCMSK1 &= ~_BV(PCINT9);
+	
+	while((PIND & 0x01) == 0x00);
+	stopMotor();
+	stepRes();
+	dispStatus();
+	while(!ENABLE)
+	{
 	}
-	goto STANDBY;//goto standby state
-
+	while((PIND & 0x01) == 0x00);
+	
+	EIMSK = INTState;
+	PCMSK1 |= _BV(PCINT9);
+	runTimerResume();
+	stepStart();
+	runTimerResume();
+	goto STANDBY;
+	
+	
+	SHUTDOWN:
+	
+	cli();
+	PORTB = 0x00;
+	PORTA = 0x00;
+	
+	 dispComplete();
+	while(1)
+	{
+		
+	}
+	
+	
+	
 	return(0);
 }
 //*************MAIN***************//
@@ -175,19 +183,6 @@ int main(int argc, char *argv[]){
 
 //*************ISR***************//
 
-//ISR Stop Button
-ISR(INT0_vect){
-	if(debounce(0, 0, BOUNCECHECK)){
-		if(ENABLE){
-			ENABLE = 0;	
-			brakeMotor();
-		}
-		else{
-			runMotor();
-			ENABLE = 1;
-		}
-	}
-}//ISR Stop Button
 
 
 //OR ISR
@@ -247,16 +242,20 @@ ISR(INT2_vect){
 				EICRA |= _BV(ISC20);// Rising Edge
 				EIMSK |= _BV(INT2); //Enable Interrupt
 				
-				if(abs(CurError)>DROP_REGION){
-					brakeMotor();
-				}
-			//	enterTime  = (CurDelay - MINDELAY)/2 * (Steps2Acc - accSteps)
-			//	+ (abs(CurError)- DROP_REGION - (Steps2Acc - accSteps))*MINDELAY;
+				enterTime  = (CurDelay - MINDELAY)/2 * (Steps2Acc - accSteps) + (abs(CurError)- DROP_REGION - (Steps2Acc - accSteps))*MINDELAY;
 				
-// 				if(enterTime>enterdropTime){
-// 						LCDWriteString("B");			
-// 						brakeMotor();//Stop Belt
-// 				}
+				//enterdropTime = ENTER_DROP_TIME;
+				
+				if(enterTime>enterdropTime)
+				{		
+						brakeMotor();//Turn motor on	
+				}
+				
+				
+				//if(abs(CurError)>DROP_REGION){
+				//	brakeMotor();
+				//}
+		
 				EXTime_s = runTime_d;
 			}//LO
 	}else
@@ -313,10 +312,22 @@ ISR(TIMER3_COMPA_vect){
 			SLIPFLAG = 0;
 		}
 	}
+	
+	
+	if(abs(CurError)>100)
+	{
+		CurError = CurError - 200;
+	}else if(CurError<-100)
+	{
+		CurError = CurError + 200;
+	}
+		
 
 	stepUpdateDir();
 	stepUpdateDelay();
 //CONTROL STEPPER
+
+	
 
 
 //CONTROL MOTOR
@@ -374,7 +385,30 @@ ISR(INT3_vect){
 }//HE
 
 
-//********************FUNCTIONS*****************//
+
+
+//ISR Stop Button
+ISR(INT0_vect){
+	if(debounce(0, 0, BOUNCECHECK)){
+		if(ENABLE)
+		{
+			ENABLE = 0;
+		}else
+		{
+			ENABLE = 1;
+		}
+	}
+}//ISR Pause Button
+
+ISR(PCINT1_vect)
+{
+	if(debouncePINJ(0, 1, BOUNCECHECK)){
+		RAMPDOWN = 1;
+		rampTime_d = runTime_d;	
+	}
+}//ISR Ramp Button
+
+
 
 
 

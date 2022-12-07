@@ -11,7 +11,11 @@ volatile uint8_t motorDecSpeed =MOTOR_SPEED;
 
 extern volatile uint16_t runTime_d;
 extern volatile char MOTORFLAG; //needs to be false
-
+extern volatile uint8_t countPart;
+extern volatile uint8_t countSort;
+extern uint8_t Parts[PARTS_SIZE];
+extern volatile uint16_t adcDisp;
+extern volatile uint16_t CurPosition;
 
 void Motor_init(void){
 	//Set control register to fast PWM mode
@@ -44,9 +48,7 @@ uint8_t runMotor(){
 	PORTB |= 0b00001011;
 	TCNT0 = 0;
 	OCR0A = MOTOR_SPEED;
-	//TCCR0B |= _BV(CS01);
 	MOTORFLAG = 1;
-	TCNT5 = 0x0000;//restart max motor run time
 	return MOTORFLAG;
 }
 
@@ -157,6 +159,22 @@ uint8_t debounce(uint8_t pin, uint8_t level, uint8_t checkNum){
 }
 
 
+uint8_t debouncePINJ(uint8_t pin, uint8_t level, uint8_t checkNum){
+	mask = (1<<pin); //create pin read mask
+	level = (level<<pin);
+	countCheck = 0;
+	for(countCheck = 0; countCheck<checkNum; countCheck++)//read the pin a number of times
+	{
+		if((PINJ & mask)!=level)//if any of the reads are false
+		{
+			return 0;//return false
+		}
+	}
+	return 1;//return true
+}
+
+
+
 
 
 uint8_t getregion(uint8_t pos){
@@ -242,3 +260,53 @@ ISR(BADISR_vect)
 	PORTC = 0xFF;
 	//mTimer(1000);
 }//BADISR
+
+
+
+
+//DISPLAY
+
+void dispComplete (void)
+{
+	
+		LCDClear();
+		LCDWriteIntXY(0,0, countB, 2);
+		LCDWriteString(",");
+		LCDWriteInt( countA, 2);
+		LCDWriteString(",");
+		LCDWriteInt( countW, 2);
+		LCDWriteString(",");
+		LCDWriteInt(countS, 2);
+		LCDWriteString("->");
+		LCDWriteInt(countSort, 2);
+		LCDWriteStringXY(0,1, "T=");
+		LCDWriteInt(runTime_d/1000, 2);
+		LCDWriteString( ".");
+		LCDWriteInt(runTime_d%10 , 1);
+		LCDWriteString("s Complete");
+	
+}
+
+void dispStatus(void){
+	LCDClear();
+	LCDWriteIntXY(0, 0, countSort, 2);
+	LCDWriteStringXY(2,0,"/");
+	LCDWriteIntXY(3,0, countPart, 2);
+	LCDWriteStringXY(5,0, "(");
+	LCDWriteIntXY(6,0, countB, 1);
+	LCDWriteIntXY(7,0, countA, 1);
+	LCDWriteIntXY(8,0, countW, 1);
+	LCDWriteIntXY(9,0, countS, 1);
+	LCDWriteStringXY(10,0, ")");
+	LCDWriteStringXY(12,0, "T");
+	LCDWriteIntXY(13,0, runTime_d/100, 3);
+	
+
+	LCDWriteIntXY(0, 1, CurPosition, 3);
+	LCDWriteStringXY(3,1, ">");
+	LCDWriteIntXY(4, 1, Parts[countSort], 3);
+	//LCDWriteStringXY(8, 1,"D" );
+	//LCDWriteIntXY(8, 1, exitdropTime/1000, 2);//delay in ms
+	LCDWriteIntXY(12, 1, adcDisp, 4);
+
+}

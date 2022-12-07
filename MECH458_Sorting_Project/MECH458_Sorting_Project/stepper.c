@@ -55,25 +55,26 @@ uint8_t step(void){
 
 
 uint8_t stepUpdateDir(void){
-	if(!DECELFLAG){
+	//if(!DECELFLAG){
 		if(CurError == 0)
 		{
 			if(CurDelay!= MAXDELAY){
-				DECELFLAG = 1;
+				//DECELFLAG = 1;
 				return 0;
 			}else
 			{
 				Dir = 0;
 				return 1;
 			}
-		}else if(CurError>100)
+		}else if(CurError>118)
 		{//target is more than 100 steps CW
 			NextDir = -1;//turn CCW
-		}else if(CurError<(-100))
+		}else if(CurError<(-118))
 		{//target is more than 100 steps CCW
 			NextDir = +1;//turn CW
 		}else if((abs(CurError)<118) && (abs(CurError)>82))
 		{//Next target is exactly 100 steps away
+			DECELFLAG = 0;
 			if(Dir != 0){
 				NextDir = Dir;//Keep direction
 			}else
@@ -104,7 +105,7 @@ uint8_t stepUpdateDir(void){
 			DECELFLAG = 1;
 			return 0;
 		}
-	}
+	//}
 	return 1;
 }
 
@@ -126,13 +127,13 @@ uint8_t stepUpdateDelay(void)
 		{
 				
 			//LCDWriteString("R");
-			exitdropTime =DROP_TIME;
+			exitdropTime =EXIT_DROP_TIME;
 			DECELFLAG = 0;
 			PAUSEFLAG = 0;	
 		}
 	}
 	
-	if(Steps2Acc >= abs(CurError) || DECELFLAG)
+	if((Steps2Acc >= abs(CurError) && !EXFLAG) || DECELFLAG)
 	{
 
 		CurDelay = CurDelay + CurAcc[accSteps];
@@ -191,13 +192,9 @@ void stepTimer_init (void)
 
 void stepStart(void){
 	TCNT3 = 0x0000;//Reset counter
-
 	OCR3A = MAXDELAY;//Set compare value
-	
-	TCCR3B |= _BV(CS31) | _BV(CS30);//Enable Stepper with prescaler
-		
+	TCCR3B |= _BV(CS31) | _BV(CS30);//Enable Stepper with prescaler	
 	TIFR3 |= _BV(OCF3A);//Reset interrupt flag
-	//StepsDelta = 0;//reset acceleration step counter
 	CurDelay = MAXDELAY;//Reset CurDelay
 }//stepStart
 
