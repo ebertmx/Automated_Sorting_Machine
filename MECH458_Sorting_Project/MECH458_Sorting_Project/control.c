@@ -11,8 +11,9 @@ volatile uint8_t motorDecSpeed =MOTOR_SPEED;
 
 volatile uint16_t exitTime =0;
 volatile uint16_t enterTime =0;
-volatile uint16_t exitdropTime = EXIT_DROP_TIME;
-volatile uint16_t enterdropTime = ENTER_DROP_TIME;
+
+volatile uint16_t dropTime = DROP_TIME;
+
 volatile uint16_t motorTime_d = 0;
 
 //EXTERNALS
@@ -54,85 +55,125 @@ void Motor_init(void){
 }
 
 
-uint8_t updateMotor(void)
+volatile uint8_t Steps2DR = 0;
+volatile uint8_t Steps2MIN = 0;
+uint8_t CalcExitTime(void)
 {
-	
-	if(abs(CurError)>DROP_REGION)
-	{//if we are outside the drop region
-		if(SLIPFLAG)
-		{//if a slip was detected
-			brakeMotor();
-			return 0;
-		}
-		
-		if(!EXFLAG)
-		{//if no piece is at EX
-			if(!MOTORFLAG)
-			{//if motor is off
-				runMotor();
-			}
-			return 1;
-		}
-		
-		if((CurError*Dir)>=0)
-		{//if we are moving in the right direction and haven't slipped
-			
-			//calculate the stepper time to drop region
-			enterTime  = (CurDelay - MINDELAY)/2 * (Steps2Acc - accSteps)
-			+ (abs(CurError)- DROP_REGION - (Steps2Acc - accSteps))*MINDELAY;
-			if(MOTORFLAG)
-			{//if the motor is running
-				if(enterTime<RUNNING_ENTER_DROP_TIME)
-				{//if stepper will reach drop region before drop hits
-					//keep running
-					return 1;
-				}//TIME
-			}else
-			{//if motor is stopped
-				if(enterTime<ENTER_DROP_TIME)
-				{//if stepper will reach drop region before drop hits
-					runMotor();//Turn motor on
-					return 1;
-				}//TIME
-			}//MOTOR
-		}//DIRECTION
-		
-		//otherwise stop the motor
-		brakeMotor();
-		return 0;
-	}else
-	{//if we are within the drop region
-		if(!MOTORFLAG)
-		{//if the motor is stopped
-			runMotor();
-		}
-		
-		if((CurError*Dir)>0)
-		{//if stepper is not slowing down
-			
-			//calculate stepper time to exit drop region
-			exitTime  = (CurDelay - MINDELAY)/2 * (Steps2Acc - accSteps)
-			+ (DROP_REGION - (CurPosition - Parts[countSort-1]) - (Steps2Acc - accSteps))*MINDELAY;
+	Steps2DR = 	DROP_REGION - abs(CurPosition - Parts[countSort-1]);
+	Steps2MIN = Steps2Acc-accSteps;
 
-			if(exitTime<EXIT_DROP_TIME)
-			{//if stepper will exit drop region before piece falls
-				if(PAUSEFLAG)
-				{
-					exitdropTime -=CurDelay;
-				}else
-				{
-					PAUSEFLAG = 1;//flag to slow down stepper
-					exitdropTime = EXIT_DROP_TIME; 	//set variable to keep track of drop time left
-				}//PAUSEFLAG
-			}else
-			{
-				PAUSEFLAG = 0;
-				//exitdropTime = EXIT_DROP_TIME;
-			}//TIME
-		}//DIRECTION
-	}//DROP REGION
-	return 1;
+	if((CurError*Dir)>0)
+	{		
+		if(Steps2DR<Steps2Acc)
+		{
+			exitTime = (CurDelay - MINDELAY)/2 * Steps2DR;
+		}else
+		{
+			exitTime = (CurDelay - MINDELAY)/2 * Steps2MIN + (Steps2DR - Steps2Acc)*MINDELAY;	
+		} 
+	}else
+	{
+		exitTime = (MAXDELAY - CurDelay)/2 * (Steps2MIN) 
+					+(MAXDELAY-MINDELAY)/2 * Steps2Acc 
+					+ (Steps2DR -(Steps2Acc-Steps2MIN))*MINDELAY;
+	}
+
+    if(exitTime<dropTime)
+    {
+	    return 1;
+    }else
+    {
+	    return 0;
+    }
+
 }
+
+
+
+uint8_t CalcEnterTime(void)
+{
+	 enterTime  = (CurDelay - MINDELAY)/2 * (Steps2Acc - accSteps)
+					+ (abs(CurError)- DROP_REGION - (Steps2Acc - accSteps))*MINDELAY;
+	
+	if(enterTime>ENTER_DROP_TIME)
+	{
+		return 1;
+	}else
+	{
+		return 0;
+	}
+
+}
+
+
+
+// uint8_t updateMotor(void)
+// {       
+//     
+//         if(PAUSEFLAG)
+//         {
+//             exitdropTime += CurDelay;
+//             if(exitdropTime>= EXIT_DROP_TIME)
+//             {
+//                 PAUSEFLAG = 0;
+//             }
+//         }
+//         
+//        if(!EXFLAG && !MOTORFLAG)
+//         {
+//             runMotor();
+//         }
+//   
+// 	    if(abs(CurError)>DROP_REGION)
+// 	    {//if we are outside the drop region
+//            
+//             
+//             if(SLIPFLAG)
+//             {//if a slip was detected
+//                 brakeMotor();
+//             }
+// 		
+// 		    if(EXFLAG)
+//             {
+// 		        if((CurError*Dir)>=0)
+// 		        {//if we are moving in the right direction and haven't slipped
+// 			
+// 			        //calculate the stepper time to drop region
+//                    if((abs(CurError)- DROP_REGION - (Steps2Acc - accSteps))>0){
+// 			            enterTime  = (CurDelay - MINDELAY)/2 * (Steps2Acc - accSteps)
+// 			                         + (abs(CurError)- DROP_REGION - (Steps2Acc - accSteps))*MINDELAY;
+//                    }else
+//                    {
+//                        enterTime = 0;
+//                    }               			
+//                     if(MOTORFLAG)
+// 			        {//if the motor is running
+// 				        if(enterTime<BRAKE_DROP_TIME)
+// 				        {//if stepper will reach drop region before drop hits
+// 					        return 1;
+// 				        }//TIME
+// 			        }else
+// 			        {//if motor is stopped
+// 				        if(enterTime<ENTER_DROP_TIME)
+// 				        {//if stepper will reach drop region before drop hits
+//                             runMotor();//Turn motor on
+// 					        return 1;
+// 				        }//TIME
+// 			        }//MOTOR
+// 		        }//DIRECTION
+// 		        //otherwise stop the motor
+// 		        brakeMotor();
+// 		        return 0;
+//             }                
+// 	    }else
+// 	    {//if we are within the drop region
+//             if(!MOTORFLAG)
+//             {//if the motor is stopped
+//                 runMotor();
+//             } 
+// 	    }//DROP REGION
+// 	    return 1;
+// }
 
 
 uint8_t startMotor(){
@@ -421,5 +462,24 @@ LCDWriteIntXY(4, 1, Parts[countSort], 3);
 //  	LCDWriteInt(TARGETFLAG,1);
 //  	LCDWriteInt(DECELFLAG,1);
 LCDWriteIntXY(12, 1, adcDisp, 4);
+
+}
+
+void dispFLAGS(void){
+    
+    LCDClear();
+    LCDWriteString("M");
+    LCDWriteInt(MOTORFLAG,1);
+    LCDWriteString(" P");
+    LCDWriteInt(PAUSEFLAG,1);
+    
+    LCDWriteString(" T");
+    LCDWriteInt(TARGETFLAG,1);
+    LCDWriteStringXY(0,1," ");
+    LCDWriteString("D");
+    LCDWriteInt(DECELFLAG,1);
+    LCDWriteString(" S");
+    LCDWriteInt(SLIPFLAG,1);
+
 
 }

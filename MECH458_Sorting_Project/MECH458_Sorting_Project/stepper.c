@@ -154,6 +154,12 @@ uint8_t stepUpdateDelay(void)
 			CurDelay = MAXDELAY;
 			accSteps = 0;
 			DECELFLAG = 0;
+            if(PAUSEFLAG && (DROP_REGION-abs(CurError))<5)
+            {
+              //  CurDelay = 2*MAXDELAY;
+              //  brakeMotor();
+              //  while(1);
+            }                
 		}else if(accSteps>0){
 			accSteps--;
 		}

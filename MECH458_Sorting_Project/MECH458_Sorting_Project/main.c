@@ -11,6 +11,9 @@ volatile char SLIPFLAG = 0;
 volatile char TARGETFLAG = 0;
 volatile char PAUSEFLAG = 0;
 
+volatile char DROPFLAG = 0;
+volatile char SORTFLAG = 0;
+
 //GLOBALS
 uint8_t Parts[PARTS_SIZE];
 volatile uint8_t countPart =0;
@@ -30,8 +33,12 @@ volatile uint16_t EXTime_s=0;
 
 //EXTERNALS
 extern volatile uint8_t CurPosition;
-
-
+extern volatile uint16_t dropTime;
+extern volatile uint16_t exitTime;
+extern volatile int16_t CurError;
+extern volatile uint16_t enterTime;
+extern volatile uint16_t dropTime;
+extern volatile uint16_t CurDelay;
 
 int main(int argc, char *argv[]){
 
@@ -61,8 +68,8 @@ int main(int argc, char *argv[]){
 	ADC_Init();
 	mTimer_init();
 	stepTimer_init();
-//	InitLCD(LS_BLINK|LS_ULINE);
-//	LCDClear();
+	InitLCD(LS_BLINK|LS_ULINE);
+	LCDClear();
 	EIMSK |= 0x08;
 	sei();// Enable global interrupts
 
@@ -94,7 +101,8 @@ STANDBY:
 		{
 			if((runTime_d-refreshTime)>REFRESH_PERIOD)
 			{
-			//	dispStatus();
+               //dispFLAGS();
+				dispStatus();
 				refreshTime = runTime_d;	
 			}	
 		}else
@@ -128,10 +136,10 @@ DISABLE:
 	uint8_t INTState = EIMSK;
 	EIMSK = 0x01;
 	PCMSK1 &= ~_BV(PCINT9);
-	
-	stopMotor();
+	brakeMotor();
+	//stopMotor();
 	stepRes();
-	dispStatus();
+	//dispStatus();
 	while(!ENABLE)
 	{
 	}
@@ -234,9 +242,15 @@ ISR(INT2_vect){
 				EIMSK |= _BV(INT2); //Enable Interrupt
 				EIFR |= _BV(INT2);
 				
-				stepUpdateError();//Calculate the current stepper error
-				updateMotor();
-				
+				SORTFLAG = 1;
+				if(CalcEnterTime() == 1)
+				{
+					SORTFLAG = 1;
+					brakeMotor();
+				}else
+				{
+					SORTFLAG = 0;
+				}
 				EXTime_s = runTime_d;
 			}//LO
 	}else
@@ -248,26 +262,17 @@ ISR(INT2_vect){
 				EICRA &= ~(_BV(ISC20));	//Turn on falling edge
 				EIMSK |= _BV(INT2); //Enable Interrupt
 				EIFR |= _BV(INT2);
-				
+                
 				if(countSort<countPart)
 				{//if we won't overrun the array
 					countSort+=1;//go to next part
 					TARGETFLAG =0;//New target; reset flag
 				}
 				
-				if(!MOTORFLAG)
-				{
-					/*
-						The program gets here if
-						1. a piece has unintentionally slipped past EX before its drop zone
-						2. the belt is dropping early so the stepper can 'catch' the falling piece
-							as it turns by
-					*/
-					SLIPFLAG = 1;//set flag to indicate to keep moving towards the previous target
-				}
-				updateMotor();
-				
-			EXTime_s = runTime_d;	
+				DROPFLAG = 1;
+				dropTime  = 0;
+				dropTime = DROP_TIME;        
+				EXTime_s = runTime_d;	
 		}//HI
 	}
 	
@@ -279,13 +284,42 @@ ISR(TIMER3_COMPA_vect){
 
 	step();//step towards target
 	stepUpdateError(); //calculate the stepper position error
-	
 	stepUpdateDir(); //update the stepper direction
 	stepUpdateDelay(); //update the stepper speed
 //CONTROL STEPPER
 //CONTROL MOTOR
-	updateMotor();
+	if(SORTFLAG)
+	{
+		if(enterTime<BRAKE_DROP_TIME)
+		{
+			runMotor();
+			SORTFLAG = 0;
+			
+		}else{
+			enterTime -= CurDelay;
+		}
+    }	
 	
+	if(DROPFLAG)
+	{
+		if(dropTime<CurDelay)
+		{
+			DROPFLAG = 0;
+			PAUSEFLAG = 0;
+		}else
+		{
+			dropTime -=CurDelay;
+		}
+		
+		if(CalcExitTime())
+		{
+			PAUSEFLAG = 1;
+		}else
+		{	
+			PAUSEFLAG = 0;
+		}
+		
+	}
 }//stepTimer
 
 
