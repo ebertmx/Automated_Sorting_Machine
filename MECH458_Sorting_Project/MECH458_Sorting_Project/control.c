@@ -13,6 +13,7 @@ volatile uint16_t exitTime =0;
 volatile uint16_t enterTime =0;
 
 volatile uint16_t dropTime = DROP_TIME;
+volatile uint16_t enterdropTime = ENTER_DROP_TIME;
 
 volatile uint16_t motorTime_d = 0;
 
@@ -55,27 +56,30 @@ void Motor_init(void){
 }
 
 
-volatile uint8_t Steps2DR = 0;
+volatile uint8_t Steps2Exit = 0;
 volatile uint8_t Steps2MIN = 0;
+
+
 uint8_t CalcExitTime(void)
 {
-	Steps2DR = 	DROP_REGION - abs(CurPosition - Parts[countSort-1]);
+	Steps2Exit = DROP_REGION - abs(CurPosition - Parts[countSort-1]);
 	Steps2MIN = Steps2Acc-accSteps;
 
-	if((CurError*Dir)>0)
+	if(((CurError*Dir)>0) || (CurDelay>=MAXDELAY))
 	{		
-		if(Steps2DR<Steps2Acc)
+		if(Steps2Exit<Steps2Acc)
 		{
-			exitTime = (CurDelay - MINDELAY)/2 * Steps2DR;
+			exitTime = (CurDelay - MINDELAY)/2 * Steps2Exit;
 		}else
 		{
-			exitTime = (CurDelay - MINDELAY)/2 * Steps2MIN + (Steps2DR - Steps2Acc)*MINDELAY;	
+			exitTime = (CurDelay - MINDELAY)/2 * Steps2MIN + (Steps2Exit - Steps2Acc)*MINDELAY;	
 		} 
 	}else
 	{
-		exitTime = (MAXDELAY - CurDelay)/2 * (Steps2MIN) 
-					+(MAXDELAY-MINDELAY)/2 * Steps2Acc 
-					+ (Steps2DR -(Steps2Acc-Steps2MIN))*MINDELAY;
+			exitTime = (MAXDELAY - CurDelay)/2 * (Steps2MIN)
+						+(MAXDELAY-MINDELAY)/2 * Steps2Acc
+						+ (Steps2Exit -(Steps2Acc-Steps2MIN))*MINDELAY;
+		
 	}
 
     if(exitTime<dropTime)
@@ -89,91 +93,45 @@ uint8_t CalcExitTime(void)
 }
 
 
+volatile uint8_t Steps2Enter = 0;
 
 uint8_t CalcEnterTime(void)
 {
-	 enterTime  = (CurDelay - MINDELAY)/2 * (Steps2Acc - accSteps)
-					+ (abs(CurError)- DROP_REGION - (Steps2Acc - accSteps))*MINDELAY;
 	
-	if(enterTime>ENTER_DROP_TIME)
+	if(abs(CurError)<DROP_REGION)
+	{
+		return 0;
+	}
+	
+	Steps2Enter = 	abs(CurError) - DROP_REGION;
+	Steps2MIN = Steps2Acc-accSteps;
+	
+	
+	if((CurError*Dir)>0)
+	{
+		if(Steps2MIN> Steps2Enter)
+		{
+			enterTime = (CurDelay - MINDELAY)/2 * Steps2MIN;
+		}else
+		{
+			enterTime  = (CurDelay - MINDELAY)/2 * Steps2MIN + (Steps2Enter- Steps2MIN)*MINDELAY;			
+		}
+	}else
+	{
+			enterTime = (MAXDELAY - CurDelay)/2 * Steps2MIN 
+						+(MAXDELAY-MINDELAY)/2 * Steps2Acc 
+						+ (Steps2Enter- Steps2MIN)*MINDELAY;
+						
+	}
+	
+	if(enterTime>enterdropTime)
 	{
 		return 1;
 	}else
 	{
 		return 0;
 	}
-
 }
-
-
-
-// uint8_t updateMotor(void)
-// {       
-//     
-//         if(PAUSEFLAG)
-//         {
-//             exitdropTime += CurDelay;
-//             if(exitdropTime>= EXIT_DROP_TIME)
-//             {
-//                 PAUSEFLAG = 0;
-//             }
-//         }
-//         
-//        if(!EXFLAG && !MOTORFLAG)
-//         {
-//             runMotor();
-//         }
-//   
-// 	    if(abs(CurError)>DROP_REGION)
-// 	    {//if we are outside the drop region
-//            
-//             
-//             if(SLIPFLAG)
-//             {//if a slip was detected
-//                 brakeMotor();
-//             }
-// 		
-// 		    if(EXFLAG)
-//             {
-// 		        if((CurError*Dir)>=0)
-// 		        {//if we are moving in the right direction and haven't slipped
-// 			
-// 			        //calculate the stepper time to drop region
-//                    if((abs(CurError)- DROP_REGION - (Steps2Acc - accSteps))>0){
-// 			            enterTime  = (CurDelay - MINDELAY)/2 * (Steps2Acc - accSteps)
-// 			                         + (abs(CurError)- DROP_REGION - (Steps2Acc - accSteps))*MINDELAY;
-//                    }else
-//                    {
-//                        enterTime = 0;
-//                    }               			
-//                     if(MOTORFLAG)
-// 			        {//if the motor is running
-// 				        if(enterTime<BRAKE_DROP_TIME)
-// 				        {//if stepper will reach drop region before drop hits
-// 					        return 1;
-// 				        }//TIME
-// 			        }else
-// 			        {//if motor is stopped
-// 				        if(enterTime<ENTER_DROP_TIME)
-// 				        {//if stepper will reach drop region before drop hits
-//                             runMotor();//Turn motor on
-// 					        return 1;
-// 				        }//TIME
-// 			        }//MOTOR
-// 		        }//DIRECTION
-// 		        //otherwise stop the motor
-// 		        brakeMotor();
-// 		        return 0;
-//             }                
-// 	    }else
-// 	    {//if we are within the drop region
-//             if(!MOTORFLAG)
-//             {//if the motor is stopped
-//                 runMotor();
-//             } 
-// 	    }//DROP REGION
-// 	    return 1;
-// }
 
 
 uint8_t startMotor(){
@@ -182,20 +140,29 @@ uint8_t startMotor(){
 	TCNT0 = 0;
 	OCR0A = MOTOR_START_SPEED;
 	//TCCR0B |= _BV(CS01);
-	MOTORFLAG = 1;
-	motorTime_d = runTime_d;
+	if(!MOTORFLAG)
+	{
+		MOTORFLAG = 1;
+		motorTime_d = runTime_d;
+	}
 	TCNT5 = 0x0000;//restart max motor run time
 	return MOTORFLAG;
 }
 
 uint8_t runMotor(){
-	PORTB &= 0x80;
-	PORTB |= 0b00001011;
-	TCNT0 = 0;
-	OCR0A = MOTOR_SPEED;
-	MOTORFLAG = 1;
-	motorTime_d = runTime_d;
-	return MOTORFLAG;
+	
+		PORTB &= 0x80;
+		PORTB |= 0b00001011;
+		TCNT0 = 0;
+		OCR0A = MOTOR_SPEED;
+	
+	if(!MOTORFLAG)
+	{
+		MOTORFLAG = 1;
+		motorTime_d = runTime_d;
+	}
+		return MOTORFLAG;
+	
 }
 
 uint8_t brakeMotor(){

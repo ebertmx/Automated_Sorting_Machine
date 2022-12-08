@@ -27,7 +27,7 @@ extern volatile char EXFLAG;
 extern volatile char PAUSEFLAG;
 extern volatile char TARGETFLAG;
 extern volatile char SLIPFLAG;
-
+extern volatile uint8_t Steps2Exit;
 
 uint8_t step(void){
 	CurState = CurState + Dir;//Update CurState based on Direction
@@ -52,11 +52,14 @@ uint8_t stepUpdateError(void)
 {
 	if(SLIPFLAG)
 	{
-		CurError = Parts[countSort-1] - CurPosition;
 		if(abs(CurError)<DROP_REGION)//We may need to check the time since slip to see if the part fell
 		{//Maybe a reduced drop region and a delay to ensure piece hits
 			SLIPFLAG = 0;
 			CurError = Parts[countSort] - CurPosition;
+		}else
+		{
+			CurError = Parts[countSort-1] - CurPosition;
+			
 		}
 	}else
 	{
@@ -121,13 +124,12 @@ uint8_t stepUpdateDir(void){
 			NextDir = (CurError>0) - (CurError<0);	
 		}
 
-		
-		if(CurDelay >= MAXDELAY)
-		{//stepper is can change direction
+		if(NextDir == Dir)
+		{//next direction is the same
 			Dir = NextDir;
 			return 1;
-		}else if(NextDir == Dir)
-		{//next direction is the same
+		}else if(CurDelay >= MAXDELAY)
+		{//stepper is can change direction
 			Dir = NextDir;
 			return 1;
 		}else
@@ -151,18 +153,19 @@ uint8_t stepUpdateDelay(void)
 		CurDelay = CurDelay + CurAcc[accSteps];
 		if (CurDelay > MAXDELAY)
 		{
-			CurDelay = MAXDELAY;
-			accSteps = 0;
-			DECELFLAG = 0;
-            if(PAUSEFLAG && (DROP_REGION-abs(CurError))<5)
-            {
-              //  CurDelay = 2*MAXDELAY;
-              //  brakeMotor();
-              //  while(1);
-            }                
+			if(PAUSEFLAG && (Steps2Exit<3))
+			{
+				
+			}else
+			{
+				CurDelay = MAXDELAY;
+				accSteps = 0;
+				DECELFLAG = 0;
+			}		     
 		}else if(accSteps>0){
 			accSteps--;
 		}
+	
 	}else if(CurDelay>MINDELAY)
 	{//Accelerate if able
 		CurDelay = CurDelay -  CurAcc[accSteps];

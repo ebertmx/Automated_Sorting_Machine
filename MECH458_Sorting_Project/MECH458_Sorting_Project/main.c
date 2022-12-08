@@ -39,6 +39,9 @@ extern volatile int16_t CurError;
 extern volatile uint16_t enterTime;
 extern volatile uint16_t dropTime;
 extern volatile uint16_t CurDelay;
+extern volatile uint16_t enterdropTime;
+
+
 
 int main(int argc, char *argv[]){
 
@@ -243,19 +246,12 @@ ISR(INT2_vect){
 				EIFR |= _BV(INT2);
 				
 				SORTFLAG = 1;
-				if(CalcEnterTime() == 1)
-				{
-					SORTFLAG = 1;
-					brakeMotor();
-				}else
-				{
-					SORTFLAG = 0;
-				}
+				enterdropTime = ENTER_DROP_TIME;
 				EXTime_s = runTime_d;
 			}//LO
 	}else
 	{//Part is leaving EX
-		if(debounce(2,1, NOISECHECK) && ((runTime_d - EXTime_s)>SORTTIME)	)
+		if(debounce(2,1, NOISECHECK) && ((runTime_d - EXTime_s)>SORTTIME))
 		{
 				EXFLAG = 0;
 				EIMSK &= ~_BV(INT2);
@@ -269,13 +265,24 @@ ISR(INT2_vect){
 					TARGETFLAG =0;//New target; reset flag
 				}
 				
+				if(abs(CurError)>DROP_REGION)
+				{//Current Error is for count-1 at this point
+					SLIPFLAG = 1;
+				}else
+				{
+					runMotor();
+				}
+				
+				if(DROPFLAG)
+				{//if the next piece is falling before previous piece has hit
+					DROPFLAG = 0;
+					PAUSEFLAG = 0;//MUST RESET THE PAUSE FLAG
+				}
 				DROPFLAG = 1;
-				dropTime  = 0;
-				dropTime = DROP_TIME;        
-				EXTime_s = runTime_d;	
+				dropTime = DROP_TIME - (OCR3A - TCNT3);        
+			EXTime_s = runTime_d;	
 		}//HI
-	}
-	
+	}	
 }//EX
 
 //STEPPER ISR  377 cc
@@ -288,17 +295,20 @@ ISR(TIMER3_COMPA_vect){
 	stepUpdateDelay(); //update the stepper speed
 //CONTROL STEPPER
 //CONTROL MOTOR
+
 	if(SORTFLAG)
 	{
-		if(enterTime<BRAKE_DROP_TIME)
+		
+		if(CalcEnterTime())
 		{
-			runMotor();
+			brakeMotor();
+			enterdropTime = BRAKE_DROP_TIME;
+		}else
+		{
 			SORTFLAG = 0;
-			
-		}else{
-			enterTime -= CurDelay;
+			runMotor();
 		}
-    }	
+    }
 	
 	if(DROPFLAG)
 	{
@@ -306,6 +316,7 @@ ISR(TIMER3_COMPA_vect){
 		{
 			DROPFLAG = 0;
 			PAUSEFLAG = 0;
+			
 		}else
 		{
 			dropTime -=CurDelay;
