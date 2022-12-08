@@ -29,7 +29,7 @@ void testStep(void){
 			mTimer(10);
 		}
 		countSort+=1;
-		mTimer(10);
+		mTimer(1);
 		//while(abs(CurError)=<10);
 	}
 	runTimerStop();

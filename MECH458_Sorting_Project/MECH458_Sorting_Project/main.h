@@ -24,6 +24,7 @@ void testStep();
 
 void Motor_init(void);
 uint8_t startMotor();
+uint8_t updateMotor(void);
 uint8_t runMotor();
 uint8_t brakeMotor();
 uint8_t stopMotor();
@@ -53,8 +54,11 @@ uint16_t calcEnterTime(void);
 void dispStatus(void);
 void dispComplete (void);
 
+#define PARTS_SIZE 100
+
+
 #define HI_Reflect 1010
-#define B_Reflect 950
+#define B_Reflect 954
 #define W_Reflect  800
 #define S_Reflect 400
 #define A_Reflect  0
@@ -64,44 +68,42 @@ void dispComplete (void);
 #define A_ID  100
 #define S_ID  200
 
-#define PARTS_SIZE 100
+
+#define SPIN_ROUND_LIMIT 90
 
 
-#define MAXACC 0x00E0
-#define MINDELAY 0x02A8
-#define MAXDELAY 0x0A00
-#define JERKSTEPS 4
+//Test speed = 3510, one battery, fails with 2
+#define MAXACC 0x00FF
+#define MINDELAY 0x02A4
+#define MAXDELAY 0x0900
+#define JERKSTEPS 3
 
 
-#define PAUSEDURATION 2
-
-#define EXIT_DROP_TIME 0x78A8 //0.2s
+#define EXIT_DROP_TIME 0x5000 //0.2s
 #define RUNNING_EXIT_DROP_TIME 0x5000
-#define ENTER_DROP_TIME 0x8000
-#define RUNNING_ENTER_DROP_TIME 0x6000
-#define DROP_REGION 22
-#define DROP_ERROVF 160
+#define ENTER_DROP_TIME 0x5000
+#define RUNNING_ENTER_DROP_TIME 0x5000
+#define DROP_REGION 20
 
-#define MOTOR_START_SPEED 230
-#define MOTOR_SPEED 180
+
+#define MOTOR_START_SPEED 210
+#define MOTOR_SPEED 160
 #define MOTOR_SLOW_SPEED 150
-#define MOTOR_MAX_SPEED 250
-#define MOTOR_MIN_SPEED 40
-
 
 #define MOTOR_TIMER 0x0180
 #define MOTOR_DEC 1
 #define MOTOR_DEC_RATE  0x0001
+#define MOTOR_ACC_TIME 100
 
 #define BOUNCECHECK 250
-#define NOISECHECK 60
+#define NOISECHECK 8
 
 
-#define PARTTIME 5
-#define SORTTIME 5
 
+#define PARTTIME 1
+#define SORTTIME 0
 
-#define REFRESH_PERIOD 100
+#define REFRESH_PERIOD 50
 #define RAMPDOWN_DELAY 4000
 
 

@@ -1,7 +1,7 @@
 #include "main.h"
 
 
-
+//GLOBALS
 volatile uint8_t countB =0;
 volatile uint8_t countW =0;
 volatile uint8_t countS=0;
@@ -9,13 +9,34 @@ volatile uint8_t countA =0;
 volatile char PULSEFLAG=0;
 volatile uint8_t motorDecSpeed =MOTOR_SPEED;
 
+volatile uint16_t exitTime =0;
+volatile uint16_t enterTime =0;
+volatile uint16_t exitdropTime = EXIT_DROP_TIME;
+volatile uint16_t enterdropTime = ENTER_DROP_TIME;
+volatile uint16_t motorTime_d = 0;
+
+//EXTERNALS
 extern volatile uint16_t runTime_d;
 extern volatile char MOTORFLAG; //needs to be false
 extern volatile uint8_t countPart;
 extern volatile uint8_t countSort;
 extern uint8_t Parts[PARTS_SIZE];
 extern volatile uint16_t adcDisp;
-extern volatile uint16_t CurPosition;
+
+extern volatile char PAUSEFLAG;
+extern volatile char TARGETFLAG;
+extern volatile char DECELFLAG;
+extern volatile char SLIPFLAG;
+
+extern volatile uint8_t Steps2Acc;
+extern volatile uint16_t CurDelay;
+extern volatile uint8_t accSteps;
+extern volatile uint8_t CurPosition;
+extern volatile int16_t CurError;
+extern volatile int8_t Dir;
+extern volatile char EXFLAG;
+
+
 
 void Motor_init(void){
 	//Set control register to fast PWM mode
@@ -29,6 +50,88 @@ void Motor_init(void){
 	OCR0A = 0;
 	//Stop
 	stopMotor();
+
+}
+
+
+uint8_t updateMotor(void)
+{
+	
+	if(abs(CurError)>DROP_REGION)
+	{//if we are outside the drop region
+		if(SLIPFLAG)
+		{//if a slip was detected
+			brakeMotor();
+			return 0;
+		}
+		
+		if(!EXFLAG)
+		{//if no piece is at EX
+			if(!MOTORFLAG)
+			{//if motor is off
+				runMotor();
+			}
+			return 1;
+		}
+		
+		if((CurError*Dir)>=0)
+		{//if we are moving in the right direction and haven't slipped
+			
+			//calculate the stepper time to drop region
+			enterTime  = (CurDelay - MINDELAY)/2 * (Steps2Acc - accSteps)
+			+ (abs(CurError)- DROP_REGION - (Steps2Acc - accSteps))*MINDELAY;
+			if(MOTORFLAG)
+			{//if the motor is running
+				if(enterTime<RUNNING_ENTER_DROP_TIME)
+				{//if stepper will reach drop region before drop hits
+					//keep running
+					return 1;
+				}//TIME
+			}else
+			{//if motor is stopped
+				if(enterTime<ENTER_DROP_TIME)
+				{//if stepper will reach drop region before drop hits
+					runMotor();//Turn motor on
+					return 1;
+				}//TIME
+			}//MOTOR
+		}//DIRECTION
+		
+		//otherwise stop the motor
+		brakeMotor();
+		return 0;
+	}else
+	{//if we are within the drop region
+		if(!MOTORFLAG)
+		{//if the motor is stopped
+			runMotor();
+		}
+		
+		if((CurError*Dir)>0)
+		{//if stepper is not slowing down
+			
+			//calculate stepper time to exit drop region
+			exitTime  = (CurDelay - MINDELAY)/2 * (Steps2Acc - accSteps)
+			+ (DROP_REGION - (CurPosition - Parts[countSort-1]) - (Steps2Acc - accSteps))*MINDELAY;
+
+			if(exitTime<EXIT_DROP_TIME)
+			{//if stepper will exit drop region before piece falls
+				if(PAUSEFLAG)
+				{
+					exitdropTime -=CurDelay;
+				}else
+				{
+					PAUSEFLAG = 1;//flag to slow down stepper
+					exitdropTime = EXIT_DROP_TIME; 	//set variable to keep track of drop time left
+				}//PAUSEFLAG
+			}else
+			{
+				PAUSEFLAG = 0;
+				//exitdropTime = EXIT_DROP_TIME;
+			}//TIME
+		}//DIRECTION
+	}//DROP REGION
+	return 1;
 }
 
 
@@ -39,6 +142,7 @@ uint8_t startMotor(){
 	OCR0A = MOTOR_START_SPEED;
 	//TCCR0B |= _BV(CS01);
 	MOTORFLAG = 1;
+	motorTime_d = runTime_d;
 	TCNT5 = 0x0000;//restart max motor run time
 	return MOTORFLAG;
 }
@@ -49,6 +153,7 @@ uint8_t runMotor(){
 	TCNT0 = 0;
 	OCR0A = MOTOR_SPEED;
 	MOTORFLAG = 1;
+	motorTime_d = runTime_d;
 	return MOTORFLAG;
 }
 
@@ -300,13 +405,21 @@ void dispStatus(void){
 	LCDWriteStringXY(10,0, ")");
 	LCDWriteStringXY(12,0, "T");
 	LCDWriteIntXY(13,0, runTime_d/100, 3);
-	
 
-	LCDWriteIntXY(0, 1, CurPosition, 3);
-	LCDWriteStringXY(3,1, ">");
-	LCDWriteIntXY(4, 1, Parts[countSort], 3);
-	//LCDWriteStringXY(8, 1,"D" );
-	//LCDWriteIntXY(8, 1, exitdropTime/1000, 2);//delay in ms
-	LCDWriteIntXY(12, 1, adcDisp, 4);
+
+	//LCDWriteStringXY(0,1,"N=" );
+	//LCDWriteInt(enterTime,8);
+	//LCDWriteString(" X=");
+	//LCDWriteInt(exitTime,6);	
+
+LCDWriteIntXY(0, 1, CurPosition, 3);
+LCDWriteStringXY(3,1, ">");
+LCDWriteIntXY(4, 1, Parts[countSort], 3);
+// 
+// 	LCDWriteIntXY(8,1, PAUSEFLAG,1);
+// 	LCDWriteInt(SLIPFLAG,1);
+//  	LCDWriteInt(TARGETFLAG,1);
+//  	LCDWriteInt(DECELFLAG,1);
+LCDWriteIntXY(12, 1, adcDisp, 4);
 
 }

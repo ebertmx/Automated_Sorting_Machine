@@ -6,7 +6,6 @@ volatile char RAMPDOWN=0;
 volatile char EXFLAG=0;
 volatile char ORFLAG = 1;
 volatile char MOTORFLAG = 0;
-volatile char EMPTYFLAG = 0;
 volatile char DECELFLAG = 0;
 volatile char SLIPFLAG = 0;
 volatile char TARGETFLAG = 0;
@@ -17,7 +16,6 @@ uint8_t Parts[PARTS_SIZE];
 volatile uint8_t countPart =0;
 volatile uint8_t countSort =0;
 
-
 volatile uint16_t adcValue = 1023;
 volatile uint16_t adcPart =1023;
 volatile uint16_t adcTemp =1023;
@@ -27,19 +25,12 @@ volatile uint16_t countADC=0;
 volatile uint16_t runTime_d =0;
 volatile uint16_t refreshTime =0;
 volatile uint16_t rampTime_d =0;
-volatile uint16_t exitTime =0;
-volatile uint16_t enterTime =0;
-volatile uint16_t exitdropTime = EXIT_DROP_TIME;
-volatile uint16_t enterdropTime = ENTER_DROP_TIME;
 volatile uint16_t ORTime_s=0;
 volatile uint16_t EXTime_s=0;
 
 //EXTERNALS
-extern volatile uint8_t Steps2Acc;
-extern volatile uint16_t CurDelay;
-extern volatile uint8_t accSteps;
 extern volatile uint8_t CurPosition;
-extern volatile int16_t CurError;
+
 
 
 int main(int argc, char *argv[]){
@@ -55,12 +46,12 @@ int main(int argc, char *argv[]){
 	DDRB = 0xFF; //OUTPUT
 	DDRC = 0xFF; //OUTPUT
 	DDRD = 0x00;//INPUT
-	DDRJ &= ~_BV(PINJ0);
+	DDRJ &= ~_BV(PINJ0); //INPUT
 	
 	//EXT INTERRUPTS
 	EICRA |= _BV(ISC01);//PAUSE
 	EICRA |= _BV(ISC11) |_BV(ISC10);//OR
-	EICRA |= _BV(ISC21);// | _BV(ISC20);//EX
+	EICRA |= _BV(ISC21);//EX
 	EICRA |= _BV(ISC31) | _BV(ISC30);//HE
 	
 	PCICR |= _BV(PCIE1);//RAMPDOWN
@@ -70,16 +61,15 @@ int main(int argc, char *argv[]){
 	ADC_Init();
 	mTimer_init();
 	stepTimer_init();
-	InitLCD(LS_BLINK|LS_ULINE);
-	LCDClear();
-	
+//	InitLCD(LS_BLINK|LS_ULINE);
+//	LCDClear();
 	EIMSK |= 0x08;
 	sei();// Enable global interrupts
 
 	//CALIBRATION
 	
 	stepCalibrate();
-	mTimer(2000);
+	//mTimer(2000);
 	//testStep();
 	//while(1);
 	//cli();
@@ -99,16 +89,14 @@ int main(int argc, char *argv[]){
 STANDBY:
 	//Handle Specific Processes and Display Data
 	while (1)
-	{	
-				
+	{				
 		if(ENABLE)
 		{
 			if((runTime_d-refreshTime)>REFRESH_PERIOD)
 			{
-				dispStatus();
+			//	dispStatus();
 				refreshTime = runTime_d;	
-			}
-			
+			}	
 		}else
 		{
 			goto DISABLE;
@@ -153,6 +141,7 @@ DISABLE:
 	PCMSK1 |= _BV(PCINT9);
 	runTimerResume();
 	stepStart();
+	runMotor();
 	runTimerResume();
 	
 goto STANDBY;
@@ -166,7 +155,7 @@ SHUTDOWN:
 	PORTB = 0x00;
 	PORTA = 0x00;
 	
-	 dispComplete();
+	dispComplete();
 	while(1)
 	{
 		
@@ -229,23 +218,10 @@ ISR(INT1_vect){
 
 
 
-uint16_t calcEnterTime(void)
-{
-	
-	return 1;
-}
-
-uint16_t calcExitTime(void)
-{
-	
-	return 1;
-}
 
 
-
-//EX ISR //376 - 471 cycles
+//EX ISR //547cycles
 ISR(INT2_vect){
-	
 	
 	if(!EXFLAG)
 	{//Part is entering EX
@@ -256,24 +232,11 @@ ISR(INT2_vect){
 				EIMSK &= ~_BV(INT2);
 				EICRA |= _BV(ISC20);// Rising Edge
 				EIMSK |= _BV(INT2); //Enable Interrupt
+				EIFR |= _BV(INT2);
 				
-				stepUpdateError();
-				enterTime  = (CurDelay - MINDELAY)/2 * (Steps2Acc - accSteps) 
-								+ (abs(CurError)- DROP_REGION - (Steps2Acc - accSteps))*MINDELAY;
+				stepUpdateError();//Calculate the current stepper error
+				updateMotor();
 				
-				if(MOTORFLAG)
-				{
-					if(enterTime>ENTER_DROP_TIME)
-					{
-						brakeMotor();//brake motor
-					}
-				}else
-				{
-					if(enterTime>RUNNING_ENTER_DROP_TIME)
-					{
-						brakeMotor();//brake motor
-					}	
-				}
 				EXTime_s = runTime_d;
 			}//LO
 	}else
@@ -284,107 +247,55 @@ ISR(INT2_vect){
 				EIMSK &= ~_BV(INT2);
 				EICRA &= ~(_BV(ISC20));	//Turn on falling edge
 				EIMSK |= _BV(INT2); //Enable Interrupt
-
+				EIFR |= _BV(INT2);
+				
 				if(countSort<countPart)
-				{
-					countSort+=1;//go to next part immediately
-					TARGETFLAG =0;
+				{//if we won't overrun the array
+					countSort+=1;//go to next part
+					TARGETFLAG =0;//New target; reset flag
 				}
 				
-				if(abs(CurError)>DROP_REGION){
-					brakeMotor();
-					SLIPFLAG = 1;
-				}else
+				if(!MOTORFLAG)
 				{
-						exitTime  = (CurDelay - MINDELAY)/2 * (Steps2Acc - accSteps) 
-									+ (DROP_REGION - (CurPosition - Parts[countSort-1]) - (Steps2Acc - accSteps))*MINDELAY;				
-						
-						if(MOTORFLAG)
-						{
-							if(exitTime<RUNNING_EXIT_DROP_TIME)
-							{
-								PAUSEFLAG = 1;
-								exitdropTime = RUNNING_EXIT_DROP_TIME;
-							}
-						}else
-						{
-							if(exitTime<EXIT_DROP_TIME)
-							{
-								PAUSEFLAG = 1;
-								exitdropTime = EXIT_DROP_TIME;
-							}
-						}
-					
+					/*
+						The program gets here if
+						1. a piece has unintentionally slipped past EX before its drop zone
+						2. the belt is dropping early so the stepper can 'catch' the falling piece
+							as it turns by
+					*/
+					SLIPFLAG = 1;//set flag to indicate to keep moving towards the previous target
 				}
+				updateMotor();
 				
-				
-			
-				
+			EXTime_s = runTime_d;	
 		}//HI
 	}
-	EIFR |= _BV(INT2);
+	
 }//EX
 
-
-
-
-//STEPPER ISR  //84 - 250 cycles
+//STEPPER ISR  377 cc
 ISR(TIMER3_COMPA_vect){
 //CONTROL STEPPER
 
 	step();//step towards target
 	stepUpdateError(); //calculate the stepper position error
 	
-	if(PAUSEFLAG)
-	{
-		
-		exitTime  = (CurDelay - MINDELAY)/2 * (Steps2Acc - accSteps)
-					+ (DROP_REGION - (CurPosition - Parts[countSort-1]) - (Steps2Acc - accSteps))*MINDELAY;
-		
-		exitdropTime -=CurDelay;
-		
-		if(exitTime>exitdropTime)
-		{
-			exitdropTime =EXIT_DROP_TIME;
-			PAUSEFLAG = 0;
-		}
-	}
-	
 	stepUpdateDir(); //update the stepper direction
 	stepUpdateDelay(); //update the stepper speed
 //CONTROL STEPPER
+//CONTROL MOTOR
+	updateMotor();
+	
+}//stepTimer
+
+
+
+
+
 
 	
 
 
-//CONTROL MOTOR
-	if(!MOTORFLAG){//If motor is OFF
-		
-		if(abs(CurError)> DROP_REGION){
-			enterTime  = (CurDelay - MINDELAY)/2 * (Steps2Acc - accSteps) 
-							+ (abs(CurError)- DROP_REGION - (Steps2Acc - accSteps))*MINDELAY;
-			if(SLIPFLAG)
-			{
-				if(enterTime<RUNNING_ENTER_DROP_TIME)
-				{				
-					runMotor();//Turn motor on
-				}
-			}else
-			{
-				if(enterTime<ENTER_DROP_TIME)
-				{
-					runMotor();//Turn motor on
-				}
-			}
-			
-		}else
-		{
-			runMotor();
-		}
-	}
-//CONTROL MOTOR	
-
-}//stepTimer
 
 //ADC ISR
 ISR(ADC_vect){

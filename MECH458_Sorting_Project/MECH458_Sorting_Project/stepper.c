@@ -53,9 +53,10 @@ uint8_t stepUpdateError(void)
 	if(SLIPFLAG)
 	{
 		CurError = Parts[countSort-1] - CurPosition;
-		if(abs(CurError)<DROP_REGION)
-		{
+		if(abs(CurError)<DROP_REGION)//We may need to check the time since slip to see if the part fell
+		{//Maybe a reduced drop region and a delay to ensure piece hits
 			SLIPFLAG = 0;
+			CurError = Parts[countSort] - CurPosition;
 		}
 	}else
 	{
@@ -63,7 +64,7 @@ uint8_t stepUpdateError(void)
 	}
 	
 	
-	if(abs(CurError)>100)
+	if(CurError>100)
 	{
 		CurError = CurError - 200;
 	}else if(CurError<-100)
@@ -71,9 +72,12 @@ uint8_t stepUpdateError(void)
 		CurError = CurError + 200;
 	}
 	
-	if(CurError == 0)
+	if(abs(CurError) < Steps2Acc)//change if slowing down to quickly at zone; may cause oscillation
 	{
 		TARGETFLAG = 1;
+	}else
+	{
+		TARGETFLAG = 0;
 	}
 	return 1;
 }
@@ -90,28 +94,25 @@ uint8_t stepUpdateError(void)
 uint8_t stepUpdateDir(void){
 	//if(!DECELFLAG){
 		if(CurError == 0)
-		{
-			if(CurDelay == MAXDELAY){
-				Dir = 0;
+		{// if stepper is at target
+			if(CurDelay > (MAXDELAY-MINDELAY))
+			{// if stepper can stop
+				Dir = 0; //stop stepping
+				TARGETFLAG = 0; //clear target flag
 				return 1;	
 			}else
-			{
+			{//Decelerate stepper
 				DECELFLAG = 1;
 				return 0;
 			}
-		}else if(CurError>118)
-		{//target is more than 100 steps CW
-			NextDir = -1;//turn CCW
-		}else if(CurError<(-118))
-		{//target is more than 100 steps CCW
-			NextDir = +1;//turn CW
-		}else if((abs(CurError)<118) && (abs(CurError)>82))
-		{//Next target is exactly 100 steps away
+		}else if((abs(CurError)>SPIN_ROUND_LIMIT) && (CurDelay<MAXDELAY))
+		{//Next target is close in same direction and you are at speed don't change
 			DECELFLAG = 0;
-			if(Dir != 0){
-				NextDir = Dir;//Keep direction
+			if(Dir != 0)
+			{//Keep direction
+				NextDir = Dir;
 			}else
-			{
+			{//edge case where Dir might be zero
 				Dir = 1;
 				return 1;
 			}
@@ -120,24 +121,20 @@ uint8_t stepUpdateDir(void){
 			NextDir = (CurError>0) - (CurError<0);	
 		}
 
-		//Set Direction or Decelerate
-		if(CurDelay >= MAXDELAY){
+		
+		if(CurDelay >= MAXDELAY)
+		{//stepper is can change direction
 			Dir = NextDir;
 			return 1;
-		}
-		
-		
-		
-		if(NextDir == Dir)
-		{//stepper is slow or next direction is the same
+		}else if(NextDir == Dir)
+		{//next direction is the same
 			Dir = NextDir;
 			return 1;
 		}else
-		{
+		{//Decelerate stepper to switch directions
 			DECELFLAG = 1;
 			return 0;
 		}
-	//}
 	return 1;
 }
 
@@ -146,12 +143,12 @@ uint8_t stepUpdateDir(void){
 uint8_t stepUpdateDelay(void)
 {
 	
-	
-	if(TARGETFLAG || DECELFLAG || PAUSEFLAG)
-	{
-
+	if(Dir==0)
+	{//if stepper is not stepping:
+		stepRes();//reset stepper
+	}else if(TARGETFLAG || DECELFLAG || PAUSEFLAG)
+	{//Decelerate if prompted
 		CurDelay = CurDelay + CurAcc[accSteps];
-		
 		if (CurDelay > MAXDELAY)
 		{
 			CurDelay = MAXDELAY;
@@ -160,25 +157,21 @@ uint8_t stepUpdateDelay(void)
 		}else if(accSteps>0){
 			accSteps--;
 		}
-		
 	}else if(CurDelay>MINDELAY)
-	{
-		//Accelerate
+	{//Accelerate if able
 		CurDelay = CurDelay -  CurAcc[accSteps];
-		
-		if (CurDelay <= MINDELAY || CurDelay > MAXDELAY)//overflow protection
-		{
+		if (CurDelay <= MINDELAY || CurDelay > MAXDELAY)
+		{//overflow protection
 			CurDelay = MINDELAY;
 		}
-		if(accSteps<Steps2Acc){
+		if(accSteps<Steps2Acc)
+		{//acceleration increase
 			accSteps++;
 		}
 	}else
 	{
 		return 0;
 	}
-	
-	
 	
 	OCR3A = CurDelay;//set the new delay
 	return 1;
