@@ -7,7 +7,7 @@ volatile char EXFLAG=0;
 volatile char ORFLAG = 1;
 volatile char MOTORFLAG = 0;
 volatile char DECELFLAG = 0;
-volatile char SLIPFLAG = 0;
+volatile char HOLDFLAG = 0;
 volatile char TARGETFLAG = 0;
 volatile char PAUSEFLAG = 0;
 
@@ -40,6 +40,7 @@ extern volatile uint16_t enterTime;
 extern volatile uint16_t dropTime;
 extern volatile uint16_t CurDelay;
 extern volatile uint16_t enterdropTime;
+extern volatile int8_t Dir;
 
 
 
@@ -200,7 +201,7 @@ ISR(INT1_vect){
 		
 			ADCSRA |=_BV(ADSC);
 		
-			motorTimerStart();//slow down motor on approach
+			//motorTimerStart();//slow down motor on approach
 			ORTime_s = runTime_d;
 
 		}//HI
@@ -246,6 +247,10 @@ ISR(INT2_vect){
 				EIFR |= _BV(INT2);
 				
 				SORTFLAG = 1;
+				if(HOLDFLAG)
+				{
+					brakeMotor();
+				}
 				enterdropTime = ENTER_DROP_TIME;
 				EXTime_s = runTime_d;
 			}//LO
@@ -267,17 +272,15 @@ ISR(INT2_vect){
 				
 				if(abs(CurError)>DROP_REGION)
 				{//Current Error is for count-1 at this point
-					SLIPFLAG = 1;
+					HOLDFLAG = 1;
 				}else
 				{
 					runMotor();
 				}
 				
-				if(DROPFLAG)
-				{//if the next piece is falling before previous piece has hit
-					DROPFLAG = 0;
-					PAUSEFLAG = 0;//MUST RESET THE PAUSE FLAG
-				}
+			
+                PAUSEFLAG=0;
+				SORTFLAG = 0;
 				DROPFLAG = 1;
 				dropTime = DROP_TIME - (OCR3A - TCNT3);        
 			EXTime_s = runTime_d;	
@@ -295,20 +298,23 @@ ISR(TIMER3_COMPA_vect){
 	stepUpdateDelay(); //update the stepper speed
 //CONTROL STEPPER
 //CONTROL MOTOR
-
-	if(SORTFLAG)
+	
+	
+	if(SORTFLAG ^ HOLDFLAG)
 	{
-		
-		if(CalcEnterTime())
-		{
-			brakeMotor();
-			enterdropTime = BRAKE_DROP_TIME;
-		}else
-		{
-			SORTFLAG = 0;
-			runMotor();
-		}
-    }
+			if(CalcEnterTime())
+			{
+				brakeMotor();
+				enterdropTime = BRAKE_DROP_TIME;
+			}else
+			{
+				SORTFLAG = 0;
+				runMotor();
+			}
+    }else if(SORTFLAG && HOLDFLAG)
+	{
+		brakeMotor();
+	}
 	
 	if(DROPFLAG)
 	{
@@ -320,14 +326,16 @@ ISR(TIMER3_COMPA_vect){
 		}else
 		{
 			dropTime -=CurDelay;
-		}
 		
-		if(CalcExitTime())
-		{
-			PAUSEFLAG = 1;
-		}else
-		{	
-			PAUSEFLAG = 0;
+		
+			if(CalcExitTime())
+			{
+
+					PAUSEFLAG = 1;				
+			}else
+			{
+					PAUSEFLAG = 0;
+			}
 		}
 		
 	}

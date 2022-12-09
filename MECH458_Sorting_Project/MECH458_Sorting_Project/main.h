@@ -59,9 +59,9 @@ void dispFLAGS(void);
 
 
 #define HI_Reflect 1010
-#define B_Reflect 939
+#define B_Reflect 960
 #define W_Reflect  800
-#define S_Reflect 100
+#define S_Reflect 300
 #define A_Reflect  0
 
 #define B_ID  50
@@ -74,37 +74,36 @@ void dispFLAGS(void);
 
 
 //Test speed = 3510, one battery, fails with 2
-#define MAXACC 0x00D0//0x00FF
-#define MINDELAY 0x0300// 0x02A4
+#define MAXACC 0x00A0 //0x00FF
+#define MINDELAY 0x0300//0x02A4
 #define MAXDELAY 0x0A00//0x0900
 #define JERKSTEPS 4//3
 
 //EXIT times, Increase if you are dropping late
-#define DROP_TIME 0x4000 
-
+#define DROP_TIME 0x6000 
 
 //ENTER times, Decrease if you are dropping early
-#define ENTER_DROP_TIME 0x5000
-#define BRAKE_DROP_TIME 0x4000
+#define ENTER_DROP_TIME 0x2000
+#define BRAKE_DROP_TIME 0x3400
 #define DROP_REGION 15
 
 
-#define MOTOR_START_SPEED 200
-#define MOTOR_SPEED 150
-#define MOTOR_SLOW_SPEED 150
+#define MOTOR_START_SPEED 220
+#define MOTOR_SPEED 170
+#define MOTOR_SLOW_SPEED 110
 
-#define MOTOR_TIMER 0x0180
-#define MOTOR_DEC 1
-#define MOTOR_DEC_RATE  0x0002
+#define MOTOR_TIMER 0x00F0
+#define MOTOR_DEC 2
+#define MOTOR_DEC_RATE  0x0003
 #define MOTOR_ACC_TIME 100
 
 #define BOUNCECHECK 250
-#define NOISECHECK 20
+#define NOISECHECK 60
 
 
 
-#define PARTTIME 5
-#define SORTTIME 5
+#define PARTTIME 30
+#define SORTTIME 30
 
 #define REFRESH_PERIOD 50
 #define RAMPDOWN_DELAY 4000

@@ -26,7 +26,7 @@ extern volatile char DECELFLAG;
 extern volatile char EXFLAG;
 extern volatile char PAUSEFLAG;
 extern volatile char TARGETFLAG;
-extern volatile char SLIPFLAG;
+extern volatile char HOLDFLAG;
 extern volatile uint8_t Steps2Exit;
 
 uint8_t step(void){
@@ -38,8 +38,8 @@ uint8_t step(void){
 	PORTA = StepStates[CurState]; //Step
 	CurPosition = CurPosition + Dir;//Update CurPosition
 	//protect against roll over
-	if(CurPosition > 200 && Dir==1){CurPosition -=  200;}
-	else if(CurPosition < 50 && Dir==-1){CurPosition += 200;}
+	if(CurPosition > 225 && Dir==1){CurPosition -=  200;}
+	else if(CurPosition < 25 && Dir==-1){CurPosition += 200;}
 	
 	TCNT3 = 0x0000;//Reset Counter
 	
@@ -50,11 +50,13 @@ uint8_t step(void){
 
 uint8_t stepUpdateError(void)
 {
-	if(SLIPFLAG)
+	if(HOLDFLAG)
 	{
 		if(abs(CurError)<DROP_REGION)//We may need to check the time since slip to see if the part fell
 		{//Maybe a reduced drop region and a delay to ensure piece hits
-			SLIPFLAG = 0;
+			HOLDFLAG = 0;
+            PAUSEFLAG = 0;
+            runMotor();
 			CurError = Parts[countSort] - CurPosition;
 		}else
 		{

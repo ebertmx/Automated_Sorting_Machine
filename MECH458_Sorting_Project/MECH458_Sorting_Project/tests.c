@@ -24,12 +24,12 @@ void testStep(void){
 	Parts[12] = 50;
 	
 	for(int i=0; i<12; i++){
-		while(abs(CurError)>10){
+		while(abs(CurError)!=0){
 			dispStatus();
 			mTimer(10);
 		}
 		countSort+=1;
-		mTimer(1);
+		mTimer(100);
 		//while(abs(CurError)=<10);
 	}
 	runTimerStop();
