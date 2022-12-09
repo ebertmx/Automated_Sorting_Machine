@@ -34,8 +34,8 @@ void ADC_Init(void);
 uint8_t classify(uint16_t reflectVal);
 
 
-uint8_t debounce(uint8_t pin, uint8_t level, uint8_t checkNum);
-uint8_t debouncePINJ(uint8_t pin, uint8_t level, uint8_t checkNum);
+uint8_t debounce(uint8_t pin, uint8_t level, uint16_t checkNum);
+uint8_t debouncePINJ(uint8_t pin, uint8_t level, uint16_t checkNum);
 uint8_t getregion(uint8_t pos);
 
 
@@ -97,7 +97,7 @@ void dispFLAGS(void);
 #define MOTOR_DEC_RATE  0x0003
 #define MOTOR_ACC_TIME 100
 
-#define BOUNCECHECK 250
+#define BOUNCECHECK 0x0030
 #define NOISECHECK 60
 
 

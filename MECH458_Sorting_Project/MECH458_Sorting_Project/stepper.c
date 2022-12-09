@@ -28,6 +28,8 @@ extern volatile char PAUSEFLAG;
 extern volatile char TARGETFLAG;
 extern volatile char HOLDFLAG;
 extern volatile uint8_t Steps2Exit;
+extern volatile char DROPFLAG;
+
 
 uint8_t step(void){
 	CurState = CurState + Dir;//Update CurState based on Direction
@@ -77,7 +79,7 @@ uint8_t stepUpdateError(void)
 		CurError = CurError + 200;
 	}
 	
-	if(abs(CurError) < Steps2Acc)//change if slowing down to quickly at zone; may cause oscillation
+	if(abs(CurError) < Steps2Acc && !DROPFLAG)//change if slowing down to quickly at zone; may cause oscillation
 	{
 		TARGETFLAG = 1;
 	}else
@@ -155,13 +157,14 @@ uint8_t stepUpdateDelay(void)
 		CurDelay = CurDelay + CurAcc[accSteps];
 		if (CurDelay > MAXDELAY)
 		{
+			accSteps = 0;
 			if(PAUSEFLAG && (Steps2Exit<3))
 			{
+				
 				
 			}else
 			{
 				CurDelay = MAXDELAY;
-				accSteps = 0;
 				DECELFLAG = 0;
 			}		     
 		}else if(accSteps>0){
@@ -232,20 +235,19 @@ int8_t stepCalibrate(void){
 	Parts[0] = 50;//Set motor to spin 360
 
 	stepStart();//Start stepTimer
-		
+	while(CurError !=0)
+	{
+		DECELFLAG = 1;
+	}	
+	HALLSENSOR = 0;
+	CurPosition = 0;
 	while(!HALLSENSOR){
-		if(abs(CurError)<20 && !HALLSENSOR){
+		if(abs(CurError)<30 && !HALLSENSOR){
 			CurPosition = 0;
-		}
-	//dispStatus();
-	//mTimer(10);	
+		}	
 	}//Wait for hall sensor to trigger
-
-	//EIMSK &= ~(0x08); //Disable HALLSENSOR interrupt
 	Parts[0] = B_ID;
-	//CurPosition = B_ID;//Calibrate the stepper
-	//accSteps = 0;
-	//mTimer(1000);
+
 	return 1;
 }
 
@@ -262,19 +264,16 @@ void stepCalcAcc(void){
 		if(CurAcc[steps]>MAXACC){
 			CurAcc[steps] = MAXACC;
 		}
-
 	}//Increase Acc
 	
 	CurAcc[steps] = MAXACC;
 	while((delay -MAXACC -JERK*JERKSTEPS*JERKSTEPS/2)>MINDELAY){
-		
 		delay -=CurAcc[steps-1];
 		if(delay<MINDELAY){
 			delay = MINDELAY;
 		}
 		steps++;
 		CurAcc[steps] = MAXACC;
-		//mTimer(1000);
 	}//Constant Acc
 	
 	while(delay >MINDELAY){
