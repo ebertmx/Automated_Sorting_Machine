@@ -52,7 +52,6 @@ void Motor_init(void){
 	OCR0A = 0;
 	//Stop
 	stopMotor();
-
 }
 
 
@@ -72,19 +71,21 @@ uint8_t CalcExitTime(void)
 	
 	if(((CurError*Dir)>0) || (CurDelay>=MAXDELAY))
 	{		
-		if(Steps2Exit<Steps2Acc)
-		{
-			exitTime = (CurDelay - MINDELAY)/2 * Steps2Exit;
-		}else
-		{
-			exitTime = (CurDelay - MINDELAY)/2 * Steps2MIN + (Steps2Exit - Steps2Acc)*MINDELAY;	
-		} 
+		
+			if(Steps2Exit<Steps2Acc)
+			{
+				exitTime = (CurDelay - MINDELAY)/2 * Steps2Exit;
+			}else
+			{
+				exitTime = (CurDelay - MINDELAY)/2 * Steps2MIN + (Steps2Exit - Steps2Acc)*MINDELAY;
+			} 
+			
 	}else
 	{
+		
 			exitTime = (MAXDELAY - CurDelay)/2 * (Steps2Acc)
 						+(MAXDELAY-MINDELAY)/2 * Steps2Acc
-						+ (Steps2Exit -(Steps2Acc-Steps2MIN))*MINDELAY;
-		
+						+ (Steps2Exit -(Steps2Acc-Steps2MIN))*MINDELAY;	
 	}
 
     if(exitTime<dropTime)
@@ -101,6 +102,7 @@ uint8_t CalcExitTime(void)
 volatile uint8_t Steps2Enter = 0;
 volatile int16_t EXCurError=0;
 volatile int16_t EnCurError=0;
+
 uint8_t CalcEnterTime(void)
 {        
 	
@@ -109,47 +111,50 @@ uint8_t CalcEnterTime(void)
 		return 0;
 	}
 	
-
+	
 	Steps2Enter = 	abs(CurError) - DROP_REGION;
 	Steps2MIN = Steps2Acc-accSteps;
-	
 	if(Steps2Enter>40)
     {
             return 1;    
     }        
 	
-	if((CurError*Dir)>0 )
+	if(((CurError*Dir)>0) || (CurDelay>=MAXDELAY))
 	{
-		if(Steps2MIN> Steps2Enter)
-		{
-			
-			enterTime = (CurDelay - MINDELAY)/2 * Steps2MIN;
-                     	
-		}else
-		{
-            enterTime =   (Steps2Enter- Steps2MIN);
-            enterTime = enterTime*MINDELAY;               
-			enterTime  += (CurDelay - MINDELAY)/2 * Steps2MIN;			
-          
-        }
+		
+			if(Steps2MIN > Steps2Enter)
+			{
+				
+				enterTime = (CurDelay - MINDELAY)/2 * Steps2MIN;
+				
+			}else
+			{
+				
+				enterTime =   (Steps2Enter- Steps2MIN);
+				enterTime = enterTime*MINDELAY;
+				enterTime  += (CurDelay - MINDELAY)/2 * Steps2MIN;
+				
+			}
+		
 	}else
 	{
-	
+		
 			enterTime = (Steps2Enter- Steps2MIN);
             enterTime = enterTime*MINDELAY;
 			enterTime += (MAXDELAY - CurDelay)/2 * Steps2Acc;
-            enterTime += (MAXDELAY-MINDELAY)/2 * Steps2Acc;  
+            enterTime += (MAXDELAY-MINDELAY)/2 * Steps2Acc; 
+			 
 	}
-   
-     
-	 
-    
+	
+	
 	if(enterTime>enterdropTime)
 	{
 		return 1;
+		
 	}else
 	{            
 		return 0;
+		
 	}
 }
 
@@ -281,7 +286,7 @@ uint8_t classify(uint16_t reflectVal){
 volatile uint16_t countCheck = 0;
 volatile uint8_t mask = 0;
 
-uint8_t debounce(uint8_t pin, uint8_t level, uint8_t checkNum){
+uint8_t debounce(uint8_t pin, uint8_t level, uint16_t checkNum){
 	mask = (1<<pin); //create pin read mask
 	level = (level<<pin);
 	countCheck = 0;
@@ -296,7 +301,7 @@ uint8_t debounce(uint8_t pin, uint8_t level, uint8_t checkNum){
 }
 
 
-uint8_t debouncePINJ(uint8_t pin, uint8_t level, uint8_t checkNum){
+uint8_t debouncePINJ(uint8_t pin, uint8_t level, uint16_t checkNum){
 	mask = (1<<pin); //create pin read mask
 	level = (level<<pin);
 	countCheck = 0;
