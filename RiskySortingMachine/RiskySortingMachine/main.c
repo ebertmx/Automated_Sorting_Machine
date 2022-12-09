@@ -75,8 +75,8 @@ int main(int argc, char *argv[]){
 	ADC_Init();
 	mTimer_init();
 	stepTimer_init();
-	InitLCD(LS_BLINK|LS_ULINE);
-	LCDClear();
+//	InitLCD(LS_BLINK|LS_ULINE);
+//	LCDClear();
 	EIMSK |= 0x08;
 	sei();// Enable global interrupts
 
@@ -109,7 +109,7 @@ STANDBY:
 			if((runTime_d-refreshTime)>REFRESH_PERIOD)
 			{
                //dispFLAGS();
-				dispStatus();
+			//	dispStatus();
 				refreshTime = runTime_d;	
 			}	
 		}else
@@ -237,7 +237,7 @@ ISR(INT1_vect){
 
 
 
-//EX ISR //547cycles
+//EX ISR //260
 ISR(INT2_vect){
 	
 	if(!EXFLAG)
@@ -305,7 +305,7 @@ ISR(TIMER3_COMPA_vect){
 //CONTROL MOTOR
 	
 	CALCFLAG = 1;
-	PORTE ^= _BV(PINE3);
+	PORTE ^= _BV(PINE1);
 	
 }//stepTimer
 
