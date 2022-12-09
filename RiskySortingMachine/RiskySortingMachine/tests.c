@@ -6,6 +6,11 @@ extern uint8_t Parts[PARTS_SIZE];
 extern volatile uint8_t countSort;
 extern volatile int16_t CurError;
 extern volatile uint16_t runTime_d;
+extern volatile char RAMPDOWN;
+extern volatile char ENABLE;
+extern volatile char DROPFLAG;
+extern volatile char SORTFLAG;
+
 
 void testStep(void){
 	runTimerStart();//Start System Timer
@@ -44,6 +49,35 @@ extern volatile uint16_t adcDisp;
 extern volatile uint16_t countADC;
 extern volatile char ORFLAG;
 extern volatile uint8_t motorDecSpeed;
+
+
+
+volatile uint16_t testdropTime_d = 0;
+void testDrop(void)
+{
+
+	while (!RAMPDOWN)
+	{
+		if(!ENABLE)
+		{
+			
+			LCDClear();
+			LCDWriteString("T = ");
+			LCDWriteInt((runTime_d - testdropTime_d)>>4, 5);
+			ENABLE = 1;
+			
+		}
+		
+		if(SORTFLAG)
+		{
+			testdropTime_d = runTime_d;
+		}
+		
+	}//while ENABLE
+	
+	
+}
+
 
 void testBelt(void){
 	

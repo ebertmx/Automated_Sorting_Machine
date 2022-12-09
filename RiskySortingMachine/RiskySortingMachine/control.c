@@ -52,7 +52,6 @@ void Motor_init(void){
 	OCR0A = 0;
 	//Stop
 	stopMotor();
-
 }
 
 
@@ -71,29 +70,31 @@ uint8_t CalcExitTime(void)
 	Steps2MIN = Steps2Acc-accSteps;
 	
 	if(((CurError*Dir)>0) || (CurDelay>=MAXDELAY))
-	{		
+	{
+		
 		if(Steps2Exit<Steps2Acc)
 		{
 			exitTime = (CurDelay - MINDELAY)/2 * Steps2Exit;
 		}else
 		{
-			exitTime = (CurDelay - MINDELAY)/2 * Steps2MIN + (Steps2Exit - Steps2Acc)*MINDELAY;	
-		} 
+			exitTime = (CurDelay - MINDELAY)/2 * Steps2MIN + (Steps2Exit - Steps2Acc)*MINDELAY;
+		}
+		
 	}else
 	{
-			exitTime = (MAXDELAY - CurDelay)/2 * (Steps2Acc)
-						+(MAXDELAY-MINDELAY)/2 * Steps2Acc
-						+ (Steps2Exit -(Steps2Acc-Steps2MIN))*MINDELAY;
 		
+		exitTime = (MAXDELAY - CurDelay)/2 * (Steps2Acc)
+		+(MAXDELAY-MINDELAY)/2 * Steps2Acc
+		+ (Steps2Exit -(Steps2Acc-Steps2MIN))*MINDELAY;
 	}
 
-    if(exitTime<dropTime)
-    {
-	    return 1;
-    }else
-    {
-	    return 0;
-    }
+	if(exitTime<dropTime)
+	{
+		return 1;
+	}else
+	{
+		return 0;
+	}
 
 }
 
@@ -101,55 +102,59 @@ uint8_t CalcExitTime(void)
 volatile uint8_t Steps2Enter = 0;
 volatile int16_t EXCurError=0;
 volatile int16_t EnCurError=0;
+
 uint8_t CalcEnterTime(void)
-{        
+{
 	
 	if(abs(CurError)<DROP_REGION)
 	{
 		return 0;
 	}
 	
-
+	
 	Steps2Enter = 	abs(CurError) - DROP_REGION;
 	Steps2MIN = Steps2Acc-accSteps;
-	
 	if(Steps2Enter>40)
-    {
-            return 1;    
-    }        
-	
-	if((CurError*Dir)>0 )
 	{
-		if(Steps2MIN> Steps2Enter)
+		return 1;
+	}
+	
+	if(((CurError*Dir)>0) || (CurDelay>=MAXDELAY))
+	{
+		
+		if(Steps2MIN > Steps2Enter)
 		{
 			
 			enterTime = (CurDelay - MINDELAY)/2 * Steps2MIN;
-                     	
+			
 		}else
 		{
-            enterTime =   (Steps2Enter- Steps2MIN);
-            enterTime = enterTime*MINDELAY;               
-			enterTime  += (CurDelay - MINDELAY)/2 * Steps2MIN;			
-          
-        }
+			
+			enterTime =   (Steps2Enter- Steps2MIN);
+			enterTime = enterTime*MINDELAY;
+			enterTime  += (CurDelay - MINDELAY)/2 * Steps2MIN;
+			
+		}
+		
 	}else
 	{
-	
-			enterTime = (Steps2Enter- Steps2MIN);
-            enterTime = enterTime*MINDELAY;
-			enterTime += (MAXDELAY - CurDelay)/2 * Steps2Acc;
-            enterTime += (MAXDELAY-MINDELAY)/2 * Steps2Acc;  
+		
+		enterTime = (Steps2Enter- Steps2MIN);
+		enterTime = enterTime*MINDELAY;
+		enterTime += (MAXDELAY - CurDelay)/2 * Steps2Acc;
+		enterTime += (MAXDELAY-MINDELAY)/2 * Steps2Acc;
+		
 	}
-   
-     
-	 
-    
+	
+	
 	if(enterTime>enterdropTime)
 	{
 		return 1;
+		
 	}else
-	{            
+	{
 		return 0;
+		
 	}
 }
 
@@ -184,7 +189,7 @@ uint8_t runMotor(){
 		MOTORFLAG = 1;
 		motorTime_d = runTime_d;
 	}
-		return MOTORFLAG;
+	return MOTORFLAG;
 	
 }
 
@@ -281,22 +286,22 @@ uint8_t classify(uint16_t reflectVal){
 volatile uint16_t countCheck = 0;
 volatile uint8_t mask = 0;
 
-uint8_t debounce(uint8_t pin, uint8_t level, uint8_t checkNum){
+uint8_t debounce(uint8_t pin, uint8_t level, uint16_t checkNum){
 	mask = (1<<pin); //create pin read mask
 	level = (level<<pin);
 	countCheck = 0;
 	for(countCheck = 0; countCheck<checkNum; countCheck++)//read the pin a number of times
-	{	
+	{
 		if((PIND & mask)!=level)//if any of the reads are false
 		{
-			return 0;//return false	
+			return 0;//return false
 		}
 	}
-		return 1;//return true	
+	return 1;//return true
 }
 
 
-uint8_t debouncePINJ(uint8_t pin, uint8_t level, uint8_t checkNum){
+uint8_t debouncePINJ(uint8_t pin, uint8_t level, uint16_t checkNum){
 	mask = (1<<pin); //create pin read mask
 	level = (level<<pin);
 	countCheck = 0;
@@ -406,21 +411,21 @@ ISR(BADISR_vect)
 void dispComplete (void)
 {
 	
-		LCDClear();
-		LCDWriteIntXY(0,0, countB, 2);
-		LCDWriteString(",");
-		LCDWriteInt( countA, 2);
-		LCDWriteString(",");
-		LCDWriteInt( countW, 2);
-		LCDWriteString(",");
-		LCDWriteInt(countS, 2);
-		LCDWriteString("->");
-		LCDWriteInt(countSort, 2);
-		LCDWriteStringXY(0,1, "T=");
-		LCDWriteInt(runTime_d/1000, 2);
-		LCDWriteString( ".");
-		LCDWriteInt(runTime_d%10 , 1);
-		LCDWriteString("s Complete");
+	LCDClear();
+	LCDWriteIntXY(0,0, countB, 2);
+	LCDWriteString(",");
+	LCDWriteInt( countA, 2);
+	LCDWriteString(",");
+	LCDWriteInt( countW, 2);
+	LCDWriteString(",");
+	LCDWriteInt(countS, 2);
+	LCDWriteString("->");
+	LCDWriteInt(countSort, 2);
+	LCDWriteStringXY(0,1, "T=");
+	LCDWriteInt(runTime_d/1000, 2);
+	LCDWriteString( ".");
+	LCDWriteInt(runTime_d%10 , 1);
+	LCDWriteString("s Complete");
 	
 }
 
@@ -442,35 +447,35 @@ void dispStatus(void){
 	//LCDWriteStringXY(0,1,"N=" );
 	//LCDWriteInt(enterTime,8);
 	//LCDWriteString(" X=");
-	//LCDWriteInt(exitTime,6);	
+	//LCDWriteInt(exitTime,6);
 
-LCDWriteIntXY(0, 1, CurPosition, 3);
-LCDWriteStringXY(3,1, ">");
-LCDWriteIntXY(4, 1, Parts[countSort], 3);
-// 
-// 	LCDWriteIntXY(8,1, PAUSEFLAG,1);
-// 	LCDWriteInt(HOLDFLAG,1);
-//  	LCDWriteInt(TARGETFLAG,1);
-//  	LCDWriteInt(DECELFLAG,1);
-LCDWriteIntXY(12, 1, adcDisp, 4);
+	LCDWriteIntXY(0, 1, CurPosition, 3);
+	LCDWriteStringXY(3,1, ">");
+	LCDWriteIntXY(4, 1, Parts[countSort], 3);
+	//
+	// 	LCDWriteIntXY(8,1, PAUSEFLAG,1);
+	// 	LCDWriteInt(HOLDFLAG,1);
+	//  	LCDWriteInt(TARGETFLAG,1);
+	//  	LCDWriteInt(DECELFLAG,1);
+	LCDWriteIntXY(12, 1, adcDisp, 4);
 
 }
 
 void dispFLAGS(void){
-    
-    LCDClear();
-    LCDWriteString("M");
-    LCDWriteInt(MOTORFLAG,1);
-    LCDWriteString(" P");
-    LCDWriteInt(PAUSEFLAG,1);
-    
-    LCDWriteString(" T");
-    LCDWriteInt(TARGETFLAG,1);
-    LCDWriteStringXY(0,1," ");
-    LCDWriteString("D");
-    LCDWriteInt(DECELFLAG,1);
-    LCDWriteString(" S");
-    LCDWriteInt(HOLDFLAG,1);
+	
+	LCDClear();
+	LCDWriteString("M");
+	LCDWriteInt(MOTORFLAG,1);
+	LCDWriteString(" P");
+	LCDWriteInt(PAUSEFLAG,1);
+	
+	LCDWriteString(" T");
+	LCDWriteInt(TARGETFLAG,1);
+	LCDWriteStringXY(0,1," ");
+	LCDWriteString("D");
+	LCDWriteInt(DECELFLAG,1);
+	LCDWriteString(" S");
+	LCDWriteInt(HOLDFLAG,1);
 
 
 }

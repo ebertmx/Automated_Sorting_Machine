@@ -59,7 +59,6 @@ int main(int argc, char *argv[]){
 	DDRC = 0xFF; //OUTPUT
 	DDRD = 0x00;//INPUT
 	DDRJ &= ~_BV(PINJ0); //INPUT
-	DDRE |= _BV(PINE1); //OUTPUT
 	//EXT INTERRUPTS
 	EICRA |= _BV(ISC01);//PAUSE
 	EICRA |= _BV(ISC11) |_BV(ISC10);//OR
@@ -69,7 +68,7 @@ int main(int argc, char *argv[]){
 	PCICR |= _BV(PCIE1);
 	PCMSK1 |= _BV(PCINT9);//RAMPDOWN
 	PCICR |= _BV(PCIE0);
-	PCMSK0 |= _BV(PCINT3);//Time Calculator
+	PCMSK0 |= _BV(PCINT4);//Time Calculator
 
 
 	ADC_Init();
@@ -143,7 +142,7 @@ DISABLE:
 	uint8_t INTState = EIMSK;
 	EIMSK = 0x01;
 	PCMSK1 &= ~_BV(PCINT9);
-	PCMSK0 &= ~_BV(PCINT3);
+	PCMSK0 &= ~_BV(PCINT4);
 	brakeMotor();
 	//stopMotor();
 	stepRes();
@@ -155,7 +154,7 @@ DISABLE:
 	while((PIND & 0x01) == 0x00);
 	EIMSK = INTState;
 	PCMSK1 |= _BV(PCINT9);
-	PCMSK0 |= _BV(PCINT3);
+	PCMSK0 |= _BV(PCINT4);
 	runTimerResume();
 	stepStart();
 	runMotor();
@@ -305,7 +304,7 @@ ISR(TIMER3_COMPA_vect){
 //CONTROL MOTOR
 	
 	CALCFLAG = 1;
-	PORTE ^= _BV(PINE1);
+	PORTB ^= _BV(PINB4);
 	
 }//stepTimer
 
@@ -372,6 +371,7 @@ ISR(PCINT0_vect)
 {
 	if(CALCFLAG)
 	{
+		
 		if(SORTFLAG ^ HOLDFLAG)
 		{
 			if(CalcEnterTime())
@@ -387,19 +387,20 @@ ISR(PCINT0_vect)
 		{
 			brakeMotor();
 		}
+		
+		
+		
 		if(DROPFLAG)
 		{
 			if(dropTime<CurDelay)
 			{
 				DROPFLAG = 0;
 				PAUSEFLAG = 0;
-				
 			}else
 			{
 				dropTime -=CurDelay;	
 				if(CalcExitTime())
 				{
-
 					PAUSEFLAG = 1;
 				}else
 				{

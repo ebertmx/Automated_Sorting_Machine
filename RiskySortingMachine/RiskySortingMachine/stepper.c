@@ -28,13 +28,15 @@ extern volatile char PAUSEFLAG;
 extern volatile char TARGETFLAG;
 extern volatile char HOLDFLAG;
 extern volatile uint8_t Steps2Exit;
+extern volatile char DROPFLAG;
+
 
 uint8_t step(void){
 	CurState = CurState + Dir;//Update CurState based on Direction
 	//stepper roll over
 	if (4 <= CurState){CurState = 0;}
 	else if (-1 >= CurState){CurState = 3;}
-		
+	
 	PORTA = StepStates[CurState]; //Step
 	CurPosition = CurPosition + Dir;//Update CurPosition
 	//protect against roll over
@@ -55,8 +57,8 @@ uint8_t stepUpdateError(void)
 		if(abs(CurError)<DROP_REGION)//We may need to check the time since slip to see if the part fell
 		{//Maybe a reduced drop region and a delay to ensure piece hits
 			HOLDFLAG = 0;
-            PAUSEFLAG = 0;
-            runMotor();
+			PAUSEFLAG = 0;
+			runMotor();
 			CurError = Parts[countSort] - CurPosition;
 		}else
 		{
@@ -98,47 +100,47 @@ uint8_t stepUpdateError(void)
 
 uint8_t stepUpdateDir(void){
 	//if(!DECELFLAG){
-		if(CurError == 0)
-		{// if stepper is at target
-			if(CurDelay > (MAXDELAY-MINDELAY))
-			{// if stepper can stop
-				Dir = 0; //stop stepping
-				TARGETFLAG = 0; //clear target flag
-				return 1;	
-			}else
-			{//Decelerate stepper
-				DECELFLAG = 1;
-				return 0;
-			}
-		}else if((abs(CurError)>SPIN_ROUND_LIMIT) && (CurDelay<MAXDELAY))
-		{//Next target is close in same direction and you are at speed don't change
-			DECELFLAG = 0;
-			if(Dir != 0)
-			{//Keep direction
-				NextDir = Dir;
-			}else
-			{//edge case where Dir might be zero
-				Dir = 1;
-				return 1;
-			}
-		}else
-		{//Calculate closest direction
-			NextDir = (CurError>0) - (CurError<0);	
-		}
-
-		if(NextDir == Dir)
-		{//next direction is the same
-			Dir = NextDir;
-			return 1;
-		}else if(CurDelay >= MAXDELAY)
-		{//stepper is can change direction
-			Dir = NextDir;
+	if(CurError == 0)
+	{// if stepper is at target
+		if(CurDelay > (MAXDELAY-MINDELAY))
+		{// if stepper can stop
+			Dir = 0; //stop stepping
+			TARGETFLAG = 0; //clear target flag
 			return 1;
 		}else
-		{//Decelerate stepper to switch directions
+		{//Decelerate stepper
 			DECELFLAG = 1;
 			return 0;
 		}
+	}else if((abs(CurError)>SPIN_ROUND_LIMIT) && (CurDelay<MAXDELAY))
+	{//Next target is close in same direction and you are at speed don't change
+		DECELFLAG = 0;
+		if(Dir != 0)
+		{//Keep direction
+			NextDir = Dir;
+		}else
+		{//edge case where Dir might be zero
+			Dir = 1;
+			return 1;
+		}
+	}else
+	{//Calculate closest direction
+		NextDir = (CurError>0) - (CurError<0);
+	}
+
+	if(NextDir == Dir)
+	{//next direction is the same
+		Dir = NextDir;
+		return 1;
+	}else if(CurDelay >= MAXDELAY)
+	{//stepper is can change direction
+		Dir = NextDir;
+		return 1;
+	}else
+	{//Decelerate stepper to switch directions
+		DECELFLAG = 1;
+		return 0;
+	}
 	return 1;
 }
 
@@ -155,19 +157,20 @@ uint8_t stepUpdateDelay(void)
 		CurDelay = CurDelay + CurAcc[accSteps];
 		if (CurDelay > MAXDELAY)
 		{
+			accSteps = 0;
 			if(PAUSEFLAG && (Steps2Exit<3))
 			{
+				
 				
 			}else
 			{
 				CurDelay = MAXDELAY;
-				accSteps = 0;
 				DECELFLAG = 0;
-			}		     
-		}else if(accSteps>0){
+			}
+			}else if(accSteps>0){
 			accSteps--;
 		}
-	
+		
 	}else if(CurDelay>MINDELAY)
 	{//Accelerate if able
 		CurDelay = CurDelay -  CurAcc[accSteps];
@@ -211,7 +214,7 @@ void stepTimer_init (void)
 void stepStart(void){
 	TCNT3 = 0x0000;//Reset counter
 	OCR3A = MAXDELAY;//Set compare value
-	TCCR3B |= _BV(CS31) | _BV(CS30);//Enable Stepper with prescaler	
+	TCCR3B |= _BV(CS31) | _BV(CS30);//Enable Stepper with prescaler
 	TIFR3 |= _BV(OCF3A);//Reset interrupt flag
 	CurDelay = MAXDELAY;//Reset CurDelay
 }//stepStart
@@ -232,20 +235,19 @@ int8_t stepCalibrate(void){
 	Parts[0] = 50;//Set motor to spin 360
 
 	stepStart();//Start stepTimer
-		
+	while(CurError !=0)
+	{
+		DECELFLAG = 1;
+	}
+	HALLSENSOR = 0;
+	CurPosition = 0;
 	while(!HALLSENSOR){
-		if(abs(CurError)<20 && !HALLSENSOR){
+		if(abs(CurError)<30 && !HALLSENSOR){
 			CurPosition = 0;
 		}
-	//dispStatus();
-	//mTimer(10);	
 	}//Wait for hall sensor to trigger
-
-	//EIMSK &= ~(0x08); //Disable HALLSENSOR interrupt
 	Parts[0] = B_ID;
-	//CurPosition = B_ID;//Calibrate the stepper
-	//accSteps = 0;
-	//mTimer(1000);
+
 	return 1;
 }
 
@@ -262,19 +264,16 @@ void stepCalcAcc(void){
 		if(CurAcc[steps]>MAXACC){
 			CurAcc[steps] = MAXACC;
 		}
-
 	}//Increase Acc
 	
 	CurAcc[steps] = MAXACC;
 	while((delay -MAXACC -JERK*JERKSTEPS*JERKSTEPS/2)>MINDELAY){
-		
 		delay -=CurAcc[steps-1];
 		if(delay<MINDELAY){
 			delay = MINDELAY;
 		}
 		steps++;
 		CurAcc[steps] = MAXACC;
-		//mTimer(1000);
 	}//Constant Acc
 	
 	while(delay >MINDELAY){
@@ -291,7 +290,7 @@ void stepCalcAcc(void){
 
 	}//Decrease Acc
 	
-	Steps2Acc = steps;	
+	Steps2Acc = steps;
 }
 
 
