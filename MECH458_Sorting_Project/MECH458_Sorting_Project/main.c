@@ -72,8 +72,8 @@ int main(int argc, char *argv[]){
 	ADC_Init();
 	mTimer_init();
 	stepTimer_init();
-	InitLCD(LS_BLINK|LS_ULINE);
-	LCDClear();
+	//InitLCD(LS_BLINK|LS_ULINE);
+	//LCDClear();
 	EIMSK |= 0x08;
 	sei();// Enable global interrupts
 
@@ -83,11 +83,11 @@ int main(int argc, char *argv[]){
 	//mTimer(2000);
 	//testStep();
 	//while(1);
-	//cli();
+
 	EIMSK |= 0x07;
-	EIMSK &= ~(0x08);
+	//EIMSK &= ~(0x08);
 	Motor_init();
-	//sei();
+
 	
 	//MAIN OPERATION
 	countPart=0;
@@ -106,7 +106,7 @@ STANDBY:
 			if((runTime_d-refreshTime)>REFRESH_PERIOD)
 			{
                //dispFLAGS();
-				dispStatus();
+				//dispStatus();
 				refreshTime = runTime_d;	
 			}	
 		}else
@@ -141,9 +141,8 @@ DISABLE:
 	EIMSK = 0x01;
 	PCMSK1 &= ~_BV(PCINT9);
 	brakeMotor();
-	//stopMotor();
 	stepRes();
-	//dispStatus();
+	dispStatus();
 	while(!ENABLE)
 	{
 	}
@@ -232,7 +231,7 @@ ISR(INT1_vect){
 
 
 
-//EX ISR //547cycles
+//EX ISR //1706 with current debounce
 ISR(INT2_vect){
 	
 	if(!EXFLAG)
@@ -296,9 +295,26 @@ ISR(TIMER3_COMPA_vect){
 	stepUpdateError(); //calculate the stepper position error
 	stepUpdateDir(); //update the stepper direction
 	stepUpdateDelay(); //update the stepper speed
-//CONTROL STEPPER
+
 //CONTROL MOTOR
-	
+	if(DROPFLAG)
+	{
+		if(dropTime<CurDelay)
+		{
+			DROPFLAG = 0;
+			PAUSEFLAG = 0;
+		}else
+		{
+			dropTime -=CurDelay;
+			if(CalcExitTime())
+			{
+					PAUSEFLAG = 1;				
+			}else
+			{
+					PAUSEFLAG = 0;
+			}
+		}
+	}
 	
 	if(SORTFLAG ^ HOLDFLAG)
 	{
@@ -315,30 +331,6 @@ ISR(TIMER3_COMPA_vect){
 	{
 		brakeMotor();
 	}
-	
-	if(DROPFLAG)
-	{
-		if(dropTime<CurDelay)
-		{
-			DROPFLAG = 0;
-			PAUSEFLAG = 0;
-			
-		}else
-		{
-			dropTime -=CurDelay;
-		
-		
-			if(CalcExitTime())
-			{
-
-					PAUSEFLAG = 1;				
-			}else
-			{
-					PAUSEFLAG = 0;
-			}
-		}
-		
-	}
 }//stepTimer
 
 
@@ -350,7 +342,7 @@ ISR(TIMER3_COMPA_vect){
 
 
 
-//ADC ISR
+//ADC ISR //runs every 140cc or 17.88 us
 ISR(ADC_vect){
 
 	//if ADC is lower than value
