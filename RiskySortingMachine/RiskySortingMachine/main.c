@@ -240,24 +240,29 @@ SHUTDOWN://When RAMPDOWN has been pushed and no part is on belt
 
 
 /************************************************************************/
-/* DECRIPTION: This ISR handles events with the OR sensor.
+/* DESCRIPTION: This ISR handles events with the OR sensor.
 Initially, the interrupt is triggered on a rising edge which occurs when 
 a part enters OR. It is then configured for a falling edge to detect when
 the part leaves. This cycle repeats.
 
 This ISR controls detecting and classifying parts. It also starts the ADC.
 
-It takes an average 300cc to run.
+Filters have been implemented to prevent errors due to noise in the system. One part makes use
+the function debounce() to implmenent a software lowpass filter. Another part compares the time
+since the part has entered against a minimum expected time to block potential double reads cause
+rocking or sliding of the parts.
+
+RUNTIME ~500cc
                                                                   */
 /************************************************************************/
 ISR(INT1_vect)
 {//OR has triggered falling or rising edge
 	if(ORFLAG)
-	{// if set to rising edge
+	{//if Part is entering OR
 		
-		//FILTER noise
+	
 		if(debounce(1, 1, NOISECHECK))
-		{//if not noise
+		{//FILTER noise
 			
 			ORFLAG  = 0; //Part has entered OR
 			
@@ -277,11 +282,11 @@ ISR(INT1_vect)
 		}//HI
 		
 	}else//!ORFLAG
-	{//if set falling edge
+	{//if Part is leaving OR
 		
-		//FILTER noise and doulbe edge detection
+
 		if(debounce(1, 0, NOISECHECK) && ((runTime_d - ORTime_s) > PARTTIME))
-		{//if not noise and part has had time to pass through sensor
+		{//FILTER noise and double edge detection
 			ORFLAG  = 1;//Part has cleared OR	
 			
 			//Turn on rising edge
@@ -305,72 +310,116 @@ ISR(INT1_vect)
 
 
 
-//EX ISR //260
+/************************************************************************/
+/* DESCRIPTION: This ISR handles events with the EX sensor.
+Initially, the interrupt is triggered on a falling edge which occurs when 
+a part enters EX. It is then configured for a rising edge to detect when
+the part leaves. This cycle repeats.
+
+This ISR set flags and variable to effectively sort parts as they
+reach the end of the belt. It also starts and brakes the belt in 2 cases.
+
+This ISR also increment the countSort variable every time a part leaves the sensor.
+
+Filters have been implemented to prevent errors due to noise in the system. One part makes use 
+the function debounce() to implmenent a software lowpass filter. Another part compares the time
+since the part has entered against a minimum expected time to block potential double reads cause
+rocking or sliding of the parts.
+
+RUNTIME ~800cc
+                                                                  */
+/************************************************************************/
 ISR(INT2_vect){
 	
 	if(!EXFLAG)
 	{//Part is entering EX
-
-			if(debounce(2, 0, NOISECHECK))
-			{
-				EXFLAG =1;//Part is at EX
+		
+		if(debounce(2, 0, NOISECHECK))
+		{//FILTER noise
+				EXFLAG =1;
+				// Turn on rising edge
 				EIMSK &= ~_BV(INT2);
-				EICRA |= _BV(ISC20);// Rising Edge
+				EICRA |= _BV(ISC20);
 				EIMSK |= _BV(INT2); //Enable Interrupt
 				EIFR |= _BV(INT2);
 				
-				SORTFLAG = 1;
+				SORTFLAG = 1;//Part need sorting
 				if(HOLDFLAG)
-				{
-					brakeMotor();
+				{//if the previous part has not finished sorting
+					brakeMotor();//stop the belt
+					enterdropTime = BRAKE_DROP_TIME;//set the drop time
+				}else
+				{//else keep the belt moving
+					enterdropTime = ENTER_DROP_TIME;//set the drop time
 				}
-				enterdropTime = ENTER_DROP_TIME;
-				EXTime_s = runTime_d;
-			}//LO
+				EXTime_s = runTime_d;//record time part entered
+		}//LO
 	}else
 	{//Part is leaving EX
+		
 		if(debounce(2,1, NOISECHECK) && ((runTime_d - EXTime_s)>SORTTIME))
-		{
+		{//FILTER noise and double edge detection
 				EXFLAG = 0;
+				//Turn on falling edge
 				EIMSK &= ~_BV(INT2);
-				EICRA &= ~(_BV(ISC20));	//Turn on falling edge
-				EIMSK |= _BV(INT2); //Enable Interrupt
+				EICRA &= ~(_BV(ISC20));
+				EIMSK |= _BV(INT2);
 				EIFR |= _BV(INT2);
                 
-				updateCount(Parts[countSort]);
+				updateCount(Parts[countSort]);//Update the sorted count for display
+				
 				if(countSort<countPart)
-				{//if we won't overrun the array
+				{//if still parts to sort
 					countSort+=1;//go to next part
 					TARGETFLAG =0;//New target; reset flag
 				}
 				
 				if(abs(CurError)>DROP_REGION)
-				{//Current Error is for count-1 at this point
-					HOLDFLAG = 1;
+				{//if stepper hasn't reached the drop zone for previous part
+					HOLDFLAG = 1;//set hold flag to keep moving to previous target position
 				}else
-				{
+				{//else start the belt to drop the part
 					runMotor();
 				}
-				
+				//reset flag
                 PAUSEFLAG=0;
 				SORTFLAG = 0;
-				DROPFLAG = 1;
-				dropTime = DROP_TIME - (OCR3A - TCNT3);        
-			EXTime_s = runTime_d;	
+				
+				DROPFLAG = 1;//part is now dropping into the bin
+				
+				//record time for part to hit bucket. 
+				//Correct for next time ISR(TIMER3_COMPA_vect) runs
+				dropTime = DROP_TIME - (OCR3A - TCNT3);   
+				     
+			EXTime_s = runTime_d;//record time part exited	
 		}//HI
 	}	
 }//EX
 
-//STEPPER ISR  377 cc
+
+
+/************************************************************************/
+/* DESCRIPTION: This is the primary ISR of the sorting system. This ISR runs 
+every time a step is required from the stepper motor. Consequently, the faster
+the stepper is moving, the more this ISR runs.
+
+The ISR controls writing to the stepper driver, calculating the variable CurError,
+calculating the best direction to turn, and determining the next delay held in CurDelay.
+CurDelay, controls the speed and acceleration of the stepper.
+
+The ISR also triggers the ISR for motor control, ISR(PCINT0_vect).
+
+RUNTIME ~400cc                                                          */
+/************************************************************************/
 ISR(TIMER3_COMPA_vect){
 //CONTROL STEPPER
-
-	step();//step towards target
-	stepUpdateError(); //calculate the stepper position error
+	step();//step stepper and update the position
+	stepUpdateError(); //calculate the new stepper position error (CurError)
 	stepUpdateDir(); //update the stepper direction
 	stepUpdateDelay(); //update the stepper speed
 //CONTROL STEPPER
-//CONTROL MOTOR
+
+	//trigger motor controller.
 	CALCFLAG = 1;
 	PORTB ^= _BV(PINB4);
 }//stepTimer

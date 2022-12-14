@@ -1,23 +1,23 @@
 #include "main.h"
 
 //GLOBALS
-volatile uint8_t Steps2Acc= 50;
-volatile uint8_t accSteps= 0;
-volatile uint16_t CurAcc[50];
-volatile uint8_t StepsDelta = 0;
-volatile uint16_t CurDelay = 0;
-volatile uint8_t countPause= 0;
+volatile uint8_t Steps2Acc= 50;//number of steps to accelerate from MAXDELAY to MINDELAY
+volatile uint8_t accSteps= 0;//indicates current step of acceleration profile
+volatile uint16_t CurAcc[50];//hold acceleration profile
 
-volatile int8_t Dir = 1;
-volatile int8_t NextDir = 1;
-volatile uint8_t CurPosition = 50;
-volatile int16_t CurError = 0;
+volatile uint16_t CurDelay = 0;//the current delay for stepper
+volatile int8_t Dir = 1;//the current direction of the stepper
+volatile int8_t NextDir = 1;//the next calculated direction needed
+volatile uint8_t CurPosition = 50;// the current stepper position
+volatile int16_t CurError = 0;//the current position error of the stepper
 
+//Coil excitation pattern and state counter
 //L1,L2		//L1,L4		//L4,L3		//L2,L3
 volatile int8_t StepStates[] = {0b11011000,0b10111000,0b10110100, 0b11010100};
 volatile int8_t CurState = 0;
 
 
+volatile uint8_t StepsDelta = 0;//legacy variable
 //EXTERNAL GLOBAL
 extern uint8_t Parts[PARTS_SIZE];
 extern volatile uint8_t countSort;
@@ -31,14 +31,21 @@ extern volatile uint8_t Steps2Exit;
 extern volatile char DROPFLAG;
 
 
+
+/************************************************************************/
+/* DESCRIPTION: This function writes to the stepper driver, updates 
+the position and state variables, and resets the delay counter. It also 
+handles roll over for CurState and CurPosition.
+                                                               */
+/************************************************************************/
 uint8_t step(void){
-	CurState = CurState + Dir;//Update CurState based on Direction
+	CurState = CurState + Dir;//Update CurState based on Dir
 	//stepper roll over
 	if (4 <= CurState){CurState = 0;}
 	else if (-1 >= CurState){CurState = 3;}
 	
 	PORTA = StepStates[CurState]; //Step
-	CurPosition = CurPosition + Dir;//Update CurPosition
+	CurPosition = CurPosition + Dir;//Update CurPosition base on Dir
 	//protect against roll over
 	if(CurPosition > 225 && Dir==1){CurPosition -=  200;}
 	else if(CurPosition < 25 && Dir==-1){CurPosition += 200;}
@@ -50,6 +57,15 @@ uint8_t step(void){
 
 
 
+
+/************************************************************************/
+/* DESCRIPTION: This function updates the variable CurError based on the
+current position and the current target position indicated by
+Parts[countSort].
+This function also handles several edge cases indicated by the flags
+HOLDFLAG, PAUSEFLAG, and TARGETFLAG (see variable initialization for meaning).
+                                                               */
+/************************************************************************/
 uint8_t stepUpdateError(void)
 {
 	if(HOLDFLAG)
@@ -91,15 +107,15 @@ uint8_t stepUpdateError(void)
 
 
 
-
-
-
-
-
-
-
+/************************************************************************/
+/* DESCRIPTION: This function updates the stepper direction (Dir).
+Dir is updated from the calculated variable NextDir. NextDir is set based on the
+stepper speed and distance to target. To avoid stalling the stepper, if NextDir
+does not equal Dir, the stepper must be slowed to MAX delay before Dir is updated.
+This is controlled by the DECELFLAG.
+                                                               */
+/************************************************************************/
 uint8_t stepUpdateDir(void){
-	//if(!DECELFLAG){
 	if(CurError == 0)
 	{// if stepper is at target
 		if(CurDelay > (MAXDELAY-MINDELAY))
@@ -113,8 +129,8 @@ uint8_t stepUpdateDir(void){
 			return 0;
 		}
 	}else if((abs(CurError)>SPIN_ROUND_LIMIT) && (CurDelay<MAXDELAY))
-	{//Next target is close in same direction and you are at speed don't change
-		DECELFLAG = 0;
+	{//Next target is close in same direction and at high speed
+		DECELFLAG = 0;//Don't slow down
 		if(Dir != 0)
 		{//Keep direction
 			NextDir = Dir;
@@ -146,6 +162,20 @@ uint8_t stepUpdateDir(void){
 
 
 
+/************************************************************************/
+/* DESCRIPTION: This function updates the stepper delay, CurDelay, which 
+controls the speed of the stepper. This function uses the acceleration profile
+ in CurAcc[] to accelerate the stepper and keep track of the current 
+ acceleration step.
+ The operation of this function can be summarized into two steps
+ 1. if requested by DECELFLAG, PAUSEFLAG, or TARGETFLAG
+	- Decelerate the stepper until MAXDELAY is reached
+2. Otherwise accelerate the stepper until MINDELAY
+
+This creates a spring like action for the stepper as it is always trying to reach
+max speed unless instructed otherwise.
+                                                               */
+/************************************************************************/
 uint8_t stepUpdateDelay(void)
 {
 	
@@ -159,9 +189,7 @@ uint8_t stepUpdateDelay(void)
 		{
 			accSteps = 0;
 			if(PAUSEFLAG && (Steps2Exit<3))
-			{
-				
-				
+			{//do nothing
 			}else
 			{
 				CurDelay = MAXDELAY;
@@ -192,7 +220,7 @@ uint8_t stepUpdateDelay(void)
 }
 
 
-
+//Resets stepper parameters when the stepper is stopped
 void stepRes(void){
 	accSteps = 0;
 	StepsDelta = 0;
@@ -200,7 +228,7 @@ void stepRes(void){
 }
 
 
-
+//Initializes the hardware timer used to control the stepper
 void stepTimer_init (void)
 {
 	TCCR3B |= _BV(WGM32);//Set CTC mode
@@ -210,7 +238,7 @@ void stepTimer_init (void)
 	return;
 } //stepTimer_init
 
-
+//enable the stepper timer and reset the stepper.
 void stepStart(void){
 	TCNT3 = 0x0000;//Reset counter
 	OCR3A = MAXDELAY;//Set compare value
@@ -219,13 +247,19 @@ void stepStart(void){
 	CurDelay = MAXDELAY;//Reset CurDelay
 }//stepStart
 
-
+//stop the stepper timer
 void stepStop(void){
 	TCCR3B &= ~_BV(CS31);//Disable timer
 	TCCR3B &=~_BV(CS30);
 }//stepStop
 
 
+/************************************************************************/
+/* DESCRIPTION: This function sets up the stepper for operations. First it
+calls for the stepper profile calculation. Next it calibrates the stepper position
+and state with the HE sensor.
+                                                               */
+/************************************************************************/
 int8_t stepCalibrate(void){
 	
 	//Calculate the acceleration profile
