@@ -7,9 +7,10 @@ volatile char EXFLAG=0;
 volatile char ORFLAG = 1;
 volatile char MOTORFLAG = 0;
 volatile char DECELFLAG = 0;
-volatile char SLIPFLAG = 0;
+volatile char HOLDFLAG = 0;
 volatile char TARGETFLAG = 0;
 volatile char PAUSEFLAG = 0;
+volatile char CALCFLAG = 0;
 
 volatile char DROPFLAG = 0;
 volatile char SORTFLAG = 0;
@@ -40,6 +41,7 @@ extern volatile uint16_t enterTime;
 extern volatile uint16_t dropTime;
 extern volatile uint16_t CurDelay;
 extern volatile uint16_t enterdropTime;
+extern volatile int8_t Dir;
 
 
 
@@ -57,22 +59,23 @@ int main(int argc, char *argv[]){
 	DDRC = 0xFF; //OUTPUT
 	DDRD = 0x00;//INPUT
 	DDRJ &= ~_BV(PINJ0); //INPUT
-	
 	//EXT INTERRUPTS
 	EICRA |= _BV(ISC01);//PAUSE
 	EICRA |= _BV(ISC11) |_BV(ISC10);//OR
 	EICRA |= _BV(ISC21);//EX
 	EICRA |= _BV(ISC31) | _BV(ISC30);//HE
 	
-	PCICR |= _BV(PCIE1);//RAMPDOWN
-	PCMSK1 |= _BV(PCINT9);
+	PCICR |= _BV(PCIE1);
+	PCMSK1 |= _BV(PCINT9);//RAMPDOWN
+	PCICR |= _BV(PCIE0);
+	PCMSK0 |= _BV(PCINT4);//Time Calculator
 
 
 	ADC_Init();
 	mTimer_init();
 	stepTimer_init();
-	InitLCD(LS_BLINK|LS_ULINE);
-	LCDClear();
+//	InitLCD(LS_BLINK|LS_ULINE);
+//	LCDClear();
 	EIMSK |= 0x08;
 	sei();// Enable global interrupts
 
@@ -105,7 +108,7 @@ STANDBY:
 			if((runTime_d-refreshTime)>REFRESH_PERIOD)
 			{
                //dispFLAGS();
-				dispStatus();
+			//	dispStatus();
 				refreshTime = runTime_d;	
 			}	
 		}else
@@ -139,6 +142,7 @@ DISABLE:
 	uint8_t INTState = EIMSK;
 	EIMSK = 0x01;
 	PCMSK1 &= ~_BV(PCINT9);
+	PCMSK0 &= ~_BV(PCINT4);
 	brakeMotor();
 	//stopMotor();
 	stepRes();
@@ -150,6 +154,7 @@ DISABLE:
 	while((PIND & 0x01) == 0x00);
 	EIMSK = INTState;
 	PCMSK1 |= _BV(PCINT9);
+	PCMSK0 |= _BV(PCINT4);
 	runTimerResume();
 	stepStart();
 	runMotor();
@@ -200,7 +205,7 @@ ISR(INT1_vect){
 		
 			ADCSRA |=_BV(ADSC);
 		
-			motorTimerStart();//slow down motor on approach
+			//motorTimerStart();//slow down motor on approach
 			ORTime_s = runTime_d;
 
 		}//HI
@@ -231,7 +236,7 @@ ISR(INT1_vect){
 
 
 
-//EX ISR //547cycles
+//EX ISR //260
 ISR(INT2_vect){
 	
 	if(!EXFLAG)
@@ -246,6 +251,10 @@ ISR(INT2_vect){
 				EIFR |= _BV(INT2);
 				
 				SORTFLAG = 1;
+				if(HOLDFLAG)
+				{
+					brakeMotor();
+				}
 				enterdropTime = ENTER_DROP_TIME;
 				EXTime_s = runTime_d;
 			}//LO
@@ -267,17 +276,15 @@ ISR(INT2_vect){
 				
 				if(abs(CurError)>DROP_REGION)
 				{//Current Error is for count-1 at this point
-					SLIPFLAG = 1;
+					HOLDFLAG = 1;
 				}else
 				{
 					runMotor();
 				}
 				
-				if(DROPFLAG)
-				{//if the next piece is falling before previous piece has hit
-					DROPFLAG = 0;
-					PAUSEFLAG = 0;//MUST RESET THE PAUSE FLAG
-				}
+			
+                PAUSEFLAG=0;
+				SORTFLAG = 0;
 				DROPFLAG = 1;
 				dropTime = DROP_TIME - (OCR3A - TCNT3);        
 			EXTime_s = runTime_d;	
@@ -295,42 +302,10 @@ ISR(TIMER3_COMPA_vect){
 	stepUpdateDelay(); //update the stepper speed
 //CONTROL STEPPER
 //CONTROL MOTOR
-
-	if(SORTFLAG)
-	{
-		
-		if(CalcEnterTime())
-		{
-			brakeMotor();
-			enterdropTime = BRAKE_DROP_TIME;
-		}else
-		{
-			SORTFLAG = 0;
-			runMotor();
-		}
-    }
 	
-	if(DROPFLAG)
-	{
-		if(dropTime<CurDelay)
-		{
-			DROPFLAG = 0;
-			PAUSEFLAG = 0;
-			
-		}else
-		{
-			dropTime -=CurDelay;
-		}
-		
-		if(CalcExitTime())
-		{
-			PAUSEFLAG = 1;
-		}else
-		{	
-			PAUSEFLAG = 0;
-		}
-		
-	}
+	CALCFLAG = 1;
+	PORTB ^= _BV(PINB4);
+	
 }//stepTimer
 
 
@@ -370,8 +345,6 @@ ISR(INT3_vect){
 }//HE
 
 
-
-
 //ISR Stop Button
 ISR(INT0_vect){
 	if(debounce(0, 0, BOUNCECHECK)){
@@ -394,7 +367,51 @@ ISR(PCINT1_vect)
 }//ISR Ramp Button
 
 
-
+ISR(PCINT0_vect)
+{
+	if(CALCFLAG)
+	{
+		
+		if(SORTFLAG ^ HOLDFLAG)
+		{
+			if(CalcEnterTime())
+			{
+				brakeMotor();
+				enterdropTime = BRAKE_DROP_TIME;
+			}else
+			{
+				SORTFLAG = 0;
+				runMotor();
+			}
+		}else if(SORTFLAG && HOLDFLAG)
+		{
+			brakeMotor();
+		}
+		
+		
+		
+		if(DROPFLAG)
+		{
+			if(dropTime<CurDelay)
+			{
+				DROPFLAG = 0;
+				PAUSEFLAG = 0;
+			}else
+			{
+				dropTime -=CurDelay;	
+				if(CalcExitTime())
+				{
+					PAUSEFLAG = 1;
+				}else
+				{
+					PAUSEFLAG = 0;
+				}
+			}	
+		}	
+	}
+	CALCFLAG = 0;
+	
+}
 
 
 
