@@ -227,36 +227,61 @@ void stepStop(void){
 
 
 int8_t stepCalibrate(void){
+	
+	//Calculate the acceleration profile
 	stepCalcAcc();
 	
+	//set stepper to slowest speed
 	CurDelay = MAXDELAY;
-	HALLSENSOR = 0;//reset HALLSENSOR
 	CurPosition = 0;//set CurPosition
-	Parts[0] = 50;//Set motor to spin 360
-
-	stepStart();//Start stepTimer
+	
+	//move 50 steps to align poles and steps
+	Parts[0] = 50;//Set stepper to move 50 steps
+	stepStart();//Start stepper
 	while(CurError !=0)
 	{
+		//prevent stepper from accelerating
 		DECELFLAG = 1;
 	}
+	
+	//move until HE triggers ISR(INT3_vect)
 	HALLSENSOR = 0;
 	CurPosition = 0;
-	while(!HALLSENSOR){
+	while(!HALLSENSOR)
+	{
+		//keep stepper moving forwards
 		if(abs(CurError)<30 && !HALLSENSOR){
 			CurPosition = 0;
 		}
 	}//Wait for hall sensor to trigger
+	
+	//move stepper to face black region
 	Parts[0] = B_ID;
-
 	return 1;
 }
 
+
+/************************************************************************/
+/* DESCRIPTION: Calculates the stepper acceleration profile based on
+	- the minimum and maximum delay between steps
+	- the maximum acceleration
+	- the number of steps to apply jerk (increase/decrease acceleration)  
+	The profile follows an S-curve shape. 
+	First stage: acceleration is increased every step until MAXACC is reached
+	Second stage: acceleration is held constant until near max speed
+	Third stage: Decrease acceleration as max speed is approached
+	
+	The profile is saved in the array CurAcc[]. This array has the size Steps2Acc
+	which indicated how many steps it take to go from rest to max speed.
+	                                                                   */
+/************************************************************************/
 void stepCalcAcc(void){
 
 	uint16_t JERK = MAXACC/JERKSTEPS;
 	uint16_t steps = 0;
 	uint16_t delay = MAXDELAY;
 
+	//FIRST STAGE: positive jerk
 	CurAcc[steps] = 0;
 	for(steps = 1; steps<JERKSTEPS; steps++){
 		delay -=CurAcc[steps-1];
@@ -264,8 +289,10 @@ void stepCalcAcc(void){
 		if(CurAcc[steps]>MAXACC){
 			CurAcc[steps] = MAXACC;
 		}
-	}//Increase Acc
+	}//Increase Acceleration
 	
+	
+	//Second Stage: Constant Acceleration
 	CurAcc[steps] = MAXACC;
 	while((delay -MAXACC -JERK*JERKSTEPS*JERKSTEPS/2)>MINDELAY){
 		delay -=CurAcc[steps-1];
@@ -274,8 +301,9 @@ void stepCalcAcc(void){
 		}
 		steps++;
 		CurAcc[steps] = MAXACC;
-	}//Constant Acc
+	}//Constant Acceleration
 	
+	//Third Stage: Negative jerk to Max Speed -> MINDELAY
 	while(delay >MINDELAY){
 		steps++;
 		
@@ -288,8 +316,9 @@ void stepCalcAcc(void){
 			
 		}
 
-	}//Decrease Acc
+	}//Decrease Acceleration
 	
+	//Record how many steps it take to reach maximum speed from rest
 	Steps2Acc = steps;
 }
 

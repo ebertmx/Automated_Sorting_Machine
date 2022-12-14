@@ -73,15 +73,12 @@ void dispFLAGS(void);
 
 #define SPIN_ROUND_LIMIT 90
 
-
-
 #define MAXACC 0x00F0 //0x00FF
 #define MINDELAY 0x02F0//0x02A4
 #define MAXDELAY 0x0A00//0x0900
 #define JERKSTEPS 4//3
 
 #define DROP_TIME 18000
-
 
 #define ENTER_DROP_TIME 22500
 #define BRAKE_DROP_TIME 23000

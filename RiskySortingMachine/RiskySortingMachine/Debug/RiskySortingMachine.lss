@@ -15,19 +15,19 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY
   5 .debug_aranges 000001f8  00000000  00000000  00001b50  2**0
                   CONTENTS, READONLY, DEBUGGING
-  6 .debug_info   00002bf0  00000000  00000000  00001d48  2**0
+  6 .debug_info   00002be9  00000000  00000000  00001d48  2**0
                   CONTENTS, READONLY, DEBUGGING
-  7 .debug_abbrev 000011a6  00000000  00000000  00004938  2**0
+  7 .debug_abbrev 000011a6  00000000  00000000  00004931  2**0
                   CONTENTS, READONLY, DEBUGGING
-  8 .debug_line   0000177e  00000000  00000000  00005ade  2**0
+  8 .debug_line   00001779  00000000  00000000  00005ad7  2**0
                   CONTENTS, READONLY, DEBUGGING
-  9 .debug_frame  0000064c  00000000  00000000  0000725c  2**2
+  9 .debug_frame  0000064c  00000000  00000000  00007250  2**2
                   CONTENTS, READONLY, DEBUGGING
- 10 .debug_str    00000a8a  00000000  00000000  000078a8  2**0
+ 10 .debug_str    00000a8a  00000000  00000000  0000789c  2**0
                   CONTENTS, READONLY, DEBUGGING
- 11 .debug_loc    000011cd  00000000  00000000  00008332  2**0
+ 11 .debug_loc    000011cd  00000000  00000000  00008326  2**0
                   CONTENTS, READONLY, DEBUGGING
- 12 .debug_ranges 000001b8  00000000  00000000  000094ff  2**0
+ 12 .debug_ranges 000001b8  00000000  00000000  000094f3  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -35,12 +35,12 @@ Disassembly of section .text:
 00000000 <__vectors>:
        0:	71 c0       	rjmp	.+226    	; 0xe4 <__ctors_end>
        2:	00 00       	nop
-       4:	0c 94 1d 09 	jmp	0x123a	; 0x123a <__vector_1>
-       8:	ed c6       	rjmp	.+3546   	; 0xde4 <__vector_2>
+       4:	0c 94 1f 09 	jmp	0x123e	; 0x123e <__vector_1>
+       8:	ec c6       	rjmp	.+3544   	; 0xde2 <__vector_2>
        a:	00 00       	nop
-       c:	9d c7       	rjmp	.+3898   	; 0xf48 <__vector_3>
+       c:	9f c7       	rjmp	.+3902   	; 0xf4c <__vector_3>
        e:	00 00       	nop
-      10:	0c 94 ea 08 	jmp	0x11d4	; 0x11d4 <__vector_4>
+      10:	0c 94 ec 08 	jmp	0x11d8	; 0x11d8 <__vector_4>
       14:	87 c0       	rjmp	.+270    	; 0x124 <__bad_interrupt>
       16:	00 00       	nop
       18:	85 c0       	rjmp	.+266    	; 0x124 <__bad_interrupt>
@@ -49,8 +49,8 @@ Disassembly of section .text:
       1e:	00 00       	nop
       20:	81 c0       	rjmp	.+258    	; 0x124 <__bad_interrupt>
       22:	00 00       	nop
-      24:	0c 94 8c 09 	jmp	0x1318	; 0x1318 <__vector_9>
-      28:	0c 94 54 09 	jmp	0x12a8	; 0x12a8 <__vector_10>
+      24:	0c 94 8e 09 	jmp	0x131c	; 0x131c <__vector_9>
+      28:	0c 94 56 09 	jmp	0x12ac	; 0x12ac <__vector_10>
       2c:	7b c0       	rjmp	.+246    	; 0x124 <__bad_interrupt>
       2e:	00 00       	nop
       30:	79 c0       	rjmp	.+242    	; 0x124 <__bad_interrupt>
@@ -87,12 +87,12 @@ Disassembly of section .text:
       6e:	00 00       	nop
       70:	59 c0       	rjmp	.+178    	; 0x124 <__bad_interrupt>
       72:	00 00       	nop
-      74:	0c 94 95 08 	jmp	0x112a	; 0x112a <__vector_29>
+      74:	0c 94 97 08 	jmp	0x112e	; 0x112e <__vector_29>
       78:	55 c0       	rjmp	.+170    	; 0x124 <__bad_interrupt>
       7a:	00 00       	nop
       7c:	53 c0       	rjmp	.+166    	; 0x124 <__bad_interrupt>
       7e:	00 00       	nop
-      80:	0c 94 64 08 	jmp	0x10c8	; 0x10c8 <__vector_32>
+      80:	0c 94 66 08 	jmp	0x10cc	; 0x10cc <__vector_32>
       84:	4f c0       	rjmp	.+158    	; 0x124 <__bad_interrupt>
       86:	00 00       	nop
       88:	4d c0       	rjmp	.+154    	; 0x124 <__bad_interrupt>
@@ -1747,9 +1747,9 @@ void LCDGotoXY(uint8_t x,uint8_t y)
 00000c7a <main>:
 
 
-
 int main(int argc, char *argv[]){
-
+//INITIALIZATION	
+	//Limit Clock to 8MHz
 	CLKPR = 0x80;
      c7a:	e1 e6       	ldi	r30, 0x61	; 97
      c7c:	f0 e0       	ldi	r31, 0x00	; 0
@@ -1758,20 +1758,20 @@ int main(int argc, char *argv[]){
 	CLKPR = 0x01;
      c82:	81 e0       	ldi	r24, 0x01	; 1
      c84:	80 83       	st	Z, r24
-	//INITIALIZATION
+
 	
 	cli();//Disable Interrupts
      c86:	f8 94       	cli
 	
 	//GPIO setup
-	DDRA = 0xFF; //OUTPUT
+	DDRA = 0xFF; //OUTPUT for stepper
      c88:	8f ef       	ldi	r24, 0xFF	; 255
      c8a:	81 b9       	out	0x01, r24	; 1
-	DDRB = 0xFF; //OUTPUT
+	DDRB = 0xFF; //OUTPUT for motor
      c8c:	84 b9       	out	0x04, r24	; 4
-	DDRC = 0xFF; //OUTPUT
+	DDRC = 0xFF; //OUTPUT for LCD
      c8e:	87 b9       	out	0x07, r24	; 7
-	DDRD = 0x00;//INPUT
+	DDRD = 0x00;//INPUT for EX, OR, HE, PAUSE
      c90:	1a b8       	out	0x0a, r1	; 10
 	DDRJ &= ~_BV(PINJ0); //INPUT
      c92:	e4 e0       	ldi	r30, 0x04	; 4
@@ -1779,6 +1779,7 @@ int main(int argc, char *argv[]){
      c96:	80 81       	ld	r24, Z
      c98:	8e 7f       	andi	r24, 0xFE	; 254
      c9a:	80 83       	st	Z, r24
+	
 	//EXT INTERRUPTS
 	EICRA |= _BV(ISC01);//PAUSE
      c9c:	e9 e6       	ldi	r30, 0x69	; 105
@@ -1799,7 +1800,7 @@ int main(int argc, char *argv[]){
      cb4:	80 6c       	ori	r24, 0xC0	; 192
      cb6:	80 83       	st	Z, r24
 	
-	PCICR |= _BV(PCIE1);
+	PCICR |= _BV(PCIE1);//Enable PCINT1
      cb8:	e8 e6       	ldi	r30, 0x68	; 104
      cba:	f0 e0       	ldi	r31, 0x00	; 0
      cbc:	80 81       	ld	r24, Z
@@ -1811,11 +1812,12 @@ int main(int argc, char *argv[]){
      cc6:	8c 91       	ld	r24, X
      cc8:	82 60       	ori	r24, 0x02	; 2
      cca:	8c 93       	st	X, r24
-	PCICR |= _BV(PCIE0);
+	
+	PCICR |= _BV(PCIE0);//Enable PCINT 0
      ccc:	80 81       	ld	r24, Z
      cce:	81 60       	ori	r24, 0x01	; 1
      cd0:	80 83       	st	Z, r24
-	PCMSK0 |= _BV(PCINT4);//Time Calculator
+	PCMSK0 |= _BV(PCINT4);//Motor Controller
      cd2:	eb e6       	ldi	r30, 0x6B	; 107
      cd4:	f0 e0       	ldi	r31, 0x00	; 0
      cd6:	80 81       	ld	r24, Z
@@ -1828,7 +1830,7 @@ int main(int argc, char *argv[]){
 	mTimer_init();
      cde:	34 dd       	rcall	.-1432   	; 0x748 <mTimer_init>
 	stepTimer_init();
-     ce0:	60 d5       	rcall	.+2752   	; 0x17a2 <stepTimer_init>
+     ce0:	62 d5       	rcall	.+2756   	; 0x17a6 <stepTimer_init>
 	InitLCD(LS_BLINK|LS_ULINE);
      ce2:	83 e0       	ldi	r24, 0x03	; 3
      ce4:	15 df       	rcall	.-470    	; 0xb10 <InitLCD>
@@ -1836,49 +1838,49 @@ int main(int argc, char *argv[]){
      ce6:	60 e0       	ldi	r22, 0x00	; 0
      ce8:	81 e0       	ldi	r24, 0x01	; 1
      cea:	db de       	rcall	.-586    	; 0xaa2 <LCDByte>
-	EIMSK |= 0x08;
+	EIMSK |= 0x08;//Enable HE
      cec:	8d b3       	in	r24, 0x1d	; 29
      cee:	88 60       	ori	r24, 0x08	; 8
      cf0:	8d bb       	out	0x1d, r24	; 29
 	sei();// Enable global interrupts
      cf2:	78 94       	sei
-
-	//CALIBRATION
-	
+	// Calculate the stepper acceleration profile and calibrate position
 	stepCalibrate();
-     cf4:	17 d6       	rcall	.+3118   	; 0x1924 <stepCalibrate>
+     cf4:	19 d6       	rcall	.+3122   	; 0x1928 <stepCalibrate>
      cf6:	8d b3       	in	r24, 0x1d	; 29
-	EIMSK |= 0x07;
+	EIMSK |= 0x07;//Enable OR, EX, and PAUSE
      cf8:	87 60       	ori	r24, 0x07	; 7
      cfa:	8d bb       	out	0x1d, r24	; 29
-	EIMSK &= ~(0x08);
+	EIMSK &= ~(0x08);//Disable HE
      cfc:	8d b3       	in	r24, 0x1d	; 29
      cfe:	87 7f       	andi	r24, 0xF7	; 247
+	
+	//Initialize the belt motor PWM and pins
 	Motor_init();
      d00:	8d bb       	out	0x1d, r24	; 29
 	
-	//MAIN OPERATION
+
+	//reset counters
 	countPart=0;
      d02:	c8 db       	rcall	.-2160   	; 0x494 <Motor_init>
      d04:	10 92 65 02 	sts	0x0265, r1	; 0x800265 <countPart>
 	countSort = 0;
      d08:	10 92 64 02 	sts	0x0264, r1	; 0x800264 <countSort>
-
-	startMotor();//Start Belt
+	startMotor();//Start Belt motor
      d0c:	ed db       	rcall	.-2086   	; 0x4e8 <startMotor>
 	runTimerStart();//Start System Timer
      d0e:	2b dd       	rcall	.-1450   	; 0x766 <runTimerStart>
      d10:	80 91 0c 02 	lds	r24, 0x020C	; 0x80020c <ENABLE>
 
-STANDBY:
-	//Handle Specific Processes and Display Data
+STANDBY://Display the system status and handle button push events
+
 	while (1)
 	{				
 		if(ENABLE)
      d14:	88 23       	and	r24, r24
      d16:	b1 f1       	breq	.+108    	; 0xd84 <main+0x10a>
      d18:	80 91 60 02 	lds	r24, 0x0260	; 0x800260 <runTime_d>
-		{
+		{//if the system is enabled
 			if((runTime_d-refreshTime)>REFRESH_PERIOD)
      d1c:	90 91 61 02 	lds	r25, 0x0261	; 0x800261 <runTime_d+0x1>
      d20:	20 91 5e 02 	lds	r18, 0x025E	; 0x80025e <refreshTime>
@@ -1887,16 +1889,16 @@ STANDBY:
      d2a:	93 0b       	sbc	r25, r19
      d2c:	c3 97       	sbiw	r24, 0x33	; 51
      d2e:	48 f0       	brcs	.+18     	; 0xd42 <main+0xc8>
-			{
-				dispStatus();
+			{//if LCD needs to be updated
+				dispStatus();//display system information
      d30:	a9 dd       	rcall	.-1198   	; 0x884 <dispStatus>
      d32:	80 91 60 02 	lds	r24, 0x0260	; 0x800260 <runTime_d>
-				refreshTime = runTime_d;	
+				refreshTime = runTime_d;//control refresh rate of LCD
      d36:	90 91 61 02 	lds	r25, 0x0261	; 0x800261 <runTime_d+0x1>
      d3a:	90 93 5f 02 	sts	0x025F, r25	; 0x80025f <refreshTime+0x1>
      d3e:	80 93 5e 02 	sts	0x025E, r24	; 0x80025e <refreshTime>
      d42:	80 91 6f 02 	lds	r24, 0x026F	; 0x80026f <RAMPDOWN>
-		{
+		{//else go to disabled state
 			goto DISABLE;
 		}
 
@@ -1905,14 +1907,14 @@ STANDBY:
      d46:	88 23       	and	r24, r24
      d48:	19 f3       	breq	.-58     	; 0xd10 <main+0x96>
      d4a:	90 91 64 02 	lds	r25, 0x0264	; 0x800264 <countSort>
-		{
+		{//if RAMPDOWN button is pushed
 			if(countSort != countPart)
      d4e:	80 91 65 02 	lds	r24, 0x0265	; 0x800265 <countPart>
      d52:	98 17       	cp	r25, r24
      d54:	49 f0       	breq	.+18     	; 0xd68 <main+0xee>
      d56:	80 91 60 02 	lds	r24, 0x0260	; 0x800260 <runTime_d>
-			{
-				rampTime_d = runTime_d;	
+			{//if there are parts which need sorting
+				rampTime_d = runTime_d;//reset RAMPDOWN timer
      d5a:	90 91 61 02 	lds	r25, 0x0261	; 0x800261 <runTime_d+0x1>
      d5e:	90 93 5d 02 	sts	0x025D, r25	; 0x80025d <rampTime_d+0x1>
      d62:	80 93 5c 02 	sts	0x025C, r24	; 0x80025c <rampTime_d>
@@ -1931,20 +1933,22 @@ STANDBY:
 	
 	
 	
-DISABLE:
-	brakeMotor();
+DISABLE:// when the ENABLE is reset by ISR(INT0_vect)
+	brakeMotor();//stop the belt
      d80:	38 f2       	brcs	.-114    	; 0xd10 <main+0x96>
-     d82:	2b c0       	rjmp	.+86     	; 0xdda <main+0x160>
-	while((PIND & 0x01) == 0x00);
+     d82:	2a c0       	rjmp	.+84     	; 0xdd8 <main+0x15e>
+	while((PIND & 0x01) == 0x00);//wait for PAUSE button to be released
      d84:	76 db       	rcall	.-2324   	; 0x472 <brakeMotor>
      d86:	48 9b       	sbis	0x09, 0	; 9
-	stepStop();
+	stepStop();//stop the stepper motor
      d88:	fe cf       	rjmp	.-4      	; 0xd86 <main+0x10c>
-     d8a:	37 d5       	rcall	.+2670   	; 0x17fa <stepStop>
-	runTimerStop();
+     d8a:	39 d5       	rcall	.+2674   	; 0x17fe <stepStop>
+	runTimerStop();//stop the run timer
      d8c:	07 dd       	rcall	.-1522   	; 0x79c <runTimerStop>
      d8e:	cd b3       	in	r28, 0x1d	; 29
-	uint8_t INTState = EIMSK;
+	uint8_t INTState = EIMSK; //save current interrupt state
+	
+	//Disable all interrupts except PAUSE button
 	EIMSK = 0x01;
      d90:	81 e0       	ldi	r24, 0x01	; 1
 	PCMSK1 &= ~_BV(PCINT9);
@@ -1959,1850 +1963,1872 @@ DISABLE:
      da0:	f0 e0       	ldi	r31, 0x00	; 0
      da2:	80 81       	ld	r24, Z
      da4:	8f 7e       	andi	r24, 0xEF	; 239
-	brakeMotor();
+	
+	brakeMotor();//insure motor is stopped (for edge case)
      da6:	80 83       	st	Z, r24
      da8:	64 db       	rcall	.-2360   	; 0x472 <brakeMotor>
-	stepRes();
-     daa:	60 d4       	rcall	.+2240   	; 0x166c <stepRes>
+	stepRes();//Reset the stepper acceleration
+     daa:	62 d4       	rcall	.+2244   	; 0x1670 <stepRes>
      dac:	f7 dd       	rcall	.-1042   	; 0x99c <dispPause>
-	dispPause();
+	dispPause();//Display pause information
      dae:	80 91 0c 02 	lds	r24, 0x020C	; 0x80020c <ENABLE>
+	
+	//Wait for PAUSE button to be pushed again
 	while(!ENABLE);
      db2:	88 23       	and	r24, r24
      db4:	e1 f3       	breq	.-8      	; 0xdae <main+0x134>
-	while((PIND & 0x01) == 0x00);
+	while((PIND & 0x01) == 0x00);//wait for PAUSE button release
      db6:	48 9b       	sbis	0x09, 0	; 9
-	EIMSK = INTState;
      db8:	fe cf       	rjmp	.-4      	; 0xdb6 <main+0x13c>
-	PCMSK1 |= _BV(PCINT9);
+	
+	//return interrupts to previous state
+	EIMSK = INTState;
      dba:	cd bb       	out	0x1d, r28	; 29
+	PCMSK1 |= _BV(PCINT9);
      dbc:	ec e6       	ldi	r30, 0x6C	; 108
      dbe:	f0 e0       	ldi	r31, 0x00	; 0
      dc0:	80 81       	ld	r24, Z
-	PCMSK0 |= _BV(PCINT4);
      dc2:	82 60       	ori	r24, 0x02	; 2
+	PCMSK0 |= _BV(PCINT4);
      dc4:	80 83       	st	Z, r24
      dc6:	eb e6       	ldi	r30, 0x6B	; 107
      dc8:	f0 e0       	ldi	r31, 0x00	; 0
      dca:	80 81       	ld	r24, Z
-	runTimerResume();
      dcc:	80 61       	ori	r24, 0x10	; 16
+	runTimerResume();//start system timer
      dce:	80 83       	st	Z, r24
-	stepStart();
      dd0:	eb dc       	rcall	.-1578   	; 0x7a8 <runTimerResume>
-     dd2:	fc d4       	rcall	.+2552   	; 0x17cc <stepStart>
-	runMotor();
+	stepStart();//start stepper
+     dd2:	fe d4       	rcall	.+2556   	; 0x17d0 <stepStart>
      dd4:	af db       	rcall	.-2210   	; 0x534 <runMotor>
-     dd6:	e8 dc       	rcall	.-1584   	; 0x7a8 <runTimerResume>
-	runTimerResume();
-     dd8:	9b cf       	rjmp	.-202    	; 0xd10 <main+0x96>
-     dda:	f8 94       	cli
+	runMotor();//start motor
+     dd6:	9c cf       	rjmp	.-200    	; 0xd10 <main+0x96>
+     dd8:	f8 94       	cli
 	
-goto STANDBY;
-     ddc:	15 b8       	out	0x05, r1	; 5
-	
+goto STANDBY;//return to STANDBY mode
+     dda:	15 b8       	out	0x05, r1	; 5
 	
 	
-	
-SHUTDOWN:
-	cli();
-     dde:	12 b8       	out	0x02, r1	; 2
-	PORTB = 0x00;
-     de0:	0e dd       	rcall	.-1508   	; 0x7fe <dispComplete>
-	PORTA = 0x00;
-     de2:	ff cf       	rjmp	.-2      	; 0xde2 <main+0x168>
+SHUTDOWN://When RAMPDOWN has been pushed and no part is on belt
+	cli();//disable all interrupts
+     ddc:	12 b8       	out	0x02, r1	; 2
+	PORTB = 0x00;//disable belt motor
+     dde:	0f dd       	rcall	.-1506   	; 0x7fe <dispComplete>
+	PORTA = 0x00;//disable stepper motor
+     de0:	ff cf       	rjmp	.-2      	; 0xde0 <main+0x166>
 
-00000de4 <__vector_2>:
-	dispComplete();
-     de4:	1f 92       	push	r1
-     de6:	0f 92       	push	r0
-     de8:	0f b6       	in	r0, 0x3f	; 63
-//*************ISR***************//
+00000de2 <__vector_2>:
+	dispComplete();//display complete information
+     de2:	1f 92       	push	r1
+     de4:	0f 92       	push	r0
+     de6:	0f b6       	in	r0, 0x3f	; 63
 
-
-
-//OR ISR
-ISR(INT1_vect){
-     dea:	0f 92       	push	r0
-     dec:	11 24       	eor	r1, r1
-     dee:	0b b6       	in	r0, 0x3b	; 59
-     df0:	0f 92       	push	r0
-     df2:	2f 93       	push	r18
-     df4:	3f 93       	push	r19
-     df6:	4f 93       	push	r20
-     df8:	5f 93       	push	r21
-     dfa:	6f 93       	push	r22
-     dfc:	7f 93       	push	r23
-     dfe:	8f 93       	push	r24
-     e00:	9f 93       	push	r25
-     e02:	af 93       	push	r26
-     e04:	bf 93       	push	r27
-     e06:	cf 93       	push	r28
-     e08:	df 93       	push	r29
-     e0a:	ef 93       	push	r30
-     e0c:	ff 93       	push	r31
-	if(ORFLAG){
-     e0e:	80 91 0b 02 	lds	r24, 0x020B	; 0x80020b <ORFLAG>
-     e12:	88 23       	and	r24, r24
-     e14:	69 f1       	breq	.+90     	; 0xe70 <__vector_2+0x8c>
+It takes an average 300cc to run.
+                                                                  */
+/************************************************************************/
+ISR(INT1_vect)
+{//OR has triggered falling or rising edge
+     de8:	0f 92       	push	r0
+     dea:	11 24       	eor	r1, r1
+     dec:	0b b6       	in	r0, 0x3b	; 59
+     dee:	0f 92       	push	r0
+     df0:	2f 93       	push	r18
+     df2:	3f 93       	push	r19
+     df4:	4f 93       	push	r20
+     df6:	5f 93       	push	r21
+     df8:	6f 93       	push	r22
+     dfa:	7f 93       	push	r23
+     dfc:	8f 93       	push	r24
+     dfe:	9f 93       	push	r25
+     e00:	af 93       	push	r26
+     e02:	bf 93       	push	r27
+     e04:	cf 93       	push	r28
+     e06:	df 93       	push	r29
+     e08:	ef 93       	push	r30
+     e0a:	ff 93       	push	r31
+	if(ORFLAG)
+     e0c:	80 91 0b 02 	lds	r24, 0x020B	; 0x80020b <ORFLAG>
+     e10:	88 23       	and	r24, r24
+     e12:	81 f1       	breq	.+96     	; 0xe74 <__vector_2+0x92>
+	{// if set to rising edge
 		
-		if(debounce(1, 1, NOISECHECK)){
-     e16:	48 e0       	ldi	r20, 0x08	; 8
-     e18:	50 e0       	ldi	r21, 0x00	; 0
-     e1a:	61 e0       	ldi	r22, 0x01	; 1
-     e1c:	81 e0       	ldi	r24, 0x01	; 1
-     e1e:	12 dc       	rcall	.-2012   	; 0x644 <debounce>
-     e20:	88 23       	and	r24, r24
-     e22:	09 f4       	brne	.+2      	; 0xe26 <__vector_2+0x42>
-     e24:	79 c0       	rjmp	.+242    	; 0xf18 <__vector_2+0x134>
+		//FILTER noise
+		if(debounce(1, 1, NOISECHECK))
+     e14:	48 e0       	ldi	r20, 0x08	; 8
+     e16:	50 e0       	ldi	r21, 0x00	; 0
+     e18:	61 e0       	ldi	r22, 0x01	; 1
+     e1a:	81 e0       	ldi	r24, 0x01	; 1
+     e1c:	13 dc       	rcall	.-2010   	; 0x644 <debounce>
+     e1e:	88 23       	and	r24, r24
+     e20:	09 f4       	brne	.+2      	; 0xe24 <__vector_2+0x42>
+     e22:	7f c0       	rjmp	.+254    	; 0xf22 <__vector_2+0x140>
+		{//if not noise
+			
 			ORFLAG  = 0; //Part has entered OR
-     e26:	10 92 0b 02 	sts	0x020B, r1	; 0x80020b <ORFLAG>
+     e24:	10 92 0b 02 	sts	0x020B, r1	; 0x80020b <ORFLAG>
+			
+			//set to falling edge
 			EIMSK &= ~_BV(INT1);
-     e2a:	8d b3       	in	r24, 0x1d	; 29
-     e2c:	8d 7f       	andi	r24, 0xFD	; 253
-     e2e:	8d bb       	out	0x1d, r24	; 29
-			EICRA &= ~_BV(ISC10); //Falling Edge
-     e30:	e9 e6       	ldi	r30, 0x69	; 105
-     e32:	f0 e0       	ldi	r31, 0x00	; 0
-     e34:	80 81       	ld	r24, Z
-     e36:	8b 7f       	andi	r24, 0xFB	; 251
-     e38:	80 83       	st	Z, r24
-			EIMSK |= _BV(INT1); // Enable Interrupt
-     e3a:	8d b3       	in	r24, 0x1d	; 29
-     e3c:	82 60       	ori	r24, 0x02	; 2
-     e3e:	8d bb       	out	0x1d, r24	; 29
+     e28:	8d b3       	in	r24, 0x1d	; 29
+     e2a:	8d 7f       	andi	r24, 0xFD	; 253
+     e2c:	8d bb       	out	0x1d, r24	; 29
+			EICRA &= ~_BV(ISC10);
+     e2e:	e9 e6       	ldi	r30, 0x69	; 105
+     e30:	f0 e0       	ldi	r31, 0x00	; 0
+     e32:	80 81       	ld	r24, Z
+     e34:	8b 7f       	andi	r24, 0xFB	; 251
+     e36:	80 83       	st	Z, r24
+			EIMSK |= _BV(INT1); 
+     e38:	8d b3       	in	r24, 0x1d	; 29
+     e3a:	82 60       	ori	r24, 0x02	; 2
+     e3c:	8d bb       	out	0x1d, r24	; 29
 
-
+			//reset adc variables
 			countADC = 0;
-     e40:	10 92 63 02 	sts	0x0263, r1	; 0x800263 <countADC+0x1>
-     e44:	10 92 62 02 	sts	0x0262, r1	; 0x800262 <countADC>
+     e3e:	10 92 63 02 	sts	0x0263, r1	; 0x800263 <countADC+0x1>
+     e42:	10 92 62 02 	sts	0x0262, r1	; 0x800262 <countADC>
 			adcPart = 1023;
-     e48:	8f ef       	ldi	r24, 0xFF	; 255
-     e4a:	93 e0       	ldi	r25, 0x03	; 3
-     e4c:	90 93 0a 02 	sts	0x020A, r25	; 0x80020a <adcPart+0x1>
-     e50:	80 93 09 02 	sts	0x0209, r24	; 0x800209 <adcPart>
+     e46:	8f ef       	ldi	r24, 0xFF	; 255
+     e48:	93 e0       	ldi	r25, 0x03	; 3
+     e4a:	90 93 0a 02 	sts	0x020A, r25	; 0x80020a <adcPart+0x1>
+     e4e:	80 93 09 02 	sts	0x0209, r24	; 0x800209 <adcPart>
 		
-			ADCSRA |=_BV(ADSC);
-     e54:	ea e7       	ldi	r30, 0x7A	; 122
-     e56:	f0 e0       	ldi	r31, 0x00	; 0
-     e58:	80 81       	ld	r24, Z
-     e5a:	80 64       	ori	r24, 0x40	; 64
-     e5c:	80 83       	st	Z, r24
-		
-			//motorTimerStart();//slow down motor on approach
-			ORTime_s = runTime_d;
-     e5e:	80 91 60 02 	lds	r24, 0x0260	; 0x800260 <runTime_d>
-     e62:	90 91 61 02 	lds	r25, 0x0261	; 0x800261 <runTime_d+0x1>
-     e66:	90 93 5b 02 	sts	0x025B, r25	; 0x80025b <ORTime_s+0x1>
-     e6a:	80 93 5a 02 	sts	0x025A, r24	; 0x80025a <ORTime_s>
-     e6e:	54 c0       	rjmp	.+168    	; 0xf18 <__vector_2+0x134>
-		}//HI
+			ADCSRA |=_BV(ADSC);//start first ADC conversion
+     e52:	ea e7       	ldi	r30, 0x7A	; 122
+     e54:	f0 e0       	ldi	r31, 0x00	; 0
+     e56:	80 81       	ld	r24, Z
+     e58:	80 64       	ori	r24, 0x40	; 64
+     e5a:	80 83       	st	Z, r24
+			
+			ORTime_s = runTime_d;//record time part entered
+     e5c:	80 91 60 02 	lds	r24, 0x0260	; 0x800260 <runTime_d>
+     e60:	90 91 61 02 	lds	r25, 0x0261	; 0x800261 <runTime_d+0x1>
+     e64:	90 93 5b 02 	sts	0x025B, r25	; 0x80025b <ORTime_s+0x1>
+     e68:	80 93 5a 02 	sts	0x025A, r24	; 0x80025a <ORTime_s>
+			EIFR |= _BV(INT1);//reset interrupt flag (for edge case)
+     e6c:	8c b3       	in	r24, 0x1c	; 28
+     e6e:	82 60       	ori	r24, 0x02	; 2
+     e70:	8c bb       	out	0x1c, r24	; 28
+     e72:	57 c0       	rjmp	.+174    	; 0xf22 <__vector_2+0x140>
 		
 	}else//!ORFLAG
-	{
+	{//if set falling edge
 		
-		if(debounce(1, 0, NOISECHECK) && ((runTime_d - ORTime_s) > PARTTIME)){
-     e70:	48 e0       	ldi	r20, 0x08	; 8
-     e72:	50 e0       	ldi	r21, 0x00	; 0
-     e74:	60 e0       	ldi	r22, 0x00	; 0
-     e76:	81 e0       	ldi	r24, 0x01	; 1
-     e78:	e5 db       	rcall	.-2102   	; 0x644 <debounce>
-     e7a:	88 23       	and	r24, r24
-     e7c:	09 f4       	brne	.+2      	; 0xe80 <__vector_2+0x9c>
-     e7e:	4c c0       	rjmp	.+152    	; 0xf18 <__vector_2+0x134>
-     e80:	80 91 60 02 	lds	r24, 0x0260	; 0x800260 <runTime_d>
-     e84:	90 91 61 02 	lds	r25, 0x0261	; 0x800261 <runTime_d+0x1>
-     e88:	20 91 5a 02 	lds	r18, 0x025A	; 0x80025a <ORTime_s>
-     e8c:	30 91 5b 02 	lds	r19, 0x025B	; 0x80025b <ORTime_s+0x1>
-     e90:	82 1b       	sub	r24, r18
-     e92:	93 0b       	sbc	r25, r19
-     e94:	06 97       	sbiw	r24, 0x06	; 6
-     e96:	08 f4       	brcc	.+2      	; 0xe9a <__vector_2+0xb6>
-     e98:	3f c0       	rjmp	.+126    	; 0xf18 <__vector_2+0x134>
+		//FILTER noise and doulbe edge detection
+		if(debounce(1, 0, NOISECHECK) && ((runTime_d - ORTime_s) > PARTTIME))
+     e74:	48 e0       	ldi	r20, 0x08	; 8
+     e76:	50 e0       	ldi	r21, 0x00	; 0
+     e78:	60 e0       	ldi	r22, 0x00	; 0
+     e7a:	81 e0       	ldi	r24, 0x01	; 1
+     e7c:	e3 db       	rcall	.-2106   	; 0x644 <debounce>
+     e7e:	88 23       	and	r24, r24
+     e80:	09 f4       	brne	.+2      	; 0xe84 <__vector_2+0xa2>
+     e82:	4f c0       	rjmp	.+158    	; 0xf22 <__vector_2+0x140>
+     e84:	80 91 60 02 	lds	r24, 0x0260	; 0x800260 <runTime_d>
+     e88:	90 91 61 02 	lds	r25, 0x0261	; 0x800261 <runTime_d+0x1>
+     e8c:	20 91 5a 02 	lds	r18, 0x025A	; 0x80025a <ORTime_s>
+     e90:	30 91 5b 02 	lds	r19, 0x025B	; 0x80025b <ORTime_s+0x1>
+     e94:	82 1b       	sub	r24, r18
+     e96:	93 0b       	sbc	r25, r19
+     e98:	06 97       	sbiw	r24, 0x06	; 6
+     e9a:	08 f4       	brcc	.+2      	; 0xe9e <__vector_2+0xbc>
+     e9c:	42 c0       	rjmp	.+132    	; 0xf22 <__vector_2+0x140>
+		{//if not noise and part has had time to pass through sensor
 			ORFLAG  = 1;//Part has cleared OR	
-     e9a:	81 e0       	ldi	r24, 0x01	; 1
-     e9c:	80 93 0b 02 	sts	0x020B, r24	; 0x80020b <ORFLAG>
-			EIMSK &= ~_BV(INT1); // Disable Interrupt
-     ea0:	8d b3       	in	r24, 0x1d	; 29
-     ea2:	8d 7f       	andi	r24, 0xFD	; 253
-     ea4:	8d bb       	out	0x1d, r24	; 29
-			EICRA |= _BV(ISC10);//Turn on rising edge
-     ea6:	e9 e6       	ldi	r30, 0x69	; 105
-     ea8:	f0 e0       	ldi	r31, 0x00	; 0
-     eaa:	80 81       	ld	r24, Z
-     eac:	84 60       	ori	r24, 0x04	; 4
-     eae:	80 83       	st	Z, r24
-			EIMSK |= _BV(INT1); // Enable Interrupt
-     eb0:	8d b3       	in	r24, 0x1d	; 29
-     eb2:	82 60       	ori	r24, 0x02	; 2
-     eb4:	8d bb       	out	0x1d, r24	; 29
+     e9e:	81 e0       	ldi	r24, 0x01	; 1
+     ea0:	80 93 0b 02 	sts	0x020B, r24	; 0x80020b <ORFLAG>
+			
+			//Turn on rising edge
+			EIMSK &= ~_BV(INT1); 
+     ea4:	8d b3       	in	r24, 0x1d	; 29
+     ea6:	8d 7f       	andi	r24, 0xFD	; 253
+     ea8:	8d bb       	out	0x1d, r24	; 29
+			EICRA |= _BV(ISC10);
+     eaa:	e9 e6       	ldi	r30, 0x69	; 105
+     eac:	f0 e0       	ldi	r31, 0x00	; 0
+     eae:	80 81       	ld	r24, Z
+     eb0:	84 60       	ori	r24, 0x04	; 4
+     eb2:	80 83       	st	Z, r24
+			EIMSK |= _BV(INT1); 
+     eb4:	8d b3       	in	r24, 0x1d	; 29
+     eb6:	82 60       	ori	r24, 0x02	; 2
+     eb8:	8d bb       	out	0x1d, r24	; 29
 
-			adcDisp = adcPart;
-     eb6:	80 91 09 02 	lds	r24, 0x0209	; 0x800209 <adcPart>
-     eba:	90 91 0a 02 	lds	r25, 0x020A	; 0x80020a <adcPart+0x1>
-     ebe:	90 93 06 02 	sts	0x0206, r25	; 0x800206 <adcDisp+0x1>
-     ec2:	80 93 05 02 	sts	0x0205, r24	; 0x800205 <adcDisp>
-			if((adcPart<HI_Reflect) && countADC>50){
-     ec6:	80 91 09 02 	lds	r24, 0x0209	; 0x800209 <adcPart>
-     eca:	90 91 0a 02 	lds	r25, 0x020A	; 0x80020a <adcPart+0x1>
-     ece:	82 3f       	cpi	r24, 0xF2	; 242
-     ed0:	93 40       	sbci	r25, 0x03	; 3
-     ed2:	10 f5       	brcc	.+68     	; 0xf18 <__vector_2+0x134>
-     ed4:	80 91 62 02 	lds	r24, 0x0262	; 0x800262 <countADC>
-     ed8:	90 91 63 02 	lds	r25, 0x0263	; 0x800263 <countADC+0x1>
-     edc:	c3 97       	sbiw	r24, 0x33	; 51
-     ede:	e0 f0       	brcs	.+56     	; 0xf18 <__vector_2+0x134>
-				Parts[countPart] = classify(adcPart);//classify the part and add to the step position
-     ee0:	c0 91 65 02 	lds	r28, 0x0265	; 0x800265 <countPart>
-     ee4:	d0 e0       	ldi	r29, 0x00	; 0
-     ee6:	80 91 09 02 	lds	r24, 0x0209	; 0x800209 <adcPart>
-     eea:	90 91 0a 02 	lds	r25, 0x020A	; 0x80020a <adcPart+0x1>
-     eee:	97 db       	rcall	.-2258   	; 0x61e <classify>
-     ef0:	c8 58       	subi	r28, 0x88	; 136
-     ef2:	dd 4f       	sbci	r29, 0xFD	; 253
-     ef4:	88 83       	st	Y, r24
+			adcDisp = adcPart;//set display ADC variable
+     eba:	80 91 09 02 	lds	r24, 0x0209	; 0x800209 <adcPart>
+     ebe:	90 91 0a 02 	lds	r25, 0x020A	; 0x80020a <adcPart+0x1>
+     ec2:	90 93 06 02 	sts	0x0206, r25	; 0x800206 <adcDisp+0x1>
+     ec6:	80 93 05 02 	sts	0x0205, r24	; 0x800205 <adcDisp>
+			
+			//FILTER bad reads from ADC
+			if((adcPart<HI_Reflect) && countADC>50)
+     eca:	80 91 09 02 	lds	r24, 0x0209	; 0x800209 <adcPart>
+     ece:	90 91 0a 02 	lds	r25, 0x020A	; 0x80020a <adcPart+0x1>
+     ed2:	82 3f       	cpi	r24, 0xF2	; 242
+     ed4:	93 40       	sbci	r25, 0x03	; 3
+     ed6:	10 f5       	brcc	.+68     	; 0xf1c <__vector_2+0x13a>
+     ed8:	80 91 62 02 	lds	r24, 0x0262	; 0x800262 <countADC>
+     edc:	90 91 63 02 	lds	r25, 0x0263	; 0x800263 <countADC+0x1>
+     ee0:	c3 97       	sbiw	r24, 0x33	; 51
+     ee2:	e0 f0       	brcs	.+56     	; 0xf1c <__vector_2+0x13a>
+			{//if a reflect value was recorded and the adc got more than minimum reads
+				Parts[countPart] = classify(adcPart);//classify the part and add to array
+     ee4:	c0 91 65 02 	lds	r28, 0x0265	; 0x800265 <countPart>
+     ee8:	d0 e0       	ldi	r29, 0x00	; 0
+     eea:	80 91 09 02 	lds	r24, 0x0209	; 0x800209 <adcPart>
+     eee:	90 91 0a 02 	lds	r25, 0x020A	; 0x80020a <adcPart+0x1>
+     ef2:	95 db       	rcall	.-2262   	; 0x61e <classify>
+     ef4:	c8 58       	subi	r28, 0x88	; 136
+     ef6:	dd 4f       	sbci	r29, 0xFD	; 253
+     ef8:	88 83       	st	Y, r24
 				Parts[countPart+1] = Parts[countPart];//Initialize next array index
-     ef6:	e0 91 65 02 	lds	r30, 0x0265	; 0x800265 <countPart>
-     efa:	f0 e0       	ldi	r31, 0x00	; 0
-     efc:	a0 91 65 02 	lds	r26, 0x0265	; 0x800265 <countPart>
-     f00:	b0 e0       	ldi	r27, 0x00	; 0
-     f02:	a8 58       	subi	r26, 0x88	; 136
-     f04:	bd 4f       	sbci	r27, 0xFD	; 253
-     f06:	8c 91       	ld	r24, X
-     f08:	e7 58       	subi	r30, 0x87	; 135
-     f0a:	fd 4f       	sbci	r31, 0xFD	; 253
-     f0c:	80 83       	st	Z, r24
+     efa:	e0 91 65 02 	lds	r30, 0x0265	; 0x800265 <countPart>
+     efe:	f0 e0       	ldi	r31, 0x00	; 0
+     f00:	a0 91 65 02 	lds	r26, 0x0265	; 0x800265 <countPart>
+     f04:	b0 e0       	ldi	r27, 0x00	; 0
+     f06:	a8 58       	subi	r26, 0x88	; 136
+     f08:	bd 4f       	sbci	r27, 0xFD	; 253
+     f0a:	8c 91       	ld	r24, X
+     f0c:	e7 58       	subi	r30, 0x87	; 135
+     f0e:	fd 4f       	sbci	r31, 0xFD	; 253
+     f10:	80 83       	st	Z, r24
 				countPart +=1;//increment part counter
-     f0e:	80 91 65 02 	lds	r24, 0x0265	; 0x800265 <countPart>
-     f12:	8f 5f       	subi	r24, 0xFF	; 255
-     f14:	80 93 65 02 	sts	0x0265, r24	; 0x800265 <countPart>
+     f12:	80 91 65 02 	lds	r24, 0x0265	; 0x800265 <countPart>
+     f16:	8f 5f       	subi	r24, 0xFF	; 255
+     f18:	80 93 65 02 	sts	0x0265, r24	; 0x800265 <countPart>
 			}
+			EIFR |= _BV(INT1);//reset interrupt flag (for edge case) 
+     f1c:	8c b3       	in	r24, 0x1c	; 28
+     f1e:	82 60       	ori	r24, 0x02	; 2
+     f20:	8c bb       	out	0x1c, r24	; 28
 		}//LO	
 	}//else
-	EIFR |= _BV(INT1); 
-     f18:	8c b3       	in	r24, 0x1c	; 28
-     f1a:	82 60       	ori	r24, 0x02	; 2
-     f1c:	8c bb       	out	0x1c, r24	; 28
 }//OR
-     f1e:	ff 91       	pop	r31
-     f20:	ef 91       	pop	r30
-     f22:	df 91       	pop	r29
-     f24:	cf 91       	pop	r28
-     f26:	bf 91       	pop	r27
-     f28:	af 91       	pop	r26
-     f2a:	9f 91       	pop	r25
-     f2c:	8f 91       	pop	r24
-     f2e:	7f 91       	pop	r23
-     f30:	6f 91       	pop	r22
-     f32:	5f 91       	pop	r21
-     f34:	4f 91       	pop	r20
-     f36:	3f 91       	pop	r19
-     f38:	2f 91       	pop	r18
-     f3a:	0f 90       	pop	r0
-     f3c:	0b be       	out	0x3b, r0	; 59
+     f22:	ff 91       	pop	r31
+     f24:	ef 91       	pop	r30
+     f26:	df 91       	pop	r29
+     f28:	cf 91       	pop	r28
+     f2a:	bf 91       	pop	r27
+     f2c:	af 91       	pop	r26
+     f2e:	9f 91       	pop	r25
+     f30:	8f 91       	pop	r24
+     f32:	7f 91       	pop	r23
+     f34:	6f 91       	pop	r22
+     f36:	5f 91       	pop	r21
+     f38:	4f 91       	pop	r20
+     f3a:	3f 91       	pop	r19
+     f3c:	2f 91       	pop	r18
      f3e:	0f 90       	pop	r0
-     f40:	0f be       	out	0x3f, r0	; 63
+     f40:	0b be       	out	0x3b, r0	; 59
      f42:	0f 90       	pop	r0
-     f44:	1f 90       	pop	r1
-     f46:	18 95       	reti
+     f44:	0f be       	out	0x3f, r0	; 63
+     f46:	0f 90       	pop	r0
+     f48:	1f 90       	pop	r1
+     f4a:	18 95       	reti
 
-00000f48 <__vector_3>:
+00000f4c <__vector_3>:
 
 
 
 //EX ISR //260
 ISR(INT2_vect){
-     f48:	1f 92       	push	r1
-     f4a:	0f 92       	push	r0
-     f4c:	0f b6       	in	r0, 0x3f	; 63
+     f4c:	1f 92       	push	r1
      f4e:	0f 92       	push	r0
-     f50:	11 24       	eor	r1, r1
-     f52:	0b b6       	in	r0, 0x3b	; 59
-     f54:	0f 92       	push	r0
-     f56:	2f 93       	push	r18
-     f58:	3f 93       	push	r19
-     f5a:	4f 93       	push	r20
-     f5c:	5f 93       	push	r21
-     f5e:	6f 93       	push	r22
-     f60:	7f 93       	push	r23
-     f62:	8f 93       	push	r24
-     f64:	9f 93       	push	r25
-     f66:	af 93       	push	r26
-     f68:	bf 93       	push	r27
-     f6a:	ef 93       	push	r30
-     f6c:	ff 93       	push	r31
+     f50:	0f b6       	in	r0, 0x3f	; 63
+     f52:	0f 92       	push	r0
+     f54:	11 24       	eor	r1, r1
+     f56:	0b b6       	in	r0, 0x3b	; 59
+     f58:	0f 92       	push	r0
+     f5a:	2f 93       	push	r18
+     f5c:	3f 93       	push	r19
+     f5e:	4f 93       	push	r20
+     f60:	5f 93       	push	r21
+     f62:	6f 93       	push	r22
+     f64:	7f 93       	push	r23
+     f66:	8f 93       	push	r24
+     f68:	9f 93       	push	r25
+     f6a:	af 93       	push	r26
+     f6c:	bf 93       	push	r27
+     f6e:	ef 93       	push	r30
+     f70:	ff 93       	push	r31
 	
 	if(!EXFLAG)
-     f6e:	80 91 6e 02 	lds	r24, 0x026E	; 0x80026e <EXFLAG>
-     f72:	81 11       	cpse	r24, r1
-     f74:	2e c0       	rjmp	.+92     	; 0xfd2 <__vector_3+0x8a>
+     f72:	80 91 6e 02 	lds	r24, 0x026E	; 0x80026e <EXFLAG>
+     f76:	81 11       	cpse	r24, r1
+     f78:	2e c0       	rjmp	.+92     	; 0xfd6 <__vector_3+0x8a>
 	{//Part is entering EX
 
 			if(debounce(2, 0, NOISECHECK))
-     f76:	48 e0       	ldi	r20, 0x08	; 8
-     f78:	50 e0       	ldi	r21, 0x00	; 0
-     f7a:	60 e0       	ldi	r22, 0x00	; 0
-     f7c:	82 e0       	ldi	r24, 0x02	; 2
-     f7e:	62 db       	rcall	.-2364   	; 0x644 <debounce>
-     f80:	88 23       	and	r24, r24
-     f82:	09 f4       	brne	.+2      	; 0xf86 <__vector_3+0x3e>
-     f84:	8e c0       	rjmp	.+284    	; 0x10a2 <__EEPROM_REGION_LENGTH__+0xa2>
+     f7a:	48 e0       	ldi	r20, 0x08	; 8
+     f7c:	50 e0       	ldi	r21, 0x00	; 0
+     f7e:	60 e0       	ldi	r22, 0x00	; 0
+     f80:	82 e0       	ldi	r24, 0x02	; 2
+     f82:	60 db       	rcall	.-2368   	; 0x644 <debounce>
+     f84:	88 23       	and	r24, r24
+     f86:	09 f4       	brne	.+2      	; 0xf8a <__vector_3+0x3e>
+     f88:	8e c0       	rjmp	.+284    	; 0x10a6 <__EEPROM_REGION_LENGTH__+0xa6>
 			{
 				EXFLAG =1;//Part is at EX
-     f86:	91 e0       	ldi	r25, 0x01	; 1
-     f88:	90 93 6e 02 	sts	0x026E, r25	; 0x80026e <EXFLAG>
+     f8a:	91 e0       	ldi	r25, 0x01	; 1
+     f8c:	90 93 6e 02 	sts	0x026E, r25	; 0x80026e <EXFLAG>
 				EIMSK &= ~_BV(INT2);
-     f8c:	8d b3       	in	r24, 0x1d	; 29
-     f8e:	8b 7f       	andi	r24, 0xFB	; 251
-     f90:	8d bb       	out	0x1d, r24	; 29
+     f90:	8d b3       	in	r24, 0x1d	; 29
+     f92:	8b 7f       	andi	r24, 0xFB	; 251
+     f94:	8d bb       	out	0x1d, r24	; 29
 				EICRA |= _BV(ISC20);// Rising Edge
-     f92:	e9 e6       	ldi	r30, 0x69	; 105
-     f94:	f0 e0       	ldi	r31, 0x00	; 0
-     f96:	80 81       	ld	r24, Z
-     f98:	80 61       	ori	r24, 0x10	; 16
-     f9a:	80 83       	st	Z, r24
+     f96:	e9 e6       	ldi	r30, 0x69	; 105
+     f98:	f0 e0       	ldi	r31, 0x00	; 0
+     f9a:	80 81       	ld	r24, Z
+     f9c:	80 61       	ori	r24, 0x10	; 16
+     f9e:	80 83       	st	Z, r24
 				EIMSK |= _BV(INT2); //Enable Interrupt
-     f9c:	8d b3       	in	r24, 0x1d	; 29
-     f9e:	84 60       	ori	r24, 0x04	; 4
-     fa0:	8d bb       	out	0x1d, r24	; 29
+     fa0:	8d b3       	in	r24, 0x1d	; 29
+     fa2:	84 60       	ori	r24, 0x04	; 4
+     fa4:	8d bb       	out	0x1d, r24	; 29
 				EIFR |= _BV(INT2);
-     fa2:	8c b3       	in	r24, 0x1c	; 28
-     fa4:	84 60       	ori	r24, 0x04	; 4
-     fa6:	8c bb       	out	0x1c, r24	; 28
+     fa6:	8c b3       	in	r24, 0x1c	; 28
+     fa8:	84 60       	ori	r24, 0x04	; 4
+     faa:	8c bb       	out	0x1c, r24	; 28
 				
 				SORTFLAG = 1;
-     fa8:	90 93 66 02 	sts	0x0266, r25	; 0x800266 <SORTFLAG>
+     fac:	90 93 66 02 	sts	0x0266, r25	; 0x800266 <SORTFLAG>
 				if(HOLDFLAG)
-     fac:	80 91 6b 02 	lds	r24, 0x026B	; 0x80026b <HOLDFLAG>
+     fb0:	80 91 6b 02 	lds	r24, 0x026B	; 0x80026b <HOLDFLAG>
 				{
 					brakeMotor();
-     fb0:	81 11       	cpse	r24, r1
-     fb2:	5f da       	rcall	.-2882   	; 0x472 <brakeMotor>
+     fb4:	81 11       	cpse	r24, r1
+     fb6:	5d da       	rcall	.-2886   	; 0x472 <brakeMotor>
 				}
 				enterdropTime = ENTER_DROP_TIME;
-     fb4:	84 ee       	ldi	r24, 0xE4	; 228
-     fb6:	97 e5       	ldi	r25, 0x57	; 87
-     fb8:	90 93 01 02 	sts	0x0201, r25	; 0x800201 <__DATA_REGION_ORIGIN__+0x1>
-     fbc:	80 93 00 02 	sts	0x0200, r24	; 0x800200 <__DATA_REGION_ORIGIN__>
+     fb8:	84 ee       	ldi	r24, 0xE4	; 228
+     fba:	97 e5       	ldi	r25, 0x57	; 87
+     fbc:	90 93 01 02 	sts	0x0201, r25	; 0x800201 <__DATA_REGION_ORIGIN__+0x1>
+     fc0:	80 93 00 02 	sts	0x0200, r24	; 0x800200 <__DATA_REGION_ORIGIN__>
 				EXTime_s = runTime_d;
-     fc0:	80 91 60 02 	lds	r24, 0x0260	; 0x800260 <runTime_d>
-     fc4:	90 91 61 02 	lds	r25, 0x0261	; 0x800261 <runTime_d+0x1>
-     fc8:	90 93 59 02 	sts	0x0259, r25	; 0x800259 <EXTime_s+0x1>
-     fcc:	80 93 58 02 	sts	0x0258, r24	; 0x800258 <EXTime_s>
-     fd0:	68 c0       	rjmp	.+208    	; 0x10a2 <__EEPROM_REGION_LENGTH__+0xa2>
+     fc4:	80 91 60 02 	lds	r24, 0x0260	; 0x800260 <runTime_d>
+     fc8:	90 91 61 02 	lds	r25, 0x0261	; 0x800261 <runTime_d+0x1>
+     fcc:	90 93 59 02 	sts	0x0259, r25	; 0x800259 <EXTime_s+0x1>
+     fd0:	80 93 58 02 	sts	0x0258, r24	; 0x800258 <EXTime_s>
+     fd4:	68 c0       	rjmp	.+208    	; 0x10a6 <__EEPROM_REGION_LENGTH__+0xa6>
 			}//LO
 	}else
 	{//Part is leaving EX
 		if(debounce(2,1, NOISECHECK) && ((runTime_d - EXTime_s)>SORTTIME))
-     fd2:	48 e0       	ldi	r20, 0x08	; 8
-     fd4:	50 e0       	ldi	r21, 0x00	; 0
-     fd6:	61 e0       	ldi	r22, 0x01	; 1
-     fd8:	82 e0       	ldi	r24, 0x02	; 2
-     fda:	34 db       	rcall	.-2456   	; 0x644 <debounce>
-     fdc:	88 23       	and	r24, r24
-     fde:	09 f4       	brne	.+2      	; 0xfe2 <__vector_3+0x9a>
-     fe0:	60 c0       	rjmp	.+192    	; 0x10a2 <__EEPROM_REGION_LENGTH__+0xa2>
-     fe2:	80 91 60 02 	lds	r24, 0x0260	; 0x800260 <runTime_d>
-     fe6:	90 91 61 02 	lds	r25, 0x0261	; 0x800261 <runTime_d+0x1>
-     fea:	20 91 58 02 	lds	r18, 0x0258	; 0x800258 <EXTime_s>
-     fee:	30 91 59 02 	lds	r19, 0x0259	; 0x800259 <EXTime_s+0x1>
-     ff2:	82 1b       	sub	r24, r18
-     ff4:	93 0b       	sbc	r25, r19
-     ff6:	06 97       	sbiw	r24, 0x06	; 6
-     ff8:	08 f4       	brcc	.+2      	; 0xffc <__vector_3+0xb4>
-     ffa:	53 c0       	rjmp	.+166    	; 0x10a2 <__EEPROM_REGION_LENGTH__+0xa2>
+     fd6:	48 e0       	ldi	r20, 0x08	; 8
+     fd8:	50 e0       	ldi	r21, 0x00	; 0
+     fda:	61 e0       	ldi	r22, 0x01	; 1
+     fdc:	82 e0       	ldi	r24, 0x02	; 2
+     fde:	32 db       	rcall	.-2460   	; 0x644 <debounce>
+     fe0:	88 23       	and	r24, r24
+     fe2:	09 f4       	brne	.+2      	; 0xfe6 <__vector_3+0x9a>
+     fe4:	60 c0       	rjmp	.+192    	; 0x10a6 <__EEPROM_REGION_LENGTH__+0xa6>
+     fe6:	80 91 60 02 	lds	r24, 0x0260	; 0x800260 <runTime_d>
+     fea:	90 91 61 02 	lds	r25, 0x0261	; 0x800261 <runTime_d+0x1>
+     fee:	20 91 58 02 	lds	r18, 0x0258	; 0x800258 <EXTime_s>
+     ff2:	30 91 59 02 	lds	r19, 0x0259	; 0x800259 <EXTime_s+0x1>
+     ff6:	82 1b       	sub	r24, r18
+     ff8:	93 0b       	sbc	r25, r19
+     ffa:	06 97       	sbiw	r24, 0x06	; 6
+     ffc:	08 f4       	brcc	.+2      	; 0x1000 <__EEPROM_REGION_LENGTH__>
+     ffe:	53 c0       	rjmp	.+166    	; 0x10a6 <__EEPROM_REGION_LENGTH__+0xa6>
 		{
 				EXFLAG = 0;
-     ffc:	10 92 6e 02 	sts	0x026E, r1	; 0x80026e <EXFLAG>
+    1000:	10 92 6e 02 	sts	0x026E, r1	; 0x80026e <EXFLAG>
 				EIMSK &= ~_BV(INT2);
-    1000:	8d b3       	in	r24, 0x1d	; 29
-    1002:	8b 7f       	andi	r24, 0xFB	; 251
-    1004:	8d bb       	out	0x1d, r24	; 29
+    1004:	8d b3       	in	r24, 0x1d	; 29
+    1006:	8b 7f       	andi	r24, 0xFB	; 251
+    1008:	8d bb       	out	0x1d, r24	; 29
 				EICRA &= ~(_BV(ISC20));	//Turn on falling edge
-    1006:	e9 e6       	ldi	r30, 0x69	; 105
-    1008:	f0 e0       	ldi	r31, 0x00	; 0
-    100a:	80 81       	ld	r24, Z
-    100c:	8f 7e       	andi	r24, 0xEF	; 239
-    100e:	80 83       	st	Z, r24
+    100a:	e9 e6       	ldi	r30, 0x69	; 105
+    100c:	f0 e0       	ldi	r31, 0x00	; 0
+    100e:	80 81       	ld	r24, Z
+    1010:	8f 7e       	andi	r24, 0xEF	; 239
+    1012:	80 83       	st	Z, r24
 				EIMSK |= _BV(INT2); //Enable Interrupt
-    1010:	8d b3       	in	r24, 0x1d	; 29
-    1012:	84 60       	ori	r24, 0x04	; 4
-    1014:	8d bb       	out	0x1d, r24	; 29
+    1014:	8d b3       	in	r24, 0x1d	; 29
+    1016:	84 60       	ori	r24, 0x04	; 4
+    1018:	8d bb       	out	0x1d, r24	; 29
 				EIFR |= _BV(INT2);
-    1016:	8c b3       	in	r24, 0x1c	; 28
-    1018:	84 60       	ori	r24, 0x04	; 4
-    101a:	8c bb       	out	0x1c, r24	; 28
+    101a:	8c b3       	in	r24, 0x1c	; 28
+    101c:	84 60       	ori	r24, 0x04	; 4
+    101e:	8c bb       	out	0x1c, r24	; 28
                 
 				updateCount(Parts[countSort]);
-    101c:	e0 91 64 02 	lds	r30, 0x0264	; 0x800264 <countSort>
-    1020:	f0 e0       	ldi	r31, 0x00	; 0
-    1022:	e8 58       	subi	r30, 0x88	; 136
-    1024:	fd 4f       	sbci	r31, 0xFD	; 253
-    1026:	80 81       	ld	r24, Z
-    1028:	70 db       	rcall	.-2336   	; 0x70a <updateCount>
+    1020:	e0 91 64 02 	lds	r30, 0x0264	; 0x800264 <countSort>
+    1024:	f0 e0       	ldi	r31, 0x00	; 0
+    1026:	e8 58       	subi	r30, 0x88	; 136
+    1028:	fd 4f       	sbci	r31, 0xFD	; 253
+    102a:	80 81       	ld	r24, Z
+    102c:	6e db       	rcall	.-2340   	; 0x70a <updateCount>
 				if(countSort<countPart)
-    102a:	90 91 64 02 	lds	r25, 0x0264	; 0x800264 <countSort>
-    102e:	80 91 65 02 	lds	r24, 0x0265	; 0x800265 <countPart>
-    1032:	98 17       	cp	r25, r24
-    1034:	38 f4       	brcc	.+14     	; 0x1044 <__EEPROM_REGION_LENGTH__+0x44>
+    102e:	90 91 64 02 	lds	r25, 0x0264	; 0x800264 <countSort>
+    1032:	80 91 65 02 	lds	r24, 0x0265	; 0x800265 <countPart>
+    1036:	98 17       	cp	r25, r24
+    1038:	38 f4       	brcc	.+14     	; 0x1048 <__EEPROM_REGION_LENGTH__+0x48>
 				{//if we won't overrun the array
 					countSort+=1;//go to next part
-    1036:	80 91 64 02 	lds	r24, 0x0264	; 0x800264 <countSort>
-    103a:	8f 5f       	subi	r24, 0xFF	; 255
-    103c:	80 93 64 02 	sts	0x0264, r24	; 0x800264 <countSort>
+    103a:	80 91 64 02 	lds	r24, 0x0264	; 0x800264 <countSort>
+    103e:	8f 5f       	subi	r24, 0xFF	; 255
+    1040:	80 93 64 02 	sts	0x0264, r24	; 0x800264 <countSort>
 					TARGETFLAG =0;//New target; reset flag
-    1040:	10 92 6a 02 	sts	0x026A, r1	; 0x80026a <TARGETFLAG>
+    1044:	10 92 6a 02 	sts	0x026A, r1	; 0x80026a <TARGETFLAG>
 				}
 				
 				if(abs(CurError)>DROP_REGION)
-    1044:	80 91 72 02 	lds	r24, 0x0272	; 0x800272 <CurError>
-    1048:	90 91 73 02 	lds	r25, 0x0273	; 0x800273 <CurError+0x1>
-    104c:	99 23       	and	r25, r25
-    104e:	1c f4       	brge	.+6      	; 0x1056 <__EEPROM_REGION_LENGTH__+0x56>
-    1050:	91 95       	neg	r25
-    1052:	81 95       	neg	r24
-    1054:	91 09       	sbc	r25, r1
-    1056:	0f 97       	sbiw	r24, 0x0f	; 15
-    1058:	24 f0       	brlt	.+8      	; 0x1062 <__EEPROM_REGION_LENGTH__+0x62>
+    1048:	80 91 72 02 	lds	r24, 0x0272	; 0x800272 <CurError>
+    104c:	90 91 73 02 	lds	r25, 0x0273	; 0x800273 <CurError+0x1>
+    1050:	99 23       	and	r25, r25
+    1052:	1c f4       	brge	.+6      	; 0x105a <__EEPROM_REGION_LENGTH__+0x5a>
+    1054:	91 95       	neg	r25
+    1056:	81 95       	neg	r24
+    1058:	91 09       	sbc	r25, r1
+    105a:	0f 97       	sbiw	r24, 0x0f	; 15
+    105c:	24 f0       	brlt	.+8      	; 0x1066 <__EEPROM_REGION_LENGTH__+0x66>
 				{//Current Error is for count-1 at this point
 					HOLDFLAG = 1;
-    105a:	81 e0       	ldi	r24, 0x01	; 1
-    105c:	80 93 6b 02 	sts	0x026B, r24	; 0x80026b <HOLDFLAG>
+    105e:	81 e0       	ldi	r24, 0x01	; 1
+    1060:	80 93 6b 02 	sts	0x026B, r24	; 0x80026b <HOLDFLAG>
 				}else
 				{
 					runMotor();
-    1060:	01 c0       	rjmp	.+2      	; 0x1064 <__EEPROM_REGION_LENGTH__+0x64>
-    1062:	68 da       	rcall	.-2864   	; 0x534 <runMotor>
+    1064:	01 c0       	rjmp	.+2      	; 0x1068 <__EEPROM_REGION_LENGTH__+0x68>
+    1066:	66 da       	rcall	.-2868   	; 0x534 <runMotor>
 				}
 				
                 PAUSEFLAG=0;
-    1064:	10 92 69 02 	sts	0x0269, r1	; 0x800269 <PAUSEFLAG>
+    1068:	10 92 69 02 	sts	0x0269, r1	; 0x800269 <PAUSEFLAG>
 				SORTFLAG = 0;
-    1068:	10 92 66 02 	sts	0x0266, r1	; 0x800266 <SORTFLAG>
+    106c:	10 92 66 02 	sts	0x0266, r1	; 0x800266 <SORTFLAG>
 				DROPFLAG = 1;
-    106c:	81 e0       	ldi	r24, 0x01	; 1
-    106e:	80 93 67 02 	sts	0x0267, r24	; 0x800267 <DROPFLAG>
+    1070:	81 e0       	ldi	r24, 0x01	; 1
+    1072:	80 93 67 02 	sts	0x0267, r24	; 0x800267 <DROPFLAG>
 				dropTime = DROP_TIME - (OCR3A - TCNT3);        
-    1072:	80 91 94 00 	lds	r24, 0x0094	; 0x800094 <__TEXT_REGION_LENGTH__+0x7c0094>
-    1076:	90 91 95 00 	lds	r25, 0x0095	; 0x800095 <__TEXT_REGION_LENGTH__+0x7c0095>
-    107a:	20 91 98 00 	lds	r18, 0x0098	; 0x800098 <__TEXT_REGION_LENGTH__+0x7c0098>
-    107e:	30 91 99 00 	lds	r19, 0x0099	; 0x800099 <__TEXT_REGION_LENGTH__+0x7c0099>
-    1082:	82 1b       	sub	r24, r18
-    1084:	93 0b       	sbc	r25, r19
-    1086:	80 5b       	subi	r24, 0xB0	; 176
-    1088:	99 4b       	sbci	r25, 0xB9	; 185
-    108a:	90 93 03 02 	sts	0x0203, r25	; 0x800203 <dropTime+0x1>
-    108e:	80 93 02 02 	sts	0x0202, r24	; 0x800202 <dropTime>
+    1076:	80 91 94 00 	lds	r24, 0x0094	; 0x800094 <__TEXT_REGION_LENGTH__+0x7c0094>
+    107a:	90 91 95 00 	lds	r25, 0x0095	; 0x800095 <__TEXT_REGION_LENGTH__+0x7c0095>
+    107e:	20 91 98 00 	lds	r18, 0x0098	; 0x800098 <__TEXT_REGION_LENGTH__+0x7c0098>
+    1082:	30 91 99 00 	lds	r19, 0x0099	; 0x800099 <__TEXT_REGION_LENGTH__+0x7c0099>
+    1086:	82 1b       	sub	r24, r18
+    1088:	93 0b       	sbc	r25, r19
+    108a:	80 5b       	subi	r24, 0xB0	; 176
+    108c:	99 4b       	sbci	r25, 0xB9	; 185
+    108e:	90 93 03 02 	sts	0x0203, r25	; 0x800203 <dropTime+0x1>
+    1092:	80 93 02 02 	sts	0x0202, r24	; 0x800202 <dropTime>
 			EXTime_s = runTime_d;	
-    1092:	80 91 60 02 	lds	r24, 0x0260	; 0x800260 <runTime_d>
-    1096:	90 91 61 02 	lds	r25, 0x0261	; 0x800261 <runTime_d+0x1>
-    109a:	90 93 59 02 	sts	0x0259, r25	; 0x800259 <EXTime_s+0x1>
-    109e:	80 93 58 02 	sts	0x0258, r24	; 0x800258 <EXTime_s>
+    1096:	80 91 60 02 	lds	r24, 0x0260	; 0x800260 <runTime_d>
+    109a:	90 91 61 02 	lds	r25, 0x0261	; 0x800261 <runTime_d+0x1>
+    109e:	90 93 59 02 	sts	0x0259, r25	; 0x800259 <EXTime_s+0x1>
+    10a2:	80 93 58 02 	sts	0x0258, r24	; 0x800258 <EXTime_s>
 		}//HI
 	}	
 }//EX
-    10a2:	ff 91       	pop	r31
-    10a4:	ef 91       	pop	r30
-    10a6:	bf 91       	pop	r27
-    10a8:	af 91       	pop	r26
-    10aa:	9f 91       	pop	r25
-    10ac:	8f 91       	pop	r24
-    10ae:	7f 91       	pop	r23
-    10b0:	6f 91       	pop	r22
-    10b2:	5f 91       	pop	r21
-    10b4:	4f 91       	pop	r20
-    10b6:	3f 91       	pop	r19
-    10b8:	2f 91       	pop	r18
-    10ba:	0f 90       	pop	r0
-    10bc:	0b be       	out	0x3b, r0	; 59
+    10a6:	ff 91       	pop	r31
+    10a8:	ef 91       	pop	r30
+    10aa:	bf 91       	pop	r27
+    10ac:	af 91       	pop	r26
+    10ae:	9f 91       	pop	r25
+    10b0:	8f 91       	pop	r24
+    10b2:	7f 91       	pop	r23
+    10b4:	6f 91       	pop	r22
+    10b6:	5f 91       	pop	r21
+    10b8:	4f 91       	pop	r20
+    10ba:	3f 91       	pop	r19
+    10bc:	2f 91       	pop	r18
     10be:	0f 90       	pop	r0
-    10c0:	0f be       	out	0x3f, r0	; 63
+    10c0:	0b be       	out	0x3b, r0	; 59
     10c2:	0f 90       	pop	r0
-    10c4:	1f 90       	pop	r1
-    10c6:	18 95       	reti
+    10c4:	0f be       	out	0x3f, r0	; 63
+    10c6:	0f 90       	pop	r0
+    10c8:	1f 90       	pop	r1
+    10ca:	18 95       	reti
 
-000010c8 <__vector_32>:
+000010cc <__vector_32>:
 
 //STEPPER ISR  377 cc
 ISR(TIMER3_COMPA_vect){
-    10c8:	1f 92       	push	r1
-    10ca:	0f 92       	push	r0
-    10cc:	0f b6       	in	r0, 0x3f	; 63
+    10cc:	1f 92       	push	r1
     10ce:	0f 92       	push	r0
-    10d0:	11 24       	eor	r1, r1
-    10d2:	0b b6       	in	r0, 0x3b	; 59
-    10d4:	0f 92       	push	r0
-    10d6:	2f 93       	push	r18
-    10d8:	3f 93       	push	r19
-    10da:	4f 93       	push	r20
-    10dc:	5f 93       	push	r21
-    10de:	6f 93       	push	r22
-    10e0:	7f 93       	push	r23
-    10e2:	8f 93       	push	r24
-    10e4:	9f 93       	push	r25
-    10e6:	af 93       	push	r26
-    10e8:	bf 93       	push	r27
-    10ea:	ef 93       	push	r30
-    10ec:	ff 93       	push	r31
+    10d0:	0f b6       	in	r0, 0x3f	; 63
+    10d2:	0f 92       	push	r0
+    10d4:	11 24       	eor	r1, r1
+    10d6:	0b b6       	in	r0, 0x3b	; 59
+    10d8:	0f 92       	push	r0
+    10da:	2f 93       	push	r18
+    10dc:	3f 93       	push	r19
+    10de:	4f 93       	push	r20
+    10e0:	5f 93       	push	r21
+    10e2:	6f 93       	push	r22
+    10e4:	7f 93       	push	r23
+    10e6:	8f 93       	push	r24
+    10e8:	9f 93       	push	r25
+    10ea:	af 93       	push	r26
+    10ec:	bf 93       	push	r27
+    10ee:	ef 93       	push	r30
+    10f0:	ff 93       	push	r31
 //CONTROL STEPPER
 
 	step();//step towards target
-    10ee:	8b d1       	rcall	.+790    	; 0x1406 <step>
+    10f2:	8b d1       	rcall	.+790    	; 0x140a <step>
 	stepUpdateError(); //calculate the stepper position error
-    10f0:	d0 d1       	rcall	.+928    	; 0x1492 <stepUpdateError>
+    10f4:	d0 d1       	rcall	.+928    	; 0x1496 <stepUpdateError>
 	stepUpdateDir(); //update the stepper direction
-    10f2:	50 d2       	rcall	.+1184   	; 0x1594 <stepUpdateDir>
-    10f4:	c6 d2       	rcall	.+1420   	; 0x1682 <stepUpdateDelay>
+    10f6:	50 d2       	rcall	.+1184   	; 0x1598 <stepUpdateDir>
+    10f8:	c6 d2       	rcall	.+1420   	; 0x1686 <stepUpdateDelay>
 	stepUpdateDelay(); //update the stepper speed
-    10f6:	81 e0       	ldi	r24, 0x01	; 1
-    10f8:	80 93 68 02 	sts	0x0268, r24	; 0x800268 <CALCFLAG>
+    10fa:	81 e0       	ldi	r24, 0x01	; 1
+    10fc:	80 93 68 02 	sts	0x0268, r24	; 0x800268 <CALCFLAG>
 //CONTROL STEPPER
 //CONTROL MOTOR
 	CALCFLAG = 1;
-    10fc:	95 b1       	in	r25, 0x05	; 5
-    10fe:	80 e1       	ldi	r24, 0x10	; 16
+    1100:	95 b1       	in	r25, 0x05	; 5
+    1102:	80 e1       	ldi	r24, 0x10	; 16
 	PORTB ^= _BV(PINB4);
-    1100:	89 27       	eor	r24, r25
-    1102:	85 b9       	out	0x05, r24	; 5
-    1104:	ff 91       	pop	r31
-    1106:	ef 91       	pop	r30
+    1104:	89 27       	eor	r24, r25
+    1106:	85 b9       	out	0x05, r24	; 5
+    1108:	ff 91       	pop	r31
+    110a:	ef 91       	pop	r30
 }//stepTimer
-    1108:	bf 91       	pop	r27
-    110a:	af 91       	pop	r26
-    110c:	9f 91       	pop	r25
-    110e:	8f 91       	pop	r24
-    1110:	7f 91       	pop	r23
-    1112:	6f 91       	pop	r22
-    1114:	5f 91       	pop	r21
-    1116:	4f 91       	pop	r20
-    1118:	3f 91       	pop	r19
-    111a:	2f 91       	pop	r18
-    111c:	0f 90       	pop	r0
-    111e:	0b be       	out	0x3b, r0	; 59
+    110c:	bf 91       	pop	r27
+    110e:	af 91       	pop	r26
+    1110:	9f 91       	pop	r25
+    1112:	8f 91       	pop	r24
+    1114:	7f 91       	pop	r23
+    1116:	6f 91       	pop	r22
+    1118:	5f 91       	pop	r21
+    111a:	4f 91       	pop	r20
+    111c:	3f 91       	pop	r19
+    111e:	2f 91       	pop	r18
     1120:	0f 90       	pop	r0
-    1122:	0f be       	out	0x3f, r0	; 63
+    1122:	0b be       	out	0x3b, r0	; 59
     1124:	0f 90       	pop	r0
-    1126:	1f 90       	pop	r1
-    1128:	18 95       	reti
+    1126:	0f be       	out	0x3f, r0	; 63
+    1128:	0f 90       	pop	r0
+    112a:	1f 90       	pop	r1
+    112c:	18 95       	reti
 
-0000112a <__vector_29>:
-    112a:	1f 92       	push	r1
-    112c:	0f 92       	push	r0
+0000112e <__vector_29>:
+    112e:	1f 92       	push	r1
+    1130:	0f 92       	push	r0
 	
 
 
 
 //ADC ISR
 ISR(ADC_vect){
-    112e:	0f b6       	in	r0, 0x3f	; 63
-    1130:	0f 92       	push	r0
-    1132:	11 24       	eor	r1, r1
-    1134:	0b b6       	in	r0, 0x3b	; 59
-    1136:	0f 92       	push	r0
-    1138:	2f 93       	push	r18
-    113a:	3f 93       	push	r19
-    113c:	8f 93       	push	r24
-    113e:	9f 93       	push	r25
-    1140:	ef 93       	push	r30
-    1142:	ff 93       	push	r31
+    1132:	0f b6       	in	r0, 0x3f	; 63
+    1134:	0f 92       	push	r0
+    1136:	11 24       	eor	r1, r1
+    1138:	0b b6       	in	r0, 0x3b	; 59
+    113a:	0f 92       	push	r0
+    113c:	2f 93       	push	r18
+    113e:	3f 93       	push	r19
+    1140:	8f 93       	push	r24
+    1142:	9f 93       	push	r25
+    1144:	ef 93       	push	r30
+    1146:	ff 93       	push	r31
 
 	//if ADC is lower than value
 	adcTemp = ADCL;
-    1144:	80 91 78 00 	lds	r24, 0x0078	; 0x800078 <__TEXT_REGION_LENGTH__+0x7c0078>
-    1148:	90 e0       	ldi	r25, 0x00	; 0
-    114a:	90 93 08 02 	sts	0x0208, r25	; 0x800208 <adcTemp+0x1>
-    114e:	80 93 07 02 	sts	0x0207, r24	; 0x800207 <adcTemp>
+    1148:	80 91 78 00 	lds	r24, 0x0078	; 0x800078 <__TEXT_REGION_LENGTH__+0x7c0078>
+    114c:	90 e0       	ldi	r25, 0x00	; 0
+    114e:	90 93 08 02 	sts	0x0208, r25	; 0x800208 <adcTemp+0x1>
+    1152:	80 93 07 02 	sts	0x0207, r24	; 0x800207 <adcTemp>
 	adcTemp+= (ADCH<<8);
-    1152:	80 91 79 00 	lds	r24, 0x0079	; 0x800079 <__TEXT_REGION_LENGTH__+0x7c0079>
-    1156:	90 e0       	ldi	r25, 0x00	; 0
-    1158:	98 2f       	mov	r25, r24
-    115a:	88 27       	eor	r24, r24
-    115c:	20 91 07 02 	lds	r18, 0x0207	; 0x800207 <adcTemp>
-    1160:	30 91 08 02 	lds	r19, 0x0208	; 0x800208 <adcTemp+0x1>
-    1164:	82 0f       	add	r24, r18
-    1166:	93 1f       	adc	r25, r19
-    1168:	90 93 08 02 	sts	0x0208, r25	; 0x800208 <adcTemp+0x1>
-    116c:	80 93 07 02 	sts	0x0207, r24	; 0x800207 <adcTemp>
+    1156:	80 91 79 00 	lds	r24, 0x0079	; 0x800079 <__TEXT_REGION_LENGTH__+0x7c0079>
+    115a:	90 e0       	ldi	r25, 0x00	; 0
+    115c:	98 2f       	mov	r25, r24
+    115e:	88 27       	eor	r24, r24
+    1160:	20 91 07 02 	lds	r18, 0x0207	; 0x800207 <adcTemp>
+    1164:	30 91 08 02 	lds	r19, 0x0208	; 0x800208 <adcTemp+0x1>
+    1168:	82 0f       	add	r24, r18
+    116a:	93 1f       	adc	r25, r19
+    116c:	90 93 08 02 	sts	0x0208, r25	; 0x800208 <adcTemp+0x1>
+    1170:	80 93 07 02 	sts	0x0207, r24	; 0x800207 <adcTemp>
 	countADC+=1;
-    1170:	80 91 62 02 	lds	r24, 0x0262	; 0x800262 <countADC>
-    1174:	90 91 63 02 	lds	r25, 0x0263	; 0x800263 <countADC+0x1>
-    1178:	01 96       	adiw	r24, 0x01	; 1
-    117a:	90 93 63 02 	sts	0x0263, r25	; 0x800263 <countADC+0x1>
-    117e:	80 93 62 02 	sts	0x0262, r24	; 0x800262 <countADC>
+    1174:	80 91 62 02 	lds	r24, 0x0262	; 0x800262 <countADC>
+    1178:	90 91 63 02 	lds	r25, 0x0263	; 0x800263 <countADC+0x1>
+    117c:	01 96       	adiw	r24, 0x01	; 1
+    117e:	90 93 63 02 	sts	0x0263, r25	; 0x800263 <countADC+0x1>
+    1182:	80 93 62 02 	sts	0x0262, r24	; 0x800262 <countADC>
 	
 	if(adcTemp<adcPart){
-    1182:	20 91 07 02 	lds	r18, 0x0207	; 0x800207 <adcTemp>
-    1186:	30 91 08 02 	lds	r19, 0x0208	; 0x800208 <adcTemp+0x1>
-    118a:	80 91 09 02 	lds	r24, 0x0209	; 0x800209 <adcPart>
-    118e:	90 91 0a 02 	lds	r25, 0x020A	; 0x80020a <adcPart+0x1>
-    1192:	28 17       	cp	r18, r24
-    1194:	39 07       	cpc	r19, r25
-    1196:	40 f4       	brcc	.+16     	; 0x11a8 <__vector_29+0x7e>
+    1186:	20 91 07 02 	lds	r18, 0x0207	; 0x800207 <adcTemp>
+    118a:	30 91 08 02 	lds	r19, 0x0208	; 0x800208 <adcTemp+0x1>
+    118e:	80 91 09 02 	lds	r24, 0x0209	; 0x800209 <adcPart>
+    1192:	90 91 0a 02 	lds	r25, 0x020A	; 0x80020a <adcPart+0x1>
+    1196:	28 17       	cp	r18, r24
+    1198:	39 07       	cpc	r19, r25
+    119a:	40 f4       	brcc	.+16     	; 0x11ac <__vector_29+0x7e>
 		adcPart = adcTemp;// set value to ADC
-    1198:	80 91 07 02 	lds	r24, 0x0207	; 0x800207 <adcTemp>
-    119c:	90 91 08 02 	lds	r25, 0x0208	; 0x800208 <adcTemp+0x1>
-    11a0:	90 93 0a 02 	sts	0x020A, r25	; 0x80020a <adcPart+0x1>
-    11a4:	80 93 09 02 	sts	0x0209, r24	; 0x800209 <adcPart>
+    119c:	80 91 07 02 	lds	r24, 0x0207	; 0x800207 <adcTemp>
+    11a0:	90 91 08 02 	lds	r25, 0x0208	; 0x800208 <adcTemp+0x1>
+    11a4:	90 93 0a 02 	sts	0x020A, r25	; 0x80020a <adcPart+0x1>
+    11a8:	80 93 09 02 	sts	0x0209, r24	; 0x800209 <adcPart>
 	}
 	
 	if(!ORFLAG){
-    11a8:	80 91 0b 02 	lds	r24, 0x020B	; 0x80020b <ORFLAG>
-    11ac:	81 11       	cpse	r24, r1
-    11ae:	05 c0       	rjmp	.+10     	; 0x11ba <__vector_29+0x90>
+    11ac:	80 91 0b 02 	lds	r24, 0x020B	; 0x80020b <ORFLAG>
+    11b0:	81 11       	cpse	r24, r1
+    11b2:	05 c0       	rjmp	.+10     	; 0x11be <__vector_29+0x90>
 		ADCSRA |=_BV( ADSC);
-    11b0:	ea e7       	ldi	r30, 0x7A	; 122
-    11b2:	f0 e0       	ldi	r31, 0x00	; 0
-    11b4:	80 81       	ld	r24, Z
-    11b6:	80 64       	ori	r24, 0x40	; 64
-    11b8:	80 83       	st	Z, r24
+    11b4:	ea e7       	ldi	r30, 0x7A	; 122
+    11b6:	f0 e0       	ldi	r31, 0x00	; 0
+    11b8:	80 81       	ld	r24, Z
+    11ba:	80 64       	ori	r24, 0x40	; 64
+    11bc:	80 83       	st	Z, r24
 	}
 }//ADC
-    11ba:	ff 91       	pop	r31
-    11bc:	ef 91       	pop	r30
-    11be:	9f 91       	pop	r25
-    11c0:	8f 91       	pop	r24
-    11c2:	3f 91       	pop	r19
-    11c4:	2f 91       	pop	r18
-    11c6:	0f 90       	pop	r0
-    11c8:	0b be       	out	0x3b, r0	; 59
+    11be:	ff 91       	pop	r31
+    11c0:	ef 91       	pop	r30
+    11c2:	9f 91       	pop	r25
+    11c4:	8f 91       	pop	r24
+    11c6:	3f 91       	pop	r19
+    11c8:	2f 91       	pop	r18
     11ca:	0f 90       	pop	r0
-    11cc:	0f be       	out	0x3f, r0	; 63
+    11cc:	0b be       	out	0x3b, r0	; 59
     11ce:	0f 90       	pop	r0
-    11d0:	1f 90       	pop	r1
-    11d2:	18 95       	reti
+    11d0:	0f be       	out	0x3f, r0	; 63
+    11d2:	0f 90       	pop	r0
+    11d4:	1f 90       	pop	r1
+    11d6:	18 95       	reti
 
-000011d4 <__vector_4>:
+000011d8 <__vector_4>:
 
 
 //HE ISR
 ISR(INT3_vect){
-    11d4:	1f 92       	push	r1
-    11d6:	0f 92       	push	r0
-    11d8:	0f b6       	in	r0, 0x3f	; 63
+    11d8:	1f 92       	push	r1
     11da:	0f 92       	push	r0
-    11dc:	11 24       	eor	r1, r1
-    11de:	0b b6       	in	r0, 0x3b	; 59
-    11e0:	0f 92       	push	r0
-    11e2:	2f 93       	push	r18
-    11e4:	3f 93       	push	r19
-    11e6:	4f 93       	push	r20
-    11e8:	5f 93       	push	r21
-    11ea:	6f 93       	push	r22
-    11ec:	7f 93       	push	r23
-    11ee:	8f 93       	push	r24
-    11f0:	9f 93       	push	r25
-    11f2:	af 93       	push	r26
-    11f4:	bf 93       	push	r27
-    11f6:	ef 93       	push	r30
-    11f8:	ff 93       	push	r31
+    11dc:	0f b6       	in	r0, 0x3f	; 63
+    11de:	0f 92       	push	r0
+    11e0:	11 24       	eor	r1, r1
+    11e2:	0b b6       	in	r0, 0x3b	; 59
+    11e4:	0f 92       	push	r0
+    11e6:	2f 93       	push	r18
+    11e8:	3f 93       	push	r19
+    11ea:	4f 93       	push	r20
+    11ec:	5f 93       	push	r21
+    11ee:	6f 93       	push	r22
+    11f0:	7f 93       	push	r23
+    11f2:	8f 93       	push	r24
+    11f4:	9f 93       	push	r25
+    11f6:	af 93       	push	r26
+    11f8:	bf 93       	push	r27
+    11fa:	ef 93       	push	r30
+    11fc:	ff 93       	push	r31
 	if(debounce(3, 1, NOISECHECK)){
-    11fa:	48 e0       	ldi	r20, 0x08	; 8
-    11fc:	50 e0       	ldi	r21, 0x00	; 0
-    11fe:	61 e0       	ldi	r22, 0x01	; 1
-    1200:	83 e0       	ldi	r24, 0x03	; 3
-    1202:	20 da       	rcall	.-3008   	; 0x644 <debounce>
-    1204:	88 23       	and	r24, r24
-    1206:	31 f0       	breq	.+12     	; 0x1214 <__vector_4+0x40>
+    11fe:	48 e0       	ldi	r20, 0x08	; 8
+    1200:	50 e0       	ldi	r21, 0x00	; 0
+    1202:	61 e0       	ldi	r22, 0x01	; 1
+    1204:	83 e0       	ldi	r24, 0x03	; 3
+    1206:	1e da       	rcall	.-3012   	; 0x644 <debounce>
+    1208:	88 23       	and	r24, r24
+    120a:	31 f0       	breq	.+12     	; 0x1218 <__vector_4+0x40>
 		//stepStop();
 		CurPosition = B_ID;
-    1208:	82 e3       	ldi	r24, 0x32	; 50
-    120a:	80 93 11 02 	sts	0x0211, r24	; 0x800211 <CurPosition>
+    120c:	82 e3       	ldi	r24, 0x32	; 50
+    120e:	80 93 11 02 	sts	0x0211, r24	; 0x800211 <CurPosition>
 		HALLSENSOR= 1;
-    120e:	81 e0       	ldi	r24, 0x01	; 1
-    1210:	80 93 70 02 	sts	0x0270, r24	; 0x800270 <HALLSENSOR>
+    1212:	81 e0       	ldi	r24, 0x01	; 1
+    1214:	80 93 70 02 	sts	0x0270, r24	; 0x800270 <HALLSENSOR>
 	}
 }//HE
-    1214:	ff 91       	pop	r31
-    1216:	ef 91       	pop	r30
-    1218:	bf 91       	pop	r27
-    121a:	af 91       	pop	r26
-    121c:	9f 91       	pop	r25
-    121e:	8f 91       	pop	r24
-    1220:	7f 91       	pop	r23
-    1222:	6f 91       	pop	r22
-    1224:	5f 91       	pop	r21
-    1226:	4f 91       	pop	r20
-    1228:	3f 91       	pop	r19
-    122a:	2f 91       	pop	r18
-    122c:	0f 90       	pop	r0
-    122e:	0b be       	out	0x3b, r0	; 59
+    1218:	ff 91       	pop	r31
+    121a:	ef 91       	pop	r30
+    121c:	bf 91       	pop	r27
+    121e:	af 91       	pop	r26
+    1220:	9f 91       	pop	r25
+    1222:	8f 91       	pop	r24
+    1224:	7f 91       	pop	r23
+    1226:	6f 91       	pop	r22
+    1228:	5f 91       	pop	r21
+    122a:	4f 91       	pop	r20
+    122c:	3f 91       	pop	r19
+    122e:	2f 91       	pop	r18
     1230:	0f 90       	pop	r0
-    1232:	0f be       	out	0x3f, r0	; 63
+    1232:	0b be       	out	0x3b, r0	; 59
     1234:	0f 90       	pop	r0
-    1236:	1f 90       	pop	r1
-    1238:	18 95       	reti
+    1236:	0f be       	out	0x3f, r0	; 63
+    1238:	0f 90       	pop	r0
+    123a:	1f 90       	pop	r1
+    123c:	18 95       	reti
 
-0000123a <__vector_1>:
+0000123e <__vector_1>:
 
 
 //ISR Stop Button
 ISR(INT0_vect){
-    123a:	1f 92       	push	r1
-    123c:	0f 92       	push	r0
-    123e:	0f b6       	in	r0, 0x3f	; 63
+    123e:	1f 92       	push	r1
     1240:	0f 92       	push	r0
-    1242:	11 24       	eor	r1, r1
-    1244:	0b b6       	in	r0, 0x3b	; 59
-    1246:	0f 92       	push	r0
-    1248:	2f 93       	push	r18
-    124a:	3f 93       	push	r19
-    124c:	4f 93       	push	r20
-    124e:	5f 93       	push	r21
-    1250:	6f 93       	push	r22
-    1252:	7f 93       	push	r23
-    1254:	8f 93       	push	r24
-    1256:	9f 93       	push	r25
-    1258:	af 93       	push	r26
-    125a:	bf 93       	push	r27
-    125c:	ef 93       	push	r30
-    125e:	ff 93       	push	r31
+    1242:	0f b6       	in	r0, 0x3f	; 63
+    1244:	0f 92       	push	r0
+    1246:	11 24       	eor	r1, r1
+    1248:	0b b6       	in	r0, 0x3b	; 59
+    124a:	0f 92       	push	r0
+    124c:	2f 93       	push	r18
+    124e:	3f 93       	push	r19
+    1250:	4f 93       	push	r20
+    1252:	5f 93       	push	r21
+    1254:	6f 93       	push	r22
+    1256:	7f 93       	push	r23
+    1258:	8f 93       	push	r24
+    125a:	9f 93       	push	r25
+    125c:	af 93       	push	r26
+    125e:	bf 93       	push	r27
+    1260:	ef 93       	push	r30
+    1262:	ff 93       	push	r31
 	if(debounce(0, 0, BOUNCECHECK)){
-    1260:	44 ef       	ldi	r20, 0xF4	; 244
-    1262:	51 e0       	ldi	r21, 0x01	; 1
-    1264:	60 e0       	ldi	r22, 0x00	; 0
-    1266:	80 e0       	ldi	r24, 0x00	; 0
-    1268:	ed d9       	rcall	.-3110   	; 0x644 <debounce>
-    126a:	88 23       	and	r24, r24
-    126c:	51 f0       	breq	.+20     	; 0x1282 <__vector_1+0x48>
+    1264:	44 ef       	ldi	r20, 0xF4	; 244
+    1266:	51 e0       	ldi	r21, 0x01	; 1
+    1268:	60 e0       	ldi	r22, 0x00	; 0
+    126a:	80 e0       	ldi	r24, 0x00	; 0
+    126c:	eb d9       	rcall	.-3114   	; 0x644 <debounce>
+    126e:	88 23       	and	r24, r24
+    1270:	51 f0       	breq	.+20     	; 0x1286 <__vector_1+0x48>
 		if(ENABLE)
-    126e:	80 91 0c 02 	lds	r24, 0x020C	; 0x80020c <ENABLE>
-    1272:	88 23       	and	r24, r24
-    1274:	19 f0       	breq	.+6      	; 0x127c <__vector_1+0x42>
+    1272:	80 91 0c 02 	lds	r24, 0x020C	; 0x80020c <ENABLE>
+    1276:	88 23       	and	r24, r24
+    1278:	19 f0       	breq	.+6      	; 0x1280 <__vector_1+0x42>
 		{
 			ENABLE = 0;
-    1276:	10 92 0c 02 	sts	0x020C, r1	; 0x80020c <ENABLE>
-    127a:	03 c0       	rjmp	.+6      	; 0x1282 <__vector_1+0x48>
+    127a:	10 92 0c 02 	sts	0x020C, r1	; 0x80020c <ENABLE>
+    127e:	03 c0       	rjmp	.+6      	; 0x1286 <__vector_1+0x48>
 		}else
 		{
 			ENABLE = 1;
-    127c:	81 e0       	ldi	r24, 0x01	; 1
-    127e:	80 93 0c 02 	sts	0x020C, r24	; 0x80020c <ENABLE>
+    1280:	81 e0       	ldi	r24, 0x01	; 1
+    1282:	80 93 0c 02 	sts	0x020C, r24	; 0x80020c <ENABLE>
 		}
 	}
 }//ISR Pause Button
-    1282:	ff 91       	pop	r31
-    1284:	ef 91       	pop	r30
-    1286:	bf 91       	pop	r27
-    1288:	af 91       	pop	r26
-    128a:	9f 91       	pop	r25
-    128c:	8f 91       	pop	r24
-    128e:	7f 91       	pop	r23
-    1290:	6f 91       	pop	r22
-    1292:	5f 91       	pop	r21
-    1294:	4f 91       	pop	r20
-    1296:	3f 91       	pop	r19
-    1298:	2f 91       	pop	r18
-    129a:	0f 90       	pop	r0
-    129c:	0b be       	out	0x3b, r0	; 59
+    1286:	ff 91       	pop	r31
+    1288:	ef 91       	pop	r30
+    128a:	bf 91       	pop	r27
+    128c:	af 91       	pop	r26
+    128e:	9f 91       	pop	r25
+    1290:	8f 91       	pop	r24
+    1292:	7f 91       	pop	r23
+    1294:	6f 91       	pop	r22
+    1296:	5f 91       	pop	r21
+    1298:	4f 91       	pop	r20
+    129a:	3f 91       	pop	r19
+    129c:	2f 91       	pop	r18
     129e:	0f 90       	pop	r0
-    12a0:	0f be       	out	0x3f, r0	; 63
+    12a0:	0b be       	out	0x3b, r0	; 59
     12a2:	0f 90       	pop	r0
-    12a4:	1f 90       	pop	r1
-    12a6:	18 95       	reti
+    12a4:	0f be       	out	0x3f, r0	; 63
+    12a6:	0f 90       	pop	r0
+    12a8:	1f 90       	pop	r1
+    12aa:	18 95       	reti
 
-000012a8 <__vector_10>:
+000012ac <__vector_10>:
 
 ISR(PCINT1_vect)
 {
-    12a8:	1f 92       	push	r1
-    12aa:	0f 92       	push	r0
-    12ac:	0f b6       	in	r0, 0x3f	; 63
+    12ac:	1f 92       	push	r1
     12ae:	0f 92       	push	r0
-    12b0:	11 24       	eor	r1, r1
-    12b2:	0b b6       	in	r0, 0x3b	; 59
-    12b4:	0f 92       	push	r0
-    12b6:	2f 93       	push	r18
-    12b8:	3f 93       	push	r19
-    12ba:	4f 93       	push	r20
-    12bc:	5f 93       	push	r21
-    12be:	6f 93       	push	r22
-    12c0:	7f 93       	push	r23
-    12c2:	8f 93       	push	r24
-    12c4:	9f 93       	push	r25
-    12c6:	af 93       	push	r26
-    12c8:	bf 93       	push	r27
-    12ca:	ef 93       	push	r30
-    12cc:	ff 93       	push	r31
+    12b0:	0f b6       	in	r0, 0x3f	; 63
+    12b2:	0f 92       	push	r0
+    12b4:	11 24       	eor	r1, r1
+    12b6:	0b b6       	in	r0, 0x3b	; 59
+    12b8:	0f 92       	push	r0
+    12ba:	2f 93       	push	r18
+    12bc:	3f 93       	push	r19
+    12be:	4f 93       	push	r20
+    12c0:	5f 93       	push	r21
+    12c2:	6f 93       	push	r22
+    12c4:	7f 93       	push	r23
+    12c6:	8f 93       	push	r24
+    12c8:	9f 93       	push	r25
+    12ca:	af 93       	push	r26
+    12cc:	bf 93       	push	r27
+    12ce:	ef 93       	push	r30
+    12d0:	ff 93       	push	r31
 	if(debouncePINJ(0, 1, BOUNCECHECK)){
-    12ce:	44 ef       	ldi	r20, 0xF4	; 244
-    12d0:	51 e0       	ldi	r21, 0x01	; 1
-    12d2:	61 e0       	ldi	r22, 0x01	; 1
-    12d4:	80 e0       	ldi	r24, 0x00	; 0
-    12d6:	e7 d9       	rcall	.-3122   	; 0x6a6 <debouncePINJ>
-    12d8:	88 23       	and	r24, r24
-    12da:	59 f0       	breq	.+22     	; 0x12f2 <__vector_10+0x4a>
+    12d2:	44 ef       	ldi	r20, 0xF4	; 244
+    12d4:	51 e0       	ldi	r21, 0x01	; 1
+    12d6:	61 e0       	ldi	r22, 0x01	; 1
+    12d8:	80 e0       	ldi	r24, 0x00	; 0
+    12da:	e5 d9       	rcall	.-3126   	; 0x6a6 <debouncePINJ>
+    12dc:	88 23       	and	r24, r24
+    12de:	59 f0       	breq	.+22     	; 0x12f6 <__vector_10+0x4a>
 		RAMPDOWN = 1;
-    12dc:	81 e0       	ldi	r24, 0x01	; 1
-    12de:	80 93 6f 02 	sts	0x026F, r24	; 0x80026f <RAMPDOWN>
+    12e0:	81 e0       	ldi	r24, 0x01	; 1
+    12e2:	80 93 6f 02 	sts	0x026F, r24	; 0x80026f <RAMPDOWN>
 		rampTime_d = runTime_d;	
-    12e2:	80 91 60 02 	lds	r24, 0x0260	; 0x800260 <runTime_d>
-    12e6:	90 91 61 02 	lds	r25, 0x0261	; 0x800261 <runTime_d+0x1>
-    12ea:	90 93 5d 02 	sts	0x025D, r25	; 0x80025d <rampTime_d+0x1>
-    12ee:	80 93 5c 02 	sts	0x025C, r24	; 0x80025c <rampTime_d>
+    12e6:	80 91 60 02 	lds	r24, 0x0260	; 0x800260 <runTime_d>
+    12ea:	90 91 61 02 	lds	r25, 0x0261	; 0x800261 <runTime_d+0x1>
+    12ee:	90 93 5d 02 	sts	0x025D, r25	; 0x80025d <rampTime_d+0x1>
+    12f2:	80 93 5c 02 	sts	0x025C, r24	; 0x80025c <rampTime_d>
 	}
 }//ISR Ramp Button
-    12f2:	ff 91       	pop	r31
-    12f4:	ef 91       	pop	r30
-    12f6:	bf 91       	pop	r27
-    12f8:	af 91       	pop	r26
-    12fa:	9f 91       	pop	r25
-    12fc:	8f 91       	pop	r24
-    12fe:	7f 91       	pop	r23
-    1300:	6f 91       	pop	r22
-    1302:	5f 91       	pop	r21
-    1304:	4f 91       	pop	r20
-    1306:	3f 91       	pop	r19
-    1308:	2f 91       	pop	r18
-    130a:	0f 90       	pop	r0
-    130c:	0b be       	out	0x3b, r0	; 59
+    12f6:	ff 91       	pop	r31
+    12f8:	ef 91       	pop	r30
+    12fa:	bf 91       	pop	r27
+    12fc:	af 91       	pop	r26
+    12fe:	9f 91       	pop	r25
+    1300:	8f 91       	pop	r24
+    1302:	7f 91       	pop	r23
+    1304:	6f 91       	pop	r22
+    1306:	5f 91       	pop	r21
+    1308:	4f 91       	pop	r20
+    130a:	3f 91       	pop	r19
+    130c:	2f 91       	pop	r18
     130e:	0f 90       	pop	r0
-    1310:	0f be       	out	0x3f, r0	; 63
+    1310:	0b be       	out	0x3b, r0	; 59
     1312:	0f 90       	pop	r0
-    1314:	1f 90       	pop	r1
-    1316:	18 95       	reti
+    1314:	0f be       	out	0x3f, r0	; 63
+    1316:	0f 90       	pop	r0
+    1318:	1f 90       	pop	r1
+    131a:	18 95       	reti
 
-00001318 <__vector_9>:
+0000131c <__vector_9>:
 
 
 ISR(PCINT0_vect)
 {
-    1318:	1f 92       	push	r1
-    131a:	0f 92       	push	r0
-    131c:	0f b6       	in	r0, 0x3f	; 63
+    131c:	1f 92       	push	r1
     131e:	0f 92       	push	r0
-    1320:	11 24       	eor	r1, r1
-    1322:	0b b6       	in	r0, 0x3b	; 59
-    1324:	0f 92       	push	r0
-    1326:	2f 93       	push	r18
-    1328:	3f 93       	push	r19
-    132a:	4f 93       	push	r20
-    132c:	5f 93       	push	r21
-    132e:	6f 93       	push	r22
-    1330:	7f 93       	push	r23
-    1332:	8f 93       	push	r24
-    1334:	9f 93       	push	r25
-    1336:	af 93       	push	r26
-    1338:	bf 93       	push	r27
-    133a:	ef 93       	push	r30
-    133c:	ff 93       	push	r31
+    1320:	0f b6       	in	r0, 0x3f	; 63
+    1322:	0f 92       	push	r0
+    1324:	11 24       	eor	r1, r1
+    1326:	0b b6       	in	r0, 0x3b	; 59
+    1328:	0f 92       	push	r0
+    132a:	2f 93       	push	r18
+    132c:	3f 93       	push	r19
+    132e:	4f 93       	push	r20
+    1330:	5f 93       	push	r21
+    1332:	6f 93       	push	r22
+    1334:	7f 93       	push	r23
+    1336:	8f 93       	push	r24
+    1338:	9f 93       	push	r25
+    133a:	af 93       	push	r26
+    133c:	bf 93       	push	r27
+    133e:	ef 93       	push	r30
+    1340:	ff 93       	push	r31
 	if(CALCFLAG)
-    133e:	80 91 68 02 	lds	r24, 0x0268	; 0x800268 <CALCFLAG>
-    1342:	88 23       	and	r24, r24
-    1344:	09 f4       	brne	.+2      	; 0x1348 <__vector_9+0x30>
-    1346:	4a c0       	rjmp	.+148    	; 0x13dc <__vector_9+0xc4>
+    1342:	80 91 68 02 	lds	r24, 0x0268	; 0x800268 <CALCFLAG>
+    1346:	88 23       	and	r24, r24
+    1348:	09 f4       	brne	.+2      	; 0x134c <__vector_9+0x30>
+    134a:	4a c0       	rjmp	.+148    	; 0x13e0 <__vector_9+0xc4>
 	{
 		
 		if(SORTFLAG ^ HOLDFLAG)
-    1348:	90 91 66 02 	lds	r25, 0x0266	; 0x800266 <SORTFLAG>
-    134c:	80 91 6b 02 	lds	r24, 0x026B	; 0x80026b <HOLDFLAG>
-    1350:	98 17       	cp	r25, r24
-    1352:	81 f0       	breq	.+32     	; 0x1374 <__vector_9+0x5c>
+    134c:	90 91 66 02 	lds	r25, 0x0266	; 0x800266 <SORTFLAG>
+    1350:	80 91 6b 02 	lds	r24, 0x026B	; 0x80026b <HOLDFLAG>
+    1354:	98 17       	cp	r25, r24
+    1356:	81 f0       	breq	.+32     	; 0x1378 <__vector_9+0x5c>
 		{
 			if(CalcEnterTime())
-    1354:	0e 94 52 01 	call	0x2a4	; 0x2a4 <CalcEnterTime>
-    1358:	88 23       	and	r24, r24
-    135a:	41 f0       	breq	.+16     	; 0x136c <__vector_9+0x54>
+    1358:	0e 94 52 01 	call	0x2a4	; 0x2a4 <CalcEnterTime>
+    135c:	88 23       	and	r24, r24
+    135e:	41 f0       	breq	.+16     	; 0x1370 <__vector_9+0x54>
 			{
 				brakeMotor();
-    135c:	8a d8       	rcall	.-3820   	; 0x472 <brakeMotor>
+    1360:	88 d8       	rcall	.-3824   	; 0x472 <brakeMotor>
 				enterdropTime = BRAKE_DROP_TIME;
-    135e:	88 ed       	ldi	r24, 0xD8	; 216
-    1360:	99 e5       	ldi	r25, 0x59	; 89
-    1362:	90 93 01 02 	sts	0x0201, r25	; 0x800201 <__DATA_REGION_ORIGIN__+0x1>
-    1366:	80 93 00 02 	sts	0x0200, r24	; 0x800200 <__DATA_REGION_ORIGIN__>
-    136a:	0c c0       	rjmp	.+24     	; 0x1384 <__vector_9+0x6c>
+    1362:	88 ed       	ldi	r24, 0xD8	; 216
+    1364:	99 e5       	ldi	r25, 0x59	; 89
+    1366:	90 93 01 02 	sts	0x0201, r25	; 0x800201 <__DATA_REGION_ORIGIN__+0x1>
+    136a:	80 93 00 02 	sts	0x0200, r24	; 0x800200 <__DATA_REGION_ORIGIN__>
+    136e:	0c c0       	rjmp	.+24     	; 0x1388 <__vector_9+0x6c>
 			}else
 			{
 				SORTFLAG = 0;
-    136c:	10 92 66 02 	sts	0x0266, r1	; 0x800266 <SORTFLAG>
+    1370:	10 92 66 02 	sts	0x0266, r1	; 0x800266 <SORTFLAG>
 				runMotor();
-    1370:	e1 d8       	rcall	.-3646   	; 0x534 <runMotor>
-    1372:	08 c0       	rjmp	.+16     	; 0x1384 <__vector_9+0x6c>
+    1374:	df d8       	rcall	.-3650   	; 0x534 <runMotor>
+    1376:	08 c0       	rjmp	.+16     	; 0x1388 <__vector_9+0x6c>
 			}
 		}else if(SORTFLAG && HOLDFLAG)
-    1374:	80 91 66 02 	lds	r24, 0x0266	; 0x800266 <SORTFLAG>
-    1378:	88 23       	and	r24, r24
-    137a:	21 f0       	breq	.+8      	; 0x1384 <__vector_9+0x6c>
-    137c:	80 91 6b 02 	lds	r24, 0x026B	; 0x80026b <HOLDFLAG>
+    1378:	80 91 66 02 	lds	r24, 0x0266	; 0x800266 <SORTFLAG>
+    137c:	88 23       	and	r24, r24
+    137e:	21 f0       	breq	.+8      	; 0x1388 <__vector_9+0x6c>
+    1380:	80 91 6b 02 	lds	r24, 0x026B	; 0x80026b <HOLDFLAG>
 		{
 			brakeMotor();
-    1380:	81 11       	cpse	r24, r1
-    1382:	77 d8       	rcall	.-3858   	; 0x472 <brakeMotor>
+    1384:	81 11       	cpse	r24, r1
+    1386:	75 d8       	rcall	.-3862   	; 0x472 <brakeMotor>
 		}
 		
 		
 		
 		if(DROPFLAG)
-    1384:	80 91 67 02 	lds	r24, 0x0267	; 0x800267 <DROPFLAG>
-    1388:	88 23       	and	r24, r24
-    138a:	41 f1       	breq	.+80     	; 0x13dc <__vector_9+0xc4>
+    1388:	80 91 67 02 	lds	r24, 0x0267	; 0x800267 <DROPFLAG>
+    138c:	88 23       	and	r24, r24
+    138e:	41 f1       	breq	.+80     	; 0x13e0 <__vector_9+0xc4>
 		{
 			if(dropTime<CurDelay)
-    138c:	20 91 02 02 	lds	r18, 0x0202	; 0x800202 <dropTime>
-    1390:	30 91 03 02 	lds	r19, 0x0203	; 0x800203 <dropTime+0x1>
-    1394:	80 91 74 02 	lds	r24, 0x0274	; 0x800274 <CurDelay>
-    1398:	90 91 75 02 	lds	r25, 0x0275	; 0x800275 <CurDelay+0x1>
-    139c:	28 17       	cp	r18, r24
-    139e:	39 07       	cpc	r19, r25
-    13a0:	28 f4       	brcc	.+10     	; 0x13ac <__vector_9+0x94>
+    1390:	20 91 02 02 	lds	r18, 0x0202	; 0x800202 <dropTime>
+    1394:	30 91 03 02 	lds	r19, 0x0203	; 0x800203 <dropTime+0x1>
+    1398:	80 91 74 02 	lds	r24, 0x0274	; 0x800274 <CurDelay>
+    139c:	90 91 75 02 	lds	r25, 0x0275	; 0x800275 <CurDelay+0x1>
+    13a0:	28 17       	cp	r18, r24
+    13a2:	39 07       	cpc	r19, r25
+    13a4:	28 f4       	brcc	.+10     	; 0x13b0 <__vector_9+0x94>
 			{
 				DROPFLAG = 0;
-    13a2:	10 92 67 02 	sts	0x0267, r1	; 0x800267 <DROPFLAG>
+    13a6:	10 92 67 02 	sts	0x0267, r1	; 0x800267 <DROPFLAG>
 				PAUSEFLAG = 0;
-    13a6:	10 92 69 02 	sts	0x0269, r1	; 0x800269 <PAUSEFLAG>
-    13aa:	18 c0       	rjmp	.+48     	; 0x13dc <__vector_9+0xc4>
+    13aa:	10 92 69 02 	sts	0x0269, r1	; 0x800269 <PAUSEFLAG>
+    13ae:	18 c0       	rjmp	.+48     	; 0x13e0 <__vector_9+0xc4>
 			}else
 			{
 				dropTime -=CurDelay;	
-    13ac:	20 91 74 02 	lds	r18, 0x0274	; 0x800274 <CurDelay>
-    13b0:	30 91 75 02 	lds	r19, 0x0275	; 0x800275 <CurDelay+0x1>
-    13b4:	80 91 02 02 	lds	r24, 0x0202	; 0x800202 <dropTime>
-    13b8:	90 91 03 02 	lds	r25, 0x0203	; 0x800203 <dropTime+0x1>
-    13bc:	82 1b       	sub	r24, r18
-    13be:	93 0b       	sbc	r25, r19
-    13c0:	90 93 03 02 	sts	0x0203, r25	; 0x800203 <dropTime+0x1>
-    13c4:	80 93 02 02 	sts	0x0202, r24	; 0x800202 <dropTime>
+    13b0:	20 91 74 02 	lds	r18, 0x0274	; 0x800274 <CurDelay>
+    13b4:	30 91 75 02 	lds	r19, 0x0275	; 0x800275 <CurDelay+0x1>
+    13b8:	80 91 02 02 	lds	r24, 0x0202	; 0x800202 <dropTime>
+    13bc:	90 91 03 02 	lds	r25, 0x0203	; 0x800203 <dropTime+0x1>
+    13c0:	82 1b       	sub	r24, r18
+    13c2:	93 0b       	sbc	r25, r19
+    13c4:	90 93 03 02 	sts	0x0203, r25	; 0x800203 <dropTime+0x1>
+    13c8:	80 93 02 02 	sts	0x0202, r24	; 0x800202 <dropTime>
 				if(CalcExitTime())
-    13c8:	0e 94 93 00 	call	0x126	; 0x126 <CalcExitTime>
-    13cc:	88 23       	and	r24, r24
-    13ce:	21 f0       	breq	.+8      	; 0x13d8 <__vector_9+0xc0>
+    13cc:	0e 94 93 00 	call	0x126	; 0x126 <CalcExitTime>
+    13d0:	88 23       	and	r24, r24
+    13d2:	21 f0       	breq	.+8      	; 0x13dc <__vector_9+0xc0>
 				{
 					PAUSEFLAG = 1;
-    13d0:	81 e0       	ldi	r24, 0x01	; 1
-    13d2:	80 93 69 02 	sts	0x0269, r24	; 0x800269 <PAUSEFLAG>
-    13d6:	02 c0       	rjmp	.+4      	; 0x13dc <__vector_9+0xc4>
+    13d4:	81 e0       	ldi	r24, 0x01	; 1
+    13d6:	80 93 69 02 	sts	0x0269, r24	; 0x800269 <PAUSEFLAG>
+    13da:	02 c0       	rjmp	.+4      	; 0x13e0 <__vector_9+0xc4>
 				}else
 				{
 					PAUSEFLAG = 0;
-    13d8:	10 92 69 02 	sts	0x0269, r1	; 0x800269 <PAUSEFLAG>
+    13dc:	10 92 69 02 	sts	0x0269, r1	; 0x800269 <PAUSEFLAG>
 				}
 			}	
 		}	
 	}
 	CALCFLAG = 0;
-    13dc:	10 92 68 02 	sts	0x0268, r1	; 0x800268 <CALCFLAG>
+    13e0:	10 92 68 02 	sts	0x0268, r1	; 0x800268 <CALCFLAG>
 	
 }
-    13e0:	ff 91       	pop	r31
-    13e2:	ef 91       	pop	r30
-    13e4:	bf 91       	pop	r27
-    13e6:	af 91       	pop	r26
-    13e8:	9f 91       	pop	r25
-    13ea:	8f 91       	pop	r24
-    13ec:	7f 91       	pop	r23
-    13ee:	6f 91       	pop	r22
-    13f0:	5f 91       	pop	r21
-    13f2:	4f 91       	pop	r20
-    13f4:	3f 91       	pop	r19
-    13f6:	2f 91       	pop	r18
-    13f8:	0f 90       	pop	r0
-    13fa:	0b be       	out	0x3b, r0	; 59
+    13e4:	ff 91       	pop	r31
+    13e6:	ef 91       	pop	r30
+    13e8:	bf 91       	pop	r27
+    13ea:	af 91       	pop	r26
+    13ec:	9f 91       	pop	r25
+    13ee:	8f 91       	pop	r24
+    13f0:	7f 91       	pop	r23
+    13f2:	6f 91       	pop	r22
+    13f4:	5f 91       	pop	r21
+    13f6:	4f 91       	pop	r20
+    13f8:	3f 91       	pop	r19
+    13fa:	2f 91       	pop	r18
     13fc:	0f 90       	pop	r0
-    13fe:	0f be       	out	0x3f, r0	; 63
+    13fe:	0b be       	out	0x3b, r0	; 59
     1400:	0f 90       	pop	r0
-    1402:	1f 90       	pop	r1
-    1404:	18 95       	reti
+    1402:	0f be       	out	0x3f, r0	; 63
+    1404:	0f 90       	pop	r0
+    1406:	1f 90       	pop	r1
+    1408:	18 95       	reti
 
-00001406 <step>:
+0000140a <step>:
 extern volatile uint8_t Steps2Exit;
 extern volatile char DROPFLAG;
 
 
 uint8_t step(void){
 	CurState = CurState + Dir;//Update CurState based on Direction
-    1406:	90 91 71 02 	lds	r25, 0x0271	; 0x800271 <CurState>
-    140a:	80 91 13 02 	lds	r24, 0x0213	; 0x800213 <Dir>
-    140e:	89 0f       	add	r24, r25
-    1410:	80 93 71 02 	sts	0x0271, r24	; 0x800271 <CurState>
+    140a:	90 91 71 02 	lds	r25, 0x0271	; 0x800271 <CurState>
+    140e:	80 91 13 02 	lds	r24, 0x0213	; 0x800213 <Dir>
+    1412:	89 0f       	add	r24, r25
+    1414:	80 93 71 02 	sts	0x0271, r24	; 0x800271 <CurState>
 	//stepper roll over
 	if (4 <= CurState){CurState = 0;}
-    1414:	80 91 71 02 	lds	r24, 0x0271	; 0x800271 <CurState>
-    1418:	84 30       	cpi	r24, 0x04	; 4
-    141a:	1c f0       	brlt	.+6      	; 0x1422 <step+0x1c>
-    141c:	10 92 71 02 	sts	0x0271, r1	; 0x800271 <CurState>
-    1420:	07 c0       	rjmp	.+14     	; 0x1430 <step+0x2a>
+    1418:	80 91 71 02 	lds	r24, 0x0271	; 0x800271 <CurState>
+    141c:	84 30       	cpi	r24, 0x04	; 4
+    141e:	1c f0       	brlt	.+6      	; 0x1426 <step+0x1c>
+    1420:	10 92 71 02 	sts	0x0271, r1	; 0x800271 <CurState>
+    1424:	07 c0       	rjmp	.+14     	; 0x1434 <step+0x2a>
 	else if (-1 >= CurState){CurState = 3;}
-    1422:	80 91 71 02 	lds	r24, 0x0271	; 0x800271 <CurState>
-    1426:	88 23       	and	r24, r24
-    1428:	1c f4       	brge	.+6      	; 0x1430 <step+0x2a>
-    142a:	83 e0       	ldi	r24, 0x03	; 3
-    142c:	80 93 71 02 	sts	0x0271, r24	; 0x800271 <CurState>
+    1426:	80 91 71 02 	lds	r24, 0x0271	; 0x800271 <CurState>
+    142a:	88 23       	and	r24, r24
+    142c:	1c f4       	brge	.+6      	; 0x1434 <step+0x2a>
+    142e:	83 e0       	ldi	r24, 0x03	; 3
+    1430:	80 93 71 02 	sts	0x0271, r24	; 0x800271 <CurState>
 	
 	PORTA = StepStates[CurState]; //Step
-    1430:	e0 91 71 02 	lds	r30, 0x0271	; 0x800271 <CurState>
-    1434:	0e 2e       	mov	r0, r30
-    1436:	00 0c       	add	r0, r0
-    1438:	ff 0b       	sbc	r31, r31
-    143a:	e3 5f       	subi	r30, 0xF3	; 243
-    143c:	fd 4f       	sbci	r31, 0xFD	; 253
-    143e:	80 81       	ld	r24, Z
-    1440:	82 b9       	out	0x02, r24	; 2
+    1434:	e0 91 71 02 	lds	r30, 0x0271	; 0x800271 <CurState>
+    1438:	0e 2e       	mov	r0, r30
+    143a:	00 0c       	add	r0, r0
+    143c:	ff 0b       	sbc	r31, r31
+    143e:	e3 5f       	subi	r30, 0xF3	; 243
+    1440:	fd 4f       	sbci	r31, 0xFD	; 253
+    1442:	80 81       	ld	r24, Z
+    1444:	82 b9       	out	0x02, r24	; 2
 	CurPosition = CurPosition + Dir;//Update CurPosition
-    1442:	80 91 11 02 	lds	r24, 0x0211	; 0x800211 <CurPosition>
-    1446:	90 91 13 02 	lds	r25, 0x0213	; 0x800213 <Dir>
-    144a:	89 0f       	add	r24, r25
-    144c:	80 93 11 02 	sts	0x0211, r24	; 0x800211 <CurPosition>
+    1446:	80 91 11 02 	lds	r24, 0x0211	; 0x800211 <CurPosition>
+    144a:	90 91 13 02 	lds	r25, 0x0213	; 0x800213 <Dir>
+    144e:	89 0f       	add	r24, r25
+    1450:	80 93 11 02 	sts	0x0211, r24	; 0x800211 <CurPosition>
 	//protect against roll over
 	if(CurPosition > 225 && Dir==1){CurPosition -=  200;}
-    1450:	80 91 11 02 	lds	r24, 0x0211	; 0x800211 <CurPosition>
-    1454:	82 3e       	cpi	r24, 0xE2	; 226
-    1456:	50 f0       	brcs	.+20     	; 0x146c <step+0x66>
-    1458:	80 91 13 02 	lds	r24, 0x0213	; 0x800213 <Dir>
-    145c:	81 30       	cpi	r24, 0x01	; 1
-    145e:	31 f4       	brne	.+12     	; 0x146c <step+0x66>
-    1460:	80 91 11 02 	lds	r24, 0x0211	; 0x800211 <CurPosition>
-    1464:	88 5c       	subi	r24, 0xC8	; 200
-    1466:	80 93 11 02 	sts	0x0211, r24	; 0x800211 <CurPosition>
-    146a:	0d c0       	rjmp	.+26     	; 0x1486 <step+0x80>
+    1454:	80 91 11 02 	lds	r24, 0x0211	; 0x800211 <CurPosition>
+    1458:	82 3e       	cpi	r24, 0xE2	; 226
+    145a:	50 f0       	brcs	.+20     	; 0x1470 <step+0x66>
+    145c:	80 91 13 02 	lds	r24, 0x0213	; 0x800213 <Dir>
+    1460:	81 30       	cpi	r24, 0x01	; 1
+    1462:	31 f4       	brne	.+12     	; 0x1470 <step+0x66>
+    1464:	80 91 11 02 	lds	r24, 0x0211	; 0x800211 <CurPosition>
+    1468:	88 5c       	subi	r24, 0xC8	; 200
+    146a:	80 93 11 02 	sts	0x0211, r24	; 0x800211 <CurPosition>
+    146e:	0d c0       	rjmp	.+26     	; 0x148a <step+0x80>
 	else if(CurPosition < 25 && Dir==-1){CurPosition += 200;}
-    146c:	80 91 11 02 	lds	r24, 0x0211	; 0x800211 <CurPosition>
-    1470:	89 31       	cpi	r24, 0x19	; 25
-    1472:	48 f4       	brcc	.+18     	; 0x1486 <step+0x80>
-    1474:	80 91 13 02 	lds	r24, 0x0213	; 0x800213 <Dir>
-    1478:	8f 3f       	cpi	r24, 0xFF	; 255
-    147a:	29 f4       	brne	.+10     	; 0x1486 <step+0x80>
-    147c:	80 91 11 02 	lds	r24, 0x0211	; 0x800211 <CurPosition>
-    1480:	88 53       	subi	r24, 0x38	; 56
-    1482:	80 93 11 02 	sts	0x0211, r24	; 0x800211 <CurPosition>
+    1470:	80 91 11 02 	lds	r24, 0x0211	; 0x800211 <CurPosition>
+    1474:	89 31       	cpi	r24, 0x19	; 25
+    1476:	48 f4       	brcc	.+18     	; 0x148a <step+0x80>
+    1478:	80 91 13 02 	lds	r24, 0x0213	; 0x800213 <Dir>
+    147c:	8f 3f       	cpi	r24, 0xFF	; 255
+    147e:	29 f4       	brne	.+10     	; 0x148a <step+0x80>
+    1480:	80 91 11 02 	lds	r24, 0x0211	; 0x800211 <CurPosition>
+    1484:	88 53       	subi	r24, 0x38	; 56
+    1486:	80 93 11 02 	sts	0x0211, r24	; 0x800211 <CurPosition>
 	
 	TCNT3 = 0x0000;//Reset Counter
-    1486:	10 92 95 00 	sts	0x0095, r1	; 0x800095 <__TEXT_REGION_LENGTH__+0x7c0095>
-    148a:	10 92 94 00 	sts	0x0094, r1	; 0x800094 <__TEXT_REGION_LENGTH__+0x7c0094>
+    148a:	10 92 95 00 	sts	0x0095, r1	; 0x800095 <__TEXT_REGION_LENGTH__+0x7c0095>
+    148e:	10 92 94 00 	sts	0x0094, r1	; 0x800094 <__TEXT_REGION_LENGTH__+0x7c0094>
 	
 	return 1;	//return step;
 }//step
-    148e:	81 e0       	ldi	r24, 0x01	; 1
-    1490:	08 95       	ret
+    1492:	81 e0       	ldi	r24, 0x01	; 1
+    1494:	08 95       	ret
 
-00001492 <stepUpdateError>:
+00001496 <stepUpdateError>:
 
 
 
 uint8_t stepUpdateError(void)
 {
 	if(HOLDFLAG)
-    1492:	80 91 6b 02 	lds	r24, 0x026B	; 0x80026b <HOLDFLAG>
-    1496:	88 23       	and	r24, r24
-    1498:	81 f1       	breq	.+96     	; 0x14fa <stepUpdateError+0x68>
+    1496:	80 91 6b 02 	lds	r24, 0x026B	; 0x80026b <HOLDFLAG>
+    149a:	88 23       	and	r24, r24
+    149c:	81 f1       	breq	.+96     	; 0x14fe <stepUpdateError+0x68>
 	{
 		if(abs(CurError)<DROP_REGION)//We may need to check the time since slip to see if the part fell
-    149a:	80 91 72 02 	lds	r24, 0x0272	; 0x800272 <CurError>
-    149e:	90 91 73 02 	lds	r25, 0x0273	; 0x800273 <CurError+0x1>
-    14a2:	99 23       	and	r25, r25
-    14a4:	1c f4       	brge	.+6      	; 0x14ac <stepUpdateError+0x1a>
-    14a6:	91 95       	neg	r25
-    14a8:	81 95       	neg	r24
-    14aa:	91 09       	sbc	r25, r1
-    14ac:	0e 97       	sbiw	r24, 0x0e	; 14
-    14ae:	ac f4       	brge	.+42     	; 0x14da <stepUpdateError+0x48>
+    149e:	80 91 72 02 	lds	r24, 0x0272	; 0x800272 <CurError>
+    14a2:	90 91 73 02 	lds	r25, 0x0273	; 0x800273 <CurError+0x1>
+    14a6:	99 23       	and	r25, r25
+    14a8:	1c f4       	brge	.+6      	; 0x14b0 <stepUpdateError+0x1a>
+    14aa:	91 95       	neg	r25
+    14ac:	81 95       	neg	r24
+    14ae:	91 09       	sbc	r25, r1
+    14b0:	0e 97       	sbiw	r24, 0x0e	; 14
+    14b2:	ac f4       	brge	.+42     	; 0x14de <stepUpdateError+0x48>
 		{//Maybe a reduced drop region and a delay to ensure piece hits
 			HOLDFLAG = 0;
-    14b0:	10 92 6b 02 	sts	0x026B, r1	; 0x80026b <HOLDFLAG>
+    14b4:	10 92 6b 02 	sts	0x026B, r1	; 0x80026b <HOLDFLAG>
 			PAUSEFLAG = 0;
-    14b4:	10 92 69 02 	sts	0x0269, r1	; 0x800269 <PAUSEFLAG>
+    14b8:	10 92 69 02 	sts	0x0269, r1	; 0x800269 <PAUSEFLAG>
 			runMotor();
-    14b8:	3d d8       	rcall	.-3974   	; 0x534 <runMotor>
+    14bc:	3b d8       	rcall	.-3978   	; 0x534 <runMotor>
 			CurError = Parts[countSort] - CurPosition;
-    14ba:	e0 91 64 02 	lds	r30, 0x0264	; 0x800264 <countSort>
-    14be:	f0 e0       	ldi	r31, 0x00	; 0
-    14c0:	e8 58       	subi	r30, 0x88	; 136
-    14c2:	fd 4f       	sbci	r31, 0xFD	; 253
-    14c4:	80 81       	ld	r24, Z
-    14c6:	20 91 11 02 	lds	r18, 0x0211	; 0x800211 <CurPosition>
-    14ca:	90 e0       	ldi	r25, 0x00	; 0
-    14cc:	82 1b       	sub	r24, r18
-    14ce:	91 09       	sbc	r25, r1
-    14d0:	90 93 73 02 	sts	0x0273, r25	; 0x800273 <CurError+0x1>
-    14d4:	80 93 72 02 	sts	0x0272, r24	; 0x800272 <CurError>
-    14d8:	1f c0       	rjmp	.+62     	; 0x1518 <stepUpdateError+0x86>
+    14be:	e0 91 64 02 	lds	r30, 0x0264	; 0x800264 <countSort>
+    14c2:	f0 e0       	ldi	r31, 0x00	; 0
+    14c4:	e8 58       	subi	r30, 0x88	; 136
+    14c6:	fd 4f       	sbci	r31, 0xFD	; 253
+    14c8:	80 81       	ld	r24, Z
+    14ca:	20 91 11 02 	lds	r18, 0x0211	; 0x800211 <CurPosition>
+    14ce:	90 e0       	ldi	r25, 0x00	; 0
+    14d0:	82 1b       	sub	r24, r18
+    14d2:	91 09       	sbc	r25, r1
+    14d4:	90 93 73 02 	sts	0x0273, r25	; 0x800273 <CurError+0x1>
+    14d8:	80 93 72 02 	sts	0x0272, r24	; 0x800272 <CurError>
+    14dc:	1f c0       	rjmp	.+62     	; 0x151c <stepUpdateError+0x86>
 		}else
 		{
 			CurError = Parts[countSort-1] - CurPosition;
-    14da:	e0 91 64 02 	lds	r30, 0x0264	; 0x800264 <countSort>
-    14de:	f0 e0       	ldi	r31, 0x00	; 0
-    14e0:	e9 58       	subi	r30, 0x89	; 137
-    14e2:	fd 4f       	sbci	r31, 0xFD	; 253
-    14e4:	80 81       	ld	r24, Z
-    14e6:	20 91 11 02 	lds	r18, 0x0211	; 0x800211 <CurPosition>
-    14ea:	90 e0       	ldi	r25, 0x00	; 0
-    14ec:	82 1b       	sub	r24, r18
-    14ee:	91 09       	sbc	r25, r1
-    14f0:	90 93 73 02 	sts	0x0273, r25	; 0x800273 <CurError+0x1>
-    14f4:	80 93 72 02 	sts	0x0272, r24	; 0x800272 <CurError>
-    14f8:	0f c0       	rjmp	.+30     	; 0x1518 <stepUpdateError+0x86>
+    14de:	e0 91 64 02 	lds	r30, 0x0264	; 0x800264 <countSort>
+    14e2:	f0 e0       	ldi	r31, 0x00	; 0
+    14e4:	e9 58       	subi	r30, 0x89	; 137
+    14e6:	fd 4f       	sbci	r31, 0xFD	; 253
+    14e8:	80 81       	ld	r24, Z
+    14ea:	20 91 11 02 	lds	r18, 0x0211	; 0x800211 <CurPosition>
+    14ee:	90 e0       	ldi	r25, 0x00	; 0
+    14f0:	82 1b       	sub	r24, r18
+    14f2:	91 09       	sbc	r25, r1
+    14f4:	90 93 73 02 	sts	0x0273, r25	; 0x800273 <CurError+0x1>
+    14f8:	80 93 72 02 	sts	0x0272, r24	; 0x800272 <CurError>
+    14fc:	0f c0       	rjmp	.+30     	; 0x151c <stepUpdateError+0x86>
 			
 		}
 	}else
 	{
 		CurError = Parts[countSort] - CurPosition;
-    14fa:	e0 91 64 02 	lds	r30, 0x0264	; 0x800264 <countSort>
-    14fe:	f0 e0       	ldi	r31, 0x00	; 0
-    1500:	e8 58       	subi	r30, 0x88	; 136
-    1502:	fd 4f       	sbci	r31, 0xFD	; 253
-    1504:	80 81       	ld	r24, Z
-    1506:	20 91 11 02 	lds	r18, 0x0211	; 0x800211 <CurPosition>
-    150a:	90 e0       	ldi	r25, 0x00	; 0
-    150c:	82 1b       	sub	r24, r18
-    150e:	91 09       	sbc	r25, r1
-    1510:	90 93 73 02 	sts	0x0273, r25	; 0x800273 <CurError+0x1>
-    1514:	80 93 72 02 	sts	0x0272, r24	; 0x800272 <CurError>
+    14fe:	e0 91 64 02 	lds	r30, 0x0264	; 0x800264 <countSort>
+    1502:	f0 e0       	ldi	r31, 0x00	; 0
+    1504:	e8 58       	subi	r30, 0x88	; 136
+    1506:	fd 4f       	sbci	r31, 0xFD	; 253
+    1508:	80 81       	ld	r24, Z
+    150a:	20 91 11 02 	lds	r18, 0x0211	; 0x800211 <CurPosition>
+    150e:	90 e0       	ldi	r25, 0x00	; 0
+    1510:	82 1b       	sub	r24, r18
+    1512:	91 09       	sbc	r25, r1
+    1514:	90 93 73 02 	sts	0x0273, r25	; 0x800273 <CurError+0x1>
+    1518:	80 93 72 02 	sts	0x0272, r24	; 0x800272 <CurError>
 	}
 	
 	
 	if(CurError>100)
-    1518:	80 91 72 02 	lds	r24, 0x0272	; 0x800272 <CurError>
-    151c:	90 91 73 02 	lds	r25, 0x0273	; 0x800273 <CurError+0x1>
-    1520:	85 36       	cpi	r24, 0x65	; 101
-    1522:	91 05       	cpc	r25, r1
-    1524:	5c f0       	brlt	.+22     	; 0x153c <stepUpdateError+0xaa>
+    151c:	80 91 72 02 	lds	r24, 0x0272	; 0x800272 <CurError>
+    1520:	90 91 73 02 	lds	r25, 0x0273	; 0x800273 <CurError+0x1>
+    1524:	85 36       	cpi	r24, 0x65	; 101
+    1526:	91 05       	cpc	r25, r1
+    1528:	5c f0       	brlt	.+22     	; 0x1540 <stepUpdateError+0xaa>
 	{
 		CurError = CurError - 200;
-    1526:	80 91 72 02 	lds	r24, 0x0272	; 0x800272 <CurError>
-    152a:	90 91 73 02 	lds	r25, 0x0273	; 0x800273 <CurError+0x1>
-    152e:	88 5c       	subi	r24, 0xC8	; 200
-    1530:	91 09       	sbc	r25, r1
-    1532:	90 93 73 02 	sts	0x0273, r25	; 0x800273 <CurError+0x1>
-    1536:	80 93 72 02 	sts	0x0272, r24	; 0x800272 <CurError>
-    153a:	11 c0       	rjmp	.+34     	; 0x155e <stepUpdateError+0xcc>
+    152a:	80 91 72 02 	lds	r24, 0x0272	; 0x800272 <CurError>
+    152e:	90 91 73 02 	lds	r25, 0x0273	; 0x800273 <CurError+0x1>
+    1532:	88 5c       	subi	r24, 0xC8	; 200
+    1534:	91 09       	sbc	r25, r1
+    1536:	90 93 73 02 	sts	0x0273, r25	; 0x800273 <CurError+0x1>
+    153a:	80 93 72 02 	sts	0x0272, r24	; 0x800272 <CurError>
+    153e:	11 c0       	rjmp	.+34     	; 0x1562 <stepUpdateError+0xcc>
 	}else if(CurError<-100)
-    153c:	80 91 72 02 	lds	r24, 0x0272	; 0x800272 <CurError>
-    1540:	90 91 73 02 	lds	r25, 0x0273	; 0x800273 <CurError+0x1>
-    1544:	8c 39       	cpi	r24, 0x9C	; 156
-    1546:	9f 4f       	sbci	r25, 0xFF	; 255
-    1548:	54 f4       	brge	.+20     	; 0x155e <stepUpdateError+0xcc>
+    1540:	80 91 72 02 	lds	r24, 0x0272	; 0x800272 <CurError>
+    1544:	90 91 73 02 	lds	r25, 0x0273	; 0x800273 <CurError+0x1>
+    1548:	8c 39       	cpi	r24, 0x9C	; 156
+    154a:	9f 4f       	sbci	r25, 0xFF	; 255
+    154c:	54 f4       	brge	.+20     	; 0x1562 <stepUpdateError+0xcc>
 	{
 		CurError = CurError + 200;
-    154a:	80 91 72 02 	lds	r24, 0x0272	; 0x800272 <CurError>
-    154e:	90 91 73 02 	lds	r25, 0x0273	; 0x800273 <CurError+0x1>
-    1552:	88 53       	subi	r24, 0x38	; 56
-    1554:	9f 4f       	sbci	r25, 0xFF	; 255
-    1556:	90 93 73 02 	sts	0x0273, r25	; 0x800273 <CurError+0x1>
-    155a:	80 93 72 02 	sts	0x0272, r24	; 0x800272 <CurError>
+    154e:	80 91 72 02 	lds	r24, 0x0272	; 0x800272 <CurError>
+    1552:	90 91 73 02 	lds	r25, 0x0273	; 0x800273 <CurError+0x1>
+    1556:	88 53       	subi	r24, 0x38	; 56
+    1558:	9f 4f       	sbci	r25, 0xFF	; 255
+    155a:	90 93 73 02 	sts	0x0273, r25	; 0x800273 <CurError+0x1>
+    155e:	80 93 72 02 	sts	0x0272, r24	; 0x800272 <CurError>
 	}
 	
 	if(abs(CurError) < Steps2Acc && !DROPFLAG)//change if slowing down to quickly at zone; may cause oscillation
-    155e:	20 91 72 02 	lds	r18, 0x0272	; 0x800272 <CurError>
-    1562:	30 91 73 02 	lds	r19, 0x0273	; 0x800273 <CurError+0x1>
-    1566:	33 23       	and	r19, r19
-    1568:	1c f4       	brge	.+6      	; 0x1570 <stepUpdateError+0xde>
-    156a:	31 95       	neg	r19
-    156c:	21 95       	neg	r18
-    156e:	31 09       	sbc	r19, r1
-    1570:	80 91 14 02 	lds	r24, 0x0214	; 0x800214 <Steps2Acc>
-    1574:	90 e0       	ldi	r25, 0x00	; 0
-    1576:	28 17       	cp	r18, r24
-    1578:	39 07       	cpc	r19, r25
-    157a:	44 f4       	brge	.+16     	; 0x158c <stepUpdateError+0xfa>
-    157c:	80 91 67 02 	lds	r24, 0x0267	; 0x800267 <DROPFLAG>
-    1580:	81 11       	cpse	r24, r1
-    1582:	04 c0       	rjmp	.+8      	; 0x158c <stepUpdateError+0xfa>
+    1562:	20 91 72 02 	lds	r18, 0x0272	; 0x800272 <CurError>
+    1566:	30 91 73 02 	lds	r19, 0x0273	; 0x800273 <CurError+0x1>
+    156a:	33 23       	and	r19, r19
+    156c:	1c f4       	brge	.+6      	; 0x1574 <stepUpdateError+0xde>
+    156e:	31 95       	neg	r19
+    1570:	21 95       	neg	r18
+    1572:	31 09       	sbc	r19, r1
+    1574:	80 91 14 02 	lds	r24, 0x0214	; 0x800214 <Steps2Acc>
+    1578:	90 e0       	ldi	r25, 0x00	; 0
+    157a:	28 17       	cp	r18, r24
+    157c:	39 07       	cpc	r19, r25
+    157e:	44 f4       	brge	.+16     	; 0x1590 <stepUpdateError+0xfa>
+    1580:	80 91 67 02 	lds	r24, 0x0267	; 0x800267 <DROPFLAG>
+    1584:	81 11       	cpse	r24, r1
+    1586:	04 c0       	rjmp	.+8      	; 0x1590 <stepUpdateError+0xfa>
 	{
 		TARGETFLAG = 1;
-    1584:	81 e0       	ldi	r24, 0x01	; 1
-    1586:	80 93 6a 02 	sts	0x026A, r24	; 0x80026a <TARGETFLAG>
-    158a:	02 c0       	rjmp	.+4      	; 0x1590 <stepUpdateError+0xfe>
+    1588:	81 e0       	ldi	r24, 0x01	; 1
+    158a:	80 93 6a 02 	sts	0x026A, r24	; 0x80026a <TARGETFLAG>
+    158e:	02 c0       	rjmp	.+4      	; 0x1594 <stepUpdateError+0xfe>
 	}else
 	{
 		TARGETFLAG = 0;
-    158c:	10 92 6a 02 	sts	0x026A, r1	; 0x80026a <TARGETFLAG>
+    1590:	10 92 6a 02 	sts	0x026A, r1	; 0x80026a <TARGETFLAG>
 	}
 	return 1;
 }
-    1590:	81 e0       	ldi	r24, 0x01	; 1
-    1592:	08 95       	ret
+    1594:	81 e0       	ldi	r24, 0x01	; 1
+    1596:	08 95       	ret
 
-00001594 <stepUpdateDir>:
+00001598 <stepUpdateDir>:
 
 
 
 uint8_t stepUpdateDir(void){
 	//if(!DECELFLAG){
 	if(CurError == 0)
-    1594:	80 91 72 02 	lds	r24, 0x0272	; 0x800272 <CurError>
-    1598:	90 91 73 02 	lds	r25, 0x0273	; 0x800273 <CurError+0x1>
-    159c:	89 2b       	or	r24, r25
-    159e:	91 f4       	brne	.+36     	; 0x15c4 <stepUpdateDir+0x30>
+    1598:	80 91 72 02 	lds	r24, 0x0272	; 0x800272 <CurError>
+    159c:	90 91 73 02 	lds	r25, 0x0273	; 0x800273 <CurError+0x1>
+    15a0:	89 2b       	or	r24, r25
+    15a2:	91 f4       	brne	.+36     	; 0x15c8 <stepUpdateDir+0x30>
 	{// if stepper is at target
 		if(CurDelay > (MAXDELAY-MINDELAY))
-    15a0:	80 91 74 02 	lds	r24, 0x0274	; 0x800274 <CurDelay>
-    15a4:	90 91 75 02 	lds	r25, 0x0275	; 0x800275 <CurDelay+0x1>
-    15a8:	81 31       	cpi	r24, 0x11	; 17
-    15aa:	97 40       	sbci	r25, 0x07	; 7
-    15ac:	30 f0       	brcs	.+12     	; 0x15ba <stepUpdateDir+0x26>
+    15a4:	80 91 74 02 	lds	r24, 0x0274	; 0x800274 <CurDelay>
+    15a8:	90 91 75 02 	lds	r25, 0x0275	; 0x800275 <CurDelay+0x1>
+    15ac:	81 31       	cpi	r24, 0x11	; 17
+    15ae:	97 40       	sbci	r25, 0x07	; 7
+    15b0:	30 f0       	brcs	.+12     	; 0x15be <stepUpdateDir+0x26>
 		{// if stepper can stop
 			Dir = 0; //stop stepping
-    15ae:	10 92 13 02 	sts	0x0213, r1	; 0x800213 <Dir>
+    15b2:	10 92 13 02 	sts	0x0213, r1	; 0x800213 <Dir>
 			TARGETFLAG = 0; //clear target flag
-    15b2:	10 92 6a 02 	sts	0x026A, r1	; 0x80026a <TARGETFLAG>
+    15b6:	10 92 6a 02 	sts	0x026A, r1	; 0x80026a <TARGETFLAG>
 			return 1;
-    15b6:	81 e0       	ldi	r24, 0x01	; 1
-    15b8:	08 95       	ret
+    15ba:	81 e0       	ldi	r24, 0x01	; 1
+    15bc:	08 95       	ret
 		}else
 		{//Decelerate stepper
 			DECELFLAG = 1;
-    15ba:	81 e0       	ldi	r24, 0x01	; 1
-    15bc:	80 93 6c 02 	sts	0x026C, r24	; 0x80026c <DECELFLAG>
+    15be:	81 e0       	ldi	r24, 0x01	; 1
+    15c0:	80 93 6c 02 	sts	0x026C, r24	; 0x80026c <DECELFLAG>
 			return 0;
-    15c0:	80 e0       	ldi	r24, 0x00	; 0
-    15c2:	08 95       	ret
+    15c4:	80 e0       	ldi	r24, 0x00	; 0
+    15c6:	08 95       	ret
 		}
 	}else if((abs(CurError)>SPIN_ROUND_LIMIT) && (CurDelay<MAXDELAY))
-    15c4:	80 91 72 02 	lds	r24, 0x0272	; 0x800272 <CurError>
-    15c8:	90 91 73 02 	lds	r25, 0x0273	; 0x800273 <CurError+0x1>
-    15cc:	99 23       	and	r25, r25
-    15ce:	1c f4       	brge	.+6      	; 0x15d6 <stepUpdateDir+0x42>
-    15d0:	91 95       	neg	r25
-    15d2:	81 95       	neg	r24
-    15d4:	91 09       	sbc	r25, r1
-    15d6:	8b 35       	cpi	r24, 0x5B	; 91
-    15d8:	91 05       	cpc	r25, r1
-    15da:	b4 f0       	brlt	.+44     	; 0x1608 <stepUpdateDir+0x74>
-    15dc:	80 91 74 02 	lds	r24, 0x0274	; 0x800274 <CurDelay>
-    15e0:	90 91 75 02 	lds	r25, 0x0275	; 0x800275 <CurDelay+0x1>
-    15e4:	81 15       	cp	r24, r1
-    15e6:	9a 40       	sbci	r25, 0x0A	; 10
-    15e8:	78 f4       	brcc	.+30     	; 0x1608 <stepUpdateDir+0x74>
+    15c8:	80 91 72 02 	lds	r24, 0x0272	; 0x800272 <CurError>
+    15cc:	90 91 73 02 	lds	r25, 0x0273	; 0x800273 <CurError+0x1>
+    15d0:	99 23       	and	r25, r25
+    15d2:	1c f4       	brge	.+6      	; 0x15da <stepUpdateDir+0x42>
+    15d4:	91 95       	neg	r25
+    15d6:	81 95       	neg	r24
+    15d8:	91 09       	sbc	r25, r1
+    15da:	8b 35       	cpi	r24, 0x5B	; 91
+    15dc:	91 05       	cpc	r25, r1
+    15de:	b4 f0       	brlt	.+44     	; 0x160c <stepUpdateDir+0x74>
+    15e0:	80 91 74 02 	lds	r24, 0x0274	; 0x800274 <CurDelay>
+    15e4:	90 91 75 02 	lds	r25, 0x0275	; 0x800275 <CurDelay+0x1>
+    15e8:	81 15       	cp	r24, r1
+    15ea:	9a 40       	sbci	r25, 0x0A	; 10
+    15ec:	78 f4       	brcc	.+30     	; 0x160c <stepUpdateDir+0x74>
 	{//Next target is close in same direction and you are at speed don't change
 		DECELFLAG = 0;
-    15ea:	10 92 6c 02 	sts	0x026C, r1	; 0x80026c <DECELFLAG>
+    15ee:	10 92 6c 02 	sts	0x026C, r1	; 0x80026c <DECELFLAG>
 		if(Dir != 0)
-    15ee:	80 91 13 02 	lds	r24, 0x0213	; 0x800213 <Dir>
-    15f2:	88 23       	and	r24, r24
-    15f4:	29 f0       	breq	.+10     	; 0x1600 <stepUpdateDir+0x6c>
+    15f2:	80 91 13 02 	lds	r24, 0x0213	; 0x800213 <Dir>
+    15f6:	88 23       	and	r24, r24
+    15f8:	29 f0       	breq	.+10     	; 0x1604 <stepUpdateDir+0x6c>
 		{//Keep direction
 			NextDir = Dir;
-    15f6:	80 91 13 02 	lds	r24, 0x0213	; 0x800213 <Dir>
-    15fa:	80 93 12 02 	sts	0x0212, r24	; 0x800212 <NextDir>
+    15fa:	80 91 13 02 	lds	r24, 0x0213	; 0x800213 <Dir>
+    15fe:	80 93 12 02 	sts	0x0212, r24	; 0x800212 <NextDir>
 			return 0;
 		}
 	}else if((abs(CurError)>SPIN_ROUND_LIMIT) && (CurDelay<MAXDELAY))
 	{//Next target is close in same direction and you are at speed don't change
 		DECELFLAG = 0;
 		if(Dir != 0)
-    15fe:	18 c0       	rjmp	.+48     	; 0x1630 <stepUpdateDir+0x9c>
+    1602:	18 c0       	rjmp	.+48     	; 0x1634 <stepUpdateDir+0x9c>
 		{//Keep direction
 			NextDir = Dir;
 		}else
 		{//edge case where Dir might be zero
 			Dir = 1;
-    1600:	81 e0       	ldi	r24, 0x01	; 1
-    1602:	80 93 13 02 	sts	0x0213, r24	; 0x800213 <Dir>
+    1604:	81 e0       	ldi	r24, 0x01	; 1
+    1606:	80 93 13 02 	sts	0x0213, r24	; 0x800213 <Dir>
 			return 1;
-    1606:	08 95       	ret
+    160a:	08 95       	ret
 		}
 	}else
 	{//Calculate closest direction
 		NextDir = (CurError>0) - (CurError<0);
-    1608:	20 91 72 02 	lds	r18, 0x0272	; 0x800272 <CurError>
-    160c:	30 91 73 02 	lds	r19, 0x0273	; 0x800273 <CurError+0x1>
-    1610:	81 e0       	ldi	r24, 0x01	; 1
-    1612:	12 16       	cp	r1, r18
-    1614:	13 06       	cpc	r1, r19
-    1616:	0c f0       	brlt	.+2      	; 0x161a <stepUpdateDir+0x86>
-    1618:	80 e0       	ldi	r24, 0x00	; 0
-    161a:	20 91 72 02 	lds	r18, 0x0272	; 0x800272 <CurError>
-    161e:	30 91 73 02 	lds	r19, 0x0273	; 0x800273 <CurError+0x1>
-    1622:	93 2f       	mov	r25, r19
-    1624:	99 1f       	adc	r25, r25
-    1626:	99 27       	eor	r25, r25
+    160c:	20 91 72 02 	lds	r18, 0x0272	; 0x800272 <CurError>
+    1610:	30 91 73 02 	lds	r19, 0x0273	; 0x800273 <CurError+0x1>
+    1614:	81 e0       	ldi	r24, 0x01	; 1
+    1616:	12 16       	cp	r1, r18
+    1618:	13 06       	cpc	r1, r19
+    161a:	0c f0       	brlt	.+2      	; 0x161e <stepUpdateDir+0x86>
+    161c:	80 e0       	ldi	r24, 0x00	; 0
+    161e:	20 91 72 02 	lds	r18, 0x0272	; 0x800272 <CurError>
+    1622:	30 91 73 02 	lds	r19, 0x0273	; 0x800273 <CurError+0x1>
+    1626:	93 2f       	mov	r25, r19
     1628:	99 1f       	adc	r25, r25
-    162a:	89 1b       	sub	r24, r25
-    162c:	80 93 12 02 	sts	0x0212, r24	; 0x800212 <NextDir>
+    162a:	99 27       	eor	r25, r25
+    162c:	99 1f       	adc	r25, r25
+    162e:	89 1b       	sub	r24, r25
+    1630:	80 93 12 02 	sts	0x0212, r24	; 0x800212 <NextDir>
 	}
 
 	if(NextDir == Dir)
-    1630:	90 91 12 02 	lds	r25, 0x0212	; 0x800212 <NextDir>
-    1634:	80 91 13 02 	lds	r24, 0x0213	; 0x800213 <Dir>
-    1638:	98 13       	cpse	r25, r24
-    163a:	06 c0       	rjmp	.+12     	; 0x1648 <stepUpdateDir+0xb4>
+    1634:	90 91 12 02 	lds	r25, 0x0212	; 0x800212 <NextDir>
+    1638:	80 91 13 02 	lds	r24, 0x0213	; 0x800213 <Dir>
+    163c:	98 13       	cpse	r25, r24
+    163e:	06 c0       	rjmp	.+12     	; 0x164c <stepUpdateDir+0xb4>
 	{//next direction is the same
 		Dir = NextDir;
-    163c:	80 91 12 02 	lds	r24, 0x0212	; 0x800212 <NextDir>
-    1640:	80 93 13 02 	sts	0x0213, r24	; 0x800213 <Dir>
+    1640:	80 91 12 02 	lds	r24, 0x0212	; 0x800212 <NextDir>
+    1644:	80 93 13 02 	sts	0x0213, r24	; 0x800213 <Dir>
 		return 1;
-    1644:	81 e0       	ldi	r24, 0x01	; 1
-    1646:	08 95       	ret
+    1648:	81 e0       	ldi	r24, 0x01	; 1
+    164a:	08 95       	ret
 	}else if(CurDelay >= MAXDELAY)
-    1648:	80 91 74 02 	lds	r24, 0x0274	; 0x800274 <CurDelay>
-    164c:	90 91 75 02 	lds	r25, 0x0275	; 0x800275 <CurDelay+0x1>
-    1650:	81 15       	cp	r24, r1
-    1652:	9a 40       	sbci	r25, 0x0A	; 10
-    1654:	30 f0       	brcs	.+12     	; 0x1662 <stepUpdateDir+0xce>
+    164c:	80 91 74 02 	lds	r24, 0x0274	; 0x800274 <CurDelay>
+    1650:	90 91 75 02 	lds	r25, 0x0275	; 0x800275 <CurDelay+0x1>
+    1654:	81 15       	cp	r24, r1
+    1656:	9a 40       	sbci	r25, 0x0A	; 10
+    1658:	30 f0       	brcs	.+12     	; 0x1666 <stepUpdateDir+0xce>
 	{//stepper is can change direction
 		Dir = NextDir;
-    1656:	80 91 12 02 	lds	r24, 0x0212	; 0x800212 <NextDir>
-    165a:	80 93 13 02 	sts	0x0213, r24	; 0x800213 <Dir>
+    165a:	80 91 12 02 	lds	r24, 0x0212	; 0x800212 <NextDir>
+    165e:	80 93 13 02 	sts	0x0213, r24	; 0x800213 <Dir>
 		return 1;
-    165e:	81 e0       	ldi	r24, 0x01	; 1
-    1660:	08 95       	ret
+    1662:	81 e0       	ldi	r24, 0x01	; 1
+    1664:	08 95       	ret
 	}else
 	{//Decelerate stepper to switch directions
 		DECELFLAG = 1;
-    1662:	81 e0       	ldi	r24, 0x01	; 1
-    1664:	80 93 6c 02 	sts	0x026C, r24	; 0x80026c <DECELFLAG>
+    1666:	81 e0       	ldi	r24, 0x01	; 1
+    1668:	80 93 6c 02 	sts	0x026C, r24	; 0x80026c <DECELFLAG>
 		return 0;
-    1668:	80 e0       	ldi	r24, 0x00	; 0
+    166c:	80 e0       	ldi	r24, 0x00	; 0
 	}
 	return 1;
 }
-    166a:	08 95       	ret
+    166e:	08 95       	ret
 
-0000166c <stepRes>:
+00001670 <stepRes>:
 }
 
 
 
 void stepRes(void){
 	accSteps = 0;
-    166c:	10 92 77 02 	sts	0x0277, r1	; 0x800277 <accSteps>
+    1670:	10 92 77 02 	sts	0x0277, r1	; 0x800277 <accSteps>
 	StepsDelta = 0;
-    1670:	10 92 76 02 	sts	0x0276, r1	; 0x800276 <StepsDelta>
+    1674:	10 92 76 02 	sts	0x0276, r1	; 0x800276 <StepsDelta>
 	CurDelay = MAXDELAY;
-    1674:	80 e0       	ldi	r24, 0x00	; 0
-    1676:	9a e0       	ldi	r25, 0x0A	; 10
-    1678:	90 93 75 02 	sts	0x0275, r25	; 0x800275 <CurDelay+0x1>
-    167c:	80 93 74 02 	sts	0x0274, r24	; 0x800274 <CurDelay>
-    1680:	08 95       	ret
+    1678:	80 e0       	ldi	r24, 0x00	; 0
+    167a:	9a e0       	ldi	r25, 0x0A	; 10
+    167c:	90 93 75 02 	sts	0x0275, r25	; 0x800275 <CurDelay+0x1>
+    1680:	80 93 74 02 	sts	0x0274, r24	; 0x800274 <CurDelay>
+    1684:	08 95       	ret
 
-00001682 <stepUpdateDelay>:
+00001686 <stepUpdateDelay>:
 
 
 uint8_t stepUpdateDelay(void)
 {
 	
 	if(Dir==0)
-    1682:	80 91 13 02 	lds	r24, 0x0213	; 0x800213 <Dir>
-    1686:	81 11       	cpse	r24, r1
-    1688:	02 c0       	rjmp	.+4      	; 0x168e <stepUpdateDelay+0xc>
+    1686:	80 91 13 02 	lds	r24, 0x0213	; 0x800213 <Dir>
+    168a:	81 11       	cpse	r24, r1
+    168c:	02 c0       	rjmp	.+4      	; 0x1692 <stepUpdateDelay+0xc>
 	{//if stepper is not stepping:
 		stepRes();//reset stepper
-    168a:	f0 df       	rcall	.-32     	; 0x166c <stepRes>
-    168c:	7e c0       	rjmp	.+252    	; 0x178a <stepUpdateDelay+0x108>
+    168e:	f0 df       	rcall	.-32     	; 0x1670 <stepRes>
+    1690:	7e c0       	rjmp	.+252    	; 0x178e <stepUpdateDelay+0x108>
 	}else if(TARGETFLAG || DECELFLAG || PAUSEFLAG)
-    168e:	80 91 6a 02 	lds	r24, 0x026A	; 0x80026a <TARGETFLAG>
-    1692:	81 11       	cpse	r24, r1
-    1694:	08 c0       	rjmp	.+16     	; 0x16a6 <stepUpdateDelay+0x24>
-    1696:	80 91 6c 02 	lds	r24, 0x026C	; 0x80026c <DECELFLAG>
-    169a:	81 11       	cpse	r24, r1
-    169c:	04 c0       	rjmp	.+8      	; 0x16a6 <stepUpdateDelay+0x24>
-    169e:	80 91 69 02 	lds	r24, 0x0269	; 0x800269 <PAUSEFLAG>
-    16a2:	88 23       	and	r24, r24
-    16a4:	c9 f1       	breq	.+114    	; 0x1718 <stepUpdateDelay+0x96>
+    1692:	80 91 6a 02 	lds	r24, 0x026A	; 0x80026a <TARGETFLAG>
+    1696:	81 11       	cpse	r24, r1
+    1698:	08 c0       	rjmp	.+16     	; 0x16aa <stepUpdateDelay+0x24>
+    169a:	80 91 6c 02 	lds	r24, 0x026C	; 0x80026c <DECELFLAG>
+    169e:	81 11       	cpse	r24, r1
+    16a0:	04 c0       	rjmp	.+8      	; 0x16aa <stepUpdateDelay+0x24>
+    16a2:	80 91 69 02 	lds	r24, 0x0269	; 0x800269 <PAUSEFLAG>
+    16a6:	88 23       	and	r24, r24
+    16a8:	c9 f1       	breq	.+114    	; 0x171c <stepUpdateDelay+0x96>
 	{//Decelerate if prompted
 		CurDelay = CurDelay + CurAcc[accSteps];
-    16a6:	e0 91 77 02 	lds	r30, 0x0277	; 0x800277 <accSteps>
-    16aa:	f0 e0       	ldi	r31, 0x00	; 0
-    16ac:	ee 0f       	add	r30, r30
-    16ae:	ff 1f       	adc	r31, r31
-    16b0:	e4 52       	subi	r30, 0x24	; 36
-    16b2:	fd 4f       	sbci	r31, 0xFD	; 253
-    16b4:	20 81       	ld	r18, Z
-    16b6:	31 81       	ldd	r19, Z+1	; 0x01
-    16b8:	80 91 74 02 	lds	r24, 0x0274	; 0x800274 <CurDelay>
-    16bc:	90 91 75 02 	lds	r25, 0x0275	; 0x800275 <CurDelay+0x1>
-    16c0:	82 0f       	add	r24, r18
-    16c2:	93 1f       	adc	r25, r19
-    16c4:	90 93 75 02 	sts	0x0275, r25	; 0x800275 <CurDelay+0x1>
-    16c8:	80 93 74 02 	sts	0x0274, r24	; 0x800274 <CurDelay>
+    16aa:	e0 91 77 02 	lds	r30, 0x0277	; 0x800277 <accSteps>
+    16ae:	f0 e0       	ldi	r31, 0x00	; 0
+    16b0:	ee 0f       	add	r30, r30
+    16b2:	ff 1f       	adc	r31, r31
+    16b4:	e4 52       	subi	r30, 0x24	; 36
+    16b6:	fd 4f       	sbci	r31, 0xFD	; 253
+    16b8:	20 81       	ld	r18, Z
+    16ba:	31 81       	ldd	r19, Z+1	; 0x01
+    16bc:	80 91 74 02 	lds	r24, 0x0274	; 0x800274 <CurDelay>
+    16c0:	90 91 75 02 	lds	r25, 0x0275	; 0x800275 <CurDelay+0x1>
+    16c4:	82 0f       	add	r24, r18
+    16c6:	93 1f       	adc	r25, r19
+    16c8:	90 93 75 02 	sts	0x0275, r25	; 0x800275 <CurDelay+0x1>
+    16cc:	80 93 74 02 	sts	0x0274, r24	; 0x800274 <CurDelay>
 		if (CurDelay > MAXDELAY)
-    16cc:	80 91 74 02 	lds	r24, 0x0274	; 0x800274 <CurDelay>
-    16d0:	90 91 75 02 	lds	r25, 0x0275	; 0x800275 <CurDelay+0x1>
-    16d4:	81 30       	cpi	r24, 0x01	; 1
-    16d6:	9a 40       	sbci	r25, 0x0A	; 10
-    16d8:	a0 f0       	brcs	.+40     	; 0x1702 <stepUpdateDelay+0x80>
+    16d0:	80 91 74 02 	lds	r24, 0x0274	; 0x800274 <CurDelay>
+    16d4:	90 91 75 02 	lds	r25, 0x0275	; 0x800275 <CurDelay+0x1>
+    16d8:	81 30       	cpi	r24, 0x01	; 1
+    16da:	9a 40       	sbci	r25, 0x0A	; 10
+    16dc:	a0 f0       	brcs	.+40     	; 0x1706 <stepUpdateDelay+0x80>
 		{
 			accSteps = 0;
-    16da:	10 92 77 02 	sts	0x0277, r1	; 0x800277 <accSteps>
+    16de:	10 92 77 02 	sts	0x0277, r1	; 0x800277 <accSteps>
 			if(PAUSEFLAG && (Steps2Exit<3))
-    16de:	80 91 69 02 	lds	r24, 0x0269	; 0x800269 <PAUSEFLAG>
-    16e2:	88 23       	and	r24, r24
-    16e4:	29 f0       	breq	.+10     	; 0x16f0 <stepUpdateDelay+0x6e>
-    16e6:	80 91 4d 02 	lds	r24, 0x024D	; 0x80024d <Steps2Exit>
-    16ea:	83 30       	cpi	r24, 0x03	; 3
-    16ec:	08 f4       	brcc	.+2      	; 0x16f0 <stepUpdateDelay+0x6e>
-    16ee:	4d c0       	rjmp	.+154    	; 0x178a <stepUpdateDelay+0x108>
+    16e2:	80 91 69 02 	lds	r24, 0x0269	; 0x800269 <PAUSEFLAG>
+    16e6:	88 23       	and	r24, r24
+    16e8:	29 f0       	breq	.+10     	; 0x16f4 <stepUpdateDelay+0x6e>
+    16ea:	80 91 4d 02 	lds	r24, 0x024D	; 0x80024d <Steps2Exit>
+    16ee:	83 30       	cpi	r24, 0x03	; 3
+    16f0:	08 f4       	brcc	.+2      	; 0x16f4 <stepUpdateDelay+0x6e>
+    16f2:	4d c0       	rjmp	.+154    	; 0x178e <stepUpdateDelay+0x108>
 			{
 				
 				
 			}else
 			{
 				CurDelay = MAXDELAY;
-    16f0:	80 e0       	ldi	r24, 0x00	; 0
-    16f2:	9a e0       	ldi	r25, 0x0A	; 10
-    16f4:	90 93 75 02 	sts	0x0275, r25	; 0x800275 <CurDelay+0x1>
-    16f8:	80 93 74 02 	sts	0x0274, r24	; 0x800274 <CurDelay>
+    16f4:	80 e0       	ldi	r24, 0x00	; 0
+    16f6:	9a e0       	ldi	r25, 0x0A	; 10
+    16f8:	90 93 75 02 	sts	0x0275, r25	; 0x800275 <CurDelay+0x1>
+    16fc:	80 93 74 02 	sts	0x0274, r24	; 0x800274 <CurDelay>
 				DECELFLAG = 0;
-    16fc:	10 92 6c 02 	sts	0x026C, r1	; 0x80026c <DECELFLAG>
-    1700:	44 c0       	rjmp	.+136    	; 0x178a <stepUpdateDelay+0x108>
+    1700:	10 92 6c 02 	sts	0x026C, r1	; 0x80026c <DECELFLAG>
+    1704:	44 c0       	rjmp	.+136    	; 0x178e <stepUpdateDelay+0x108>
 			}
 			}else if(accSteps>0){
-    1702:	80 91 77 02 	lds	r24, 0x0277	; 0x800277 <accSteps>
-    1706:	88 23       	and	r24, r24
-    1708:	09 f4       	brne	.+2      	; 0x170c <stepUpdateDelay+0x8a>
-    170a:	3f c0       	rjmp	.+126    	; 0x178a <stepUpdateDelay+0x108>
+    1706:	80 91 77 02 	lds	r24, 0x0277	; 0x800277 <accSteps>
+    170a:	88 23       	and	r24, r24
+    170c:	09 f4       	brne	.+2      	; 0x1710 <stepUpdateDelay+0x8a>
+    170e:	3f c0       	rjmp	.+126    	; 0x178e <stepUpdateDelay+0x108>
 			accSteps--;
-    170c:	80 91 77 02 	lds	r24, 0x0277	; 0x800277 <accSteps>
-    1710:	81 50       	subi	r24, 0x01	; 1
-    1712:	80 93 77 02 	sts	0x0277, r24	; 0x800277 <accSteps>
-    1716:	39 c0       	rjmp	.+114    	; 0x178a <stepUpdateDelay+0x108>
+    1710:	80 91 77 02 	lds	r24, 0x0277	; 0x800277 <accSteps>
+    1714:	81 50       	subi	r24, 0x01	; 1
+    1716:	80 93 77 02 	sts	0x0277, r24	; 0x800277 <accSteps>
+    171a:	39 c0       	rjmp	.+114    	; 0x178e <stepUpdateDelay+0x108>
 		}
 		
 	}else if(CurDelay>MINDELAY)
-    1718:	80 91 74 02 	lds	r24, 0x0274	; 0x800274 <CurDelay>
-    171c:	90 91 75 02 	lds	r25, 0x0275	; 0x800275 <CurDelay+0x1>
-    1720:	81 3f       	cpi	r24, 0xF1	; 241
-    1722:	92 40       	sbci	r25, 0x02	; 2
-    1724:	e0 f1       	brcs	.+120    	; 0x179e <stepUpdateDelay+0x11c>
+    171c:	80 91 74 02 	lds	r24, 0x0274	; 0x800274 <CurDelay>
+    1720:	90 91 75 02 	lds	r25, 0x0275	; 0x800275 <CurDelay+0x1>
+    1724:	81 3f       	cpi	r24, 0xF1	; 241
+    1726:	92 40       	sbci	r25, 0x02	; 2
+    1728:	e0 f1       	brcs	.+120    	; 0x17a2 <stepUpdateDelay+0x11c>
 	{//Accelerate if able
 		CurDelay = CurDelay -  CurAcc[accSteps];
-    1726:	80 91 74 02 	lds	r24, 0x0274	; 0x800274 <CurDelay>
-    172a:	90 91 75 02 	lds	r25, 0x0275	; 0x800275 <CurDelay+0x1>
-    172e:	e0 91 77 02 	lds	r30, 0x0277	; 0x800277 <accSteps>
-    1732:	f0 e0       	ldi	r31, 0x00	; 0
-    1734:	ee 0f       	add	r30, r30
-    1736:	ff 1f       	adc	r31, r31
-    1738:	e4 52       	subi	r30, 0x24	; 36
-    173a:	fd 4f       	sbci	r31, 0xFD	; 253
-    173c:	20 81       	ld	r18, Z
-    173e:	31 81       	ldd	r19, Z+1	; 0x01
-    1740:	82 1b       	sub	r24, r18
-    1742:	93 0b       	sbc	r25, r19
-    1744:	90 93 75 02 	sts	0x0275, r25	; 0x800275 <CurDelay+0x1>
-    1748:	80 93 74 02 	sts	0x0274, r24	; 0x800274 <CurDelay>
+    172a:	80 91 74 02 	lds	r24, 0x0274	; 0x800274 <CurDelay>
+    172e:	90 91 75 02 	lds	r25, 0x0275	; 0x800275 <CurDelay+0x1>
+    1732:	e0 91 77 02 	lds	r30, 0x0277	; 0x800277 <accSteps>
+    1736:	f0 e0       	ldi	r31, 0x00	; 0
+    1738:	ee 0f       	add	r30, r30
+    173a:	ff 1f       	adc	r31, r31
+    173c:	e4 52       	subi	r30, 0x24	; 36
+    173e:	fd 4f       	sbci	r31, 0xFD	; 253
+    1740:	20 81       	ld	r18, Z
+    1742:	31 81       	ldd	r19, Z+1	; 0x01
+    1744:	82 1b       	sub	r24, r18
+    1746:	93 0b       	sbc	r25, r19
+    1748:	90 93 75 02 	sts	0x0275, r25	; 0x800275 <CurDelay+0x1>
+    174c:	80 93 74 02 	sts	0x0274, r24	; 0x800274 <CurDelay>
 		if (CurDelay <= MINDELAY || CurDelay > MAXDELAY)
-    174c:	80 91 74 02 	lds	r24, 0x0274	; 0x800274 <CurDelay>
-    1750:	90 91 75 02 	lds	r25, 0x0275	; 0x800275 <CurDelay+0x1>
-    1754:	81 3f       	cpi	r24, 0xF1	; 241
-    1756:	92 40       	sbci	r25, 0x02	; 2
-    1758:	38 f0       	brcs	.+14     	; 0x1768 <stepUpdateDelay+0xe6>
-    175a:	80 91 74 02 	lds	r24, 0x0274	; 0x800274 <CurDelay>
-    175e:	90 91 75 02 	lds	r25, 0x0275	; 0x800275 <CurDelay+0x1>
-    1762:	81 30       	cpi	r24, 0x01	; 1
-    1764:	9a 40       	sbci	r25, 0x0A	; 10
-    1766:	30 f0       	brcs	.+12     	; 0x1774 <stepUpdateDelay+0xf2>
+    1750:	80 91 74 02 	lds	r24, 0x0274	; 0x800274 <CurDelay>
+    1754:	90 91 75 02 	lds	r25, 0x0275	; 0x800275 <CurDelay+0x1>
+    1758:	81 3f       	cpi	r24, 0xF1	; 241
+    175a:	92 40       	sbci	r25, 0x02	; 2
+    175c:	38 f0       	brcs	.+14     	; 0x176c <stepUpdateDelay+0xe6>
+    175e:	80 91 74 02 	lds	r24, 0x0274	; 0x800274 <CurDelay>
+    1762:	90 91 75 02 	lds	r25, 0x0275	; 0x800275 <CurDelay+0x1>
+    1766:	81 30       	cpi	r24, 0x01	; 1
+    1768:	9a 40       	sbci	r25, 0x0A	; 10
+    176a:	30 f0       	brcs	.+12     	; 0x1778 <stepUpdateDelay+0xf2>
 		{//overflow protection
 			CurDelay = MINDELAY;
-    1768:	80 ef       	ldi	r24, 0xF0	; 240
-    176a:	92 e0       	ldi	r25, 0x02	; 2
-    176c:	90 93 75 02 	sts	0x0275, r25	; 0x800275 <CurDelay+0x1>
-    1770:	80 93 74 02 	sts	0x0274, r24	; 0x800274 <CurDelay>
+    176c:	80 ef       	ldi	r24, 0xF0	; 240
+    176e:	92 e0       	ldi	r25, 0x02	; 2
+    1770:	90 93 75 02 	sts	0x0275, r25	; 0x800275 <CurDelay+0x1>
+    1774:	80 93 74 02 	sts	0x0274, r24	; 0x800274 <CurDelay>
 		}
 		if(accSteps<Steps2Acc)
-    1774:	90 91 77 02 	lds	r25, 0x0277	; 0x800277 <accSteps>
-    1778:	80 91 14 02 	lds	r24, 0x0214	; 0x800214 <Steps2Acc>
-    177c:	98 17       	cp	r25, r24
-    177e:	28 f4       	brcc	.+10     	; 0x178a <stepUpdateDelay+0x108>
+    1778:	90 91 77 02 	lds	r25, 0x0277	; 0x800277 <accSteps>
+    177c:	80 91 14 02 	lds	r24, 0x0214	; 0x800214 <Steps2Acc>
+    1780:	98 17       	cp	r25, r24
+    1782:	28 f4       	brcc	.+10     	; 0x178e <stepUpdateDelay+0x108>
 		{//acceleration increase
 			accSteps++;
-    1780:	80 91 77 02 	lds	r24, 0x0277	; 0x800277 <accSteps>
-    1784:	8f 5f       	subi	r24, 0xFF	; 255
-    1786:	80 93 77 02 	sts	0x0277, r24	; 0x800277 <accSteps>
+    1784:	80 91 77 02 	lds	r24, 0x0277	; 0x800277 <accSteps>
+    1788:	8f 5f       	subi	r24, 0xFF	; 255
+    178a:	80 93 77 02 	sts	0x0277, r24	; 0x800277 <accSteps>
 	}else
 	{
 		return 0;
 	}
 	
 	OCR3A = CurDelay;//set the new delay
-    178a:	80 91 74 02 	lds	r24, 0x0274	; 0x800274 <CurDelay>
-    178e:	90 91 75 02 	lds	r25, 0x0275	; 0x800275 <CurDelay+0x1>
-    1792:	90 93 99 00 	sts	0x0099, r25	; 0x800099 <__TEXT_REGION_LENGTH__+0x7c0099>
-    1796:	80 93 98 00 	sts	0x0098, r24	; 0x800098 <__TEXT_REGION_LENGTH__+0x7c0098>
+    178e:	80 91 74 02 	lds	r24, 0x0274	; 0x800274 <CurDelay>
+    1792:	90 91 75 02 	lds	r25, 0x0275	; 0x800275 <CurDelay+0x1>
+    1796:	90 93 99 00 	sts	0x0099, r25	; 0x800099 <__TEXT_REGION_LENGTH__+0x7c0099>
+    179a:	80 93 98 00 	sts	0x0098, r24	; 0x800098 <__TEXT_REGION_LENGTH__+0x7c0098>
 	return 1;
-    179a:	81 e0       	ldi	r24, 0x01	; 1
-    179c:	08 95       	ret
+    179e:	81 e0       	ldi	r24, 0x01	; 1
+    17a0:	08 95       	ret
 		{//acceleration increase
 			accSteps++;
 		}
 	}else
 	{
 		return 0;
-    179e:	80 e0       	ldi	r24, 0x00	; 0
+    17a2:	80 e0       	ldi	r24, 0x00	; 0
 	}
 	
 	OCR3A = CurDelay;//set the new delay
 	return 1;
 }
-    17a0:	08 95       	ret
+    17a4:	08 95       	ret
 
-000017a2 <stepTimer_init>:
+000017a6 <stepTimer_init>:
 
 
 
 void stepTimer_init (void)
 {
 	TCCR3B |= _BV(WGM32);//Set CTC mode
-    17a2:	e1 e9       	ldi	r30, 0x91	; 145
-    17a4:	f0 e0       	ldi	r31, 0x00	; 0
-    17a6:	80 81       	ld	r24, Z
-    17a8:	88 60       	ori	r24, 0x08	; 8
-    17aa:	80 83       	st	Z, r24
+    17a6:	e1 e9       	ldi	r30, 0x91	; 145
+    17a8:	f0 e0       	ldi	r31, 0x00	; 0
+    17aa:	80 81       	ld	r24, Z
+    17ac:	88 60       	ori	r24, 0x08	; 8
+    17ae:	80 83       	st	Z, r24
 	OCR3A = 0xFFFF; //Clear compare register A
-    17ac:	8f ef       	ldi	r24, 0xFF	; 255
-    17ae:	9f ef       	ldi	r25, 0xFF	; 255
-    17b0:	90 93 99 00 	sts	0x0099, r25	; 0x800099 <__TEXT_REGION_LENGTH__+0x7c0099>
-    17b4:	80 93 98 00 	sts	0x0098, r24	; 0x800098 <__TEXT_REGION_LENGTH__+0x7c0098>
+    17b0:	8f ef       	ldi	r24, 0xFF	; 255
+    17b2:	9f ef       	ldi	r25, 0xFF	; 255
+    17b4:	90 93 99 00 	sts	0x0099, r25	; 0x800099 <__TEXT_REGION_LENGTH__+0x7c0099>
+    17b8:	80 93 98 00 	sts	0x0098, r24	; 0x800098 <__TEXT_REGION_LENGTH__+0x7c0098>
 	TCNT3 = 0x0000; //Clear count register
-    17b8:	10 92 95 00 	sts	0x0095, r1	; 0x800095 <__TEXT_REGION_LENGTH__+0x7c0095>
-    17bc:	10 92 94 00 	sts	0x0094, r1	; 0x800094 <__TEXT_REGION_LENGTH__+0x7c0094>
+    17bc:	10 92 95 00 	sts	0x0095, r1	; 0x800095 <__TEXT_REGION_LENGTH__+0x7c0095>
+    17c0:	10 92 94 00 	sts	0x0094, r1	; 0x800094 <__TEXT_REGION_LENGTH__+0x7c0094>
 	TIMSK3 |= _BV(OCIE3A);  //Enable Interrupt
-    17c0:	e1 e7       	ldi	r30, 0x71	; 113
-    17c2:	f0 e0       	ldi	r31, 0x00	; 0
-    17c4:	80 81       	ld	r24, Z
-    17c6:	82 60       	ori	r24, 0x02	; 2
-    17c8:	80 83       	st	Z, r24
-    17ca:	08 95       	ret
+    17c4:	e1 e7       	ldi	r30, 0x71	; 113
+    17c6:	f0 e0       	ldi	r31, 0x00	; 0
+    17c8:	80 81       	ld	r24, Z
+    17ca:	82 60       	ori	r24, 0x02	; 2
+    17cc:	80 83       	st	Z, r24
+    17ce:	08 95       	ret
 
-000017cc <stepStart>:
+000017d0 <stepStart>:
 	return;
 } //stepTimer_init
 
 
 void stepStart(void){
 	TCNT3 = 0x0000;//Reset counter
-    17cc:	10 92 95 00 	sts	0x0095, r1	; 0x800095 <__TEXT_REGION_LENGTH__+0x7c0095>
-    17d0:	10 92 94 00 	sts	0x0094, r1	; 0x800094 <__TEXT_REGION_LENGTH__+0x7c0094>
+    17d0:	10 92 95 00 	sts	0x0095, r1	; 0x800095 <__TEXT_REGION_LENGTH__+0x7c0095>
+    17d4:	10 92 94 00 	sts	0x0094, r1	; 0x800094 <__TEXT_REGION_LENGTH__+0x7c0094>
 	OCR3A = MAXDELAY;//Set compare value
-    17d4:	20 e0       	ldi	r18, 0x00	; 0
-    17d6:	3a e0       	ldi	r19, 0x0A	; 10
-    17d8:	30 93 99 00 	sts	0x0099, r19	; 0x800099 <__TEXT_REGION_LENGTH__+0x7c0099>
-    17dc:	20 93 98 00 	sts	0x0098, r18	; 0x800098 <__TEXT_REGION_LENGTH__+0x7c0098>
+    17d8:	20 e0       	ldi	r18, 0x00	; 0
+    17da:	3a e0       	ldi	r19, 0x0A	; 10
+    17dc:	30 93 99 00 	sts	0x0099, r19	; 0x800099 <__TEXT_REGION_LENGTH__+0x7c0099>
+    17e0:	20 93 98 00 	sts	0x0098, r18	; 0x800098 <__TEXT_REGION_LENGTH__+0x7c0098>
 	TCCR3B |= _BV(CS31) | _BV(CS30);//Enable Stepper with prescaler
-    17e0:	e1 e9       	ldi	r30, 0x91	; 145
-    17e2:	f0 e0       	ldi	r31, 0x00	; 0
-    17e4:	80 81       	ld	r24, Z
-    17e6:	83 60       	ori	r24, 0x03	; 3
-    17e8:	80 83       	st	Z, r24
+    17e4:	e1 e9       	ldi	r30, 0x91	; 145
+    17e6:	f0 e0       	ldi	r31, 0x00	; 0
+    17e8:	80 81       	ld	r24, Z
+    17ea:	83 60       	ori	r24, 0x03	; 3
+    17ec:	80 83       	st	Z, r24
 	TIFR3 |= _BV(OCF3A);//Reset interrupt flag
-    17ea:	88 b3       	in	r24, 0x18	; 24
-    17ec:	82 60       	ori	r24, 0x02	; 2
-    17ee:	88 bb       	out	0x18, r24	; 24
+    17ee:	88 b3       	in	r24, 0x18	; 24
+    17f0:	82 60       	ori	r24, 0x02	; 2
+    17f2:	88 bb       	out	0x18, r24	; 24
 	CurDelay = MAXDELAY;//Reset CurDelay
-    17f0:	30 93 75 02 	sts	0x0275, r19	; 0x800275 <CurDelay+0x1>
-    17f4:	20 93 74 02 	sts	0x0274, r18	; 0x800274 <CurDelay>
-    17f8:	08 95       	ret
+    17f4:	30 93 75 02 	sts	0x0275, r19	; 0x800275 <CurDelay+0x1>
+    17f8:	20 93 74 02 	sts	0x0274, r18	; 0x800274 <CurDelay>
+    17fc:	08 95       	ret
 
-000017fa <stepStop>:
+000017fe <stepStop>:
 }//stepStart
 
 
 void stepStop(void){
 	TCCR3B &= ~_BV(CS31);//Disable timer
-    17fa:	e1 e9       	ldi	r30, 0x91	; 145
-    17fc:	f0 e0       	ldi	r31, 0x00	; 0
-    17fe:	80 81       	ld	r24, Z
-    1800:	8d 7f       	andi	r24, 0xFD	; 253
-    1802:	80 83       	st	Z, r24
+    17fe:	e1 e9       	ldi	r30, 0x91	; 145
+    1800:	f0 e0       	ldi	r31, 0x00	; 0
+    1802:	80 81       	ld	r24, Z
+    1804:	8d 7f       	andi	r24, 0xFD	; 253
+    1806:	80 83       	st	Z, r24
 	TCCR3B &=~_BV(CS30);
-    1804:	80 81       	ld	r24, Z
-    1806:	8e 7f       	andi	r24, 0xFE	; 254
-    1808:	80 83       	st	Z, r24
-    180a:	08 95       	ret
+    1808:	80 81       	ld	r24, Z
+    180a:	8e 7f       	andi	r24, 0xFE	; 254
+    180c:	80 83       	st	Z, r24
+    180e:	08 95       	ret
 
-0000180c <stepCalcAcc>:
-
+00001810 <stepCalcAcc>:
 	uint16_t JERK = MAXACC/JERKSTEPS;
 	uint16_t steps = 0;
 	uint16_t delay = MAXDELAY;
 
+	//FIRST STAGE: positive jerk
 	CurAcc[steps] = 0;
-    180c:	10 92 dd 02 	sts	0x02DD, r1	; 0x8002dd <CurAcc+0x1>
-    1810:	10 92 dc 02 	sts	0x02DC, r1	; 0x8002dc <CurAcc>
-
+    1810:	10 92 dd 02 	sts	0x02DD, r1	; 0x8002dd <CurAcc+0x1>
+    1814:	10 92 dc 02 	sts	0x02DC, r1	; 0x8002dc <CurAcc>
+/************************************************************************/
 void stepCalcAcc(void){
 
 	uint16_t JERK = MAXACC/JERKSTEPS;
 	uint16_t steps = 0;
 	uint16_t delay = MAXDELAY;
-    1814:	20 e0       	ldi	r18, 0x00	; 0
-    1816:	3a e0       	ldi	r19, 0x0A	; 10
+    1818:	20 e0       	ldi	r18, 0x00	; 0
+    181a:	3a e0       	ldi	r19, 0x0A	; 10
 
+	//FIRST STAGE: positive jerk
 	CurAcc[steps] = 0;
 	for(steps = 1; steps<JERKSTEPS; steps++){
-    1818:	81 e0       	ldi	r24, 0x01	; 1
-    181a:	90 e0       	ldi	r25, 0x00	; 0
-    181c:	24 c0       	rjmp	.+72     	; 0x1866 <stepCalcAcc+0x5a>
+    181c:	81 e0       	ldi	r24, 0x01	; 1
+    181e:	90 e0       	ldi	r25, 0x00	; 0
+    1820:	24 c0       	rjmp	.+72     	; 0x186a <stepCalcAcc+0x5a>
 		delay -=CurAcc[steps-1];
-    181e:	fc 01       	movw	r30, r24
-    1820:	31 97       	sbiw	r30, 0x01	; 1
-    1822:	ee 0f       	add	r30, r30
-    1824:	ff 1f       	adc	r31, r31
-    1826:	e4 52       	subi	r30, 0x24	; 36
-    1828:	fd 4f       	sbci	r31, 0xFD	; 253
-    182a:	40 81       	ld	r20, Z
-    182c:	51 81       	ldd	r21, Z+1	; 0x01
-    182e:	24 1b       	sub	r18, r20
-    1830:	35 0b       	sbc	r19, r21
+    1822:	fc 01       	movw	r30, r24
+    1824:	31 97       	sbiw	r30, 0x01	; 1
+    1826:	ee 0f       	add	r30, r30
+    1828:	ff 1f       	adc	r31, r31
+    182a:	e4 52       	subi	r30, 0x24	; 36
+    182c:	fd 4f       	sbci	r31, 0xFD	; 253
+    182e:	40 81       	ld	r20, Z
+    1830:	51 81       	ldd	r21, Z+1	; 0x01
+    1832:	24 1b       	sub	r18, r20
+    1834:	35 0b       	sbc	r19, r21
 		CurAcc[steps] = CurAcc[steps-1]+JERK;
-    1832:	40 81       	ld	r20, Z
-    1834:	51 81       	ldd	r21, Z+1	; 0x01
-    1836:	44 5c       	subi	r20, 0xC4	; 196
-    1838:	5f 4f       	sbci	r21, 0xFF	; 255
-    183a:	fc 01       	movw	r30, r24
-    183c:	ee 0f       	add	r30, r30
-    183e:	ff 1f       	adc	r31, r31
-    1840:	e4 52       	subi	r30, 0x24	; 36
-    1842:	fd 4f       	sbci	r31, 0xFD	; 253
-    1844:	51 83       	std	Z+1, r21	; 0x01
-    1846:	40 83       	st	Z, r20
+    1836:	40 81       	ld	r20, Z
+    1838:	51 81       	ldd	r21, Z+1	; 0x01
+    183a:	44 5c       	subi	r20, 0xC4	; 196
+    183c:	5f 4f       	sbci	r21, 0xFF	; 255
+    183e:	fc 01       	movw	r30, r24
+    1840:	ee 0f       	add	r30, r30
+    1842:	ff 1f       	adc	r31, r31
+    1844:	e4 52       	subi	r30, 0x24	; 36
+    1846:	fd 4f       	sbci	r31, 0xFD	; 253
+    1848:	51 83       	std	Z+1, r21	; 0x01
+    184a:	40 83       	st	Z, r20
 		if(CurAcc[steps]>MAXACC){
-    1848:	40 81       	ld	r20, Z
-    184a:	51 81       	ldd	r21, Z+1	; 0x01
-    184c:	41 3f       	cpi	r20, 0xF1	; 241
-    184e:	51 05       	cpc	r21, r1
-    1850:	48 f0       	brcs	.+18     	; 0x1864 <stepCalcAcc+0x58>
+    184c:	40 81       	ld	r20, Z
+    184e:	51 81       	ldd	r21, Z+1	; 0x01
+    1850:	41 3f       	cpi	r20, 0xF1	; 241
+    1852:	51 05       	cpc	r21, r1
+    1854:	48 f0       	brcs	.+18     	; 0x1868 <stepCalcAcc+0x58>
 			CurAcc[steps] = MAXACC;
-    1852:	fc 01       	movw	r30, r24
-    1854:	ee 0f       	add	r30, r30
-    1856:	ff 1f       	adc	r31, r31
-    1858:	e4 52       	subi	r30, 0x24	; 36
-    185a:	fd 4f       	sbci	r31, 0xFD	; 253
-    185c:	40 ef       	ldi	r20, 0xF0	; 240
-    185e:	50 e0       	ldi	r21, 0x00	; 0
-    1860:	51 83       	std	Z+1, r21	; 0x01
-    1862:	40 83       	st	Z, r20
-	uint16_t JERK = MAXACC/JERKSTEPS;
+    1856:	fc 01       	movw	r30, r24
+    1858:	ee 0f       	add	r30, r30
+    185a:	ff 1f       	adc	r31, r31
+    185c:	e4 52       	subi	r30, 0x24	; 36
+    185e:	fd 4f       	sbci	r31, 0xFD	; 253
+    1860:	40 ef       	ldi	r20, 0xF0	; 240
+    1862:	50 e0       	ldi	r21, 0x00	; 0
+    1864:	51 83       	std	Z+1, r21	; 0x01
+    1866:	40 83       	st	Z, r20
 	uint16_t steps = 0;
 	uint16_t delay = MAXDELAY;
 
+	//FIRST STAGE: positive jerk
 	CurAcc[steps] = 0;
 	for(steps = 1; steps<JERKSTEPS; steps++){
-    1864:	01 96       	adiw	r24, 0x01	; 1
-    1866:	84 30       	cpi	r24, 0x04	; 4
-    1868:	91 05       	cpc	r25, r1
-    186a:	c8 f2       	brcs	.-78     	; 0x181e <stepCalcAcc+0x12>
-		if(CurAcc[steps]>MAXACC){
-			CurAcc[steps] = MAXACC;
+    1868:	01 96       	adiw	r24, 0x01	; 1
+    186a:	84 30       	cpi	r24, 0x04	; 4
+    186c:	91 05       	cpc	r25, r1
+    186e:	c8 f2       	brcs	.-78     	; 0x1822 <stepCalcAcc+0x12>
 		}
-	}//Increase Acc
+	}//Increase Acceleration
 	
+	
+	//Second Stage: Constant Acceleration
 	CurAcc[steps] = MAXACC;
-    186c:	fc 01       	movw	r30, r24
-    186e:	ee 0f       	add	r30, r30
-    1870:	ff 1f       	adc	r31, r31
-    1872:	e4 52       	subi	r30, 0x24	; 36
-    1874:	fd 4f       	sbci	r31, 0xFD	; 253
-    1876:	40 ef       	ldi	r20, 0xF0	; 240
-    1878:	50 e0       	ldi	r21, 0x00	; 0
-    187a:	51 83       	std	Z+1, r21	; 0x01
-    187c:	40 83       	st	Z, r20
+    1870:	fc 01       	movw	r30, r24
+    1872:	ee 0f       	add	r30, r30
+    1874:	ff 1f       	adc	r31, r31
+    1876:	e4 52       	subi	r30, 0x24	; 36
+    1878:	fd 4f       	sbci	r31, 0xFD	; 253
+    187a:	40 ef       	ldi	r20, 0xF0	; 240
+    187c:	50 e0       	ldi	r21, 0x00	; 0
+    187e:	51 83       	std	Z+1, r21	; 0x01
+    1880:	40 83       	st	Z, r20
 	while((delay -MAXACC -JERK*JERKSTEPS*JERKSTEPS/2)>MINDELAY){
-    187e:	1a c0       	rjmp	.+52     	; 0x18b4 <stepCalcAcc+0xa8>
+    1882:	1a c0       	rjmp	.+52     	; 0x18b8 <stepCalcAcc+0xa8>
 		delay -=CurAcc[steps-1];
-    1880:	fc 01       	movw	r30, r24
-    1882:	31 97       	sbiw	r30, 0x01	; 1
-    1884:	ee 0f       	add	r30, r30
-    1886:	ff 1f       	adc	r31, r31
-    1888:	e4 52       	subi	r30, 0x24	; 36
-    188a:	fd 4f       	sbci	r31, 0xFD	; 253
-    188c:	40 81       	ld	r20, Z
-    188e:	51 81       	ldd	r21, Z+1	; 0x01
-    1890:	24 1b       	sub	r18, r20
-    1892:	35 0b       	sbc	r19, r21
+    1884:	fc 01       	movw	r30, r24
+    1886:	31 97       	sbiw	r30, 0x01	; 1
+    1888:	ee 0f       	add	r30, r30
+    188a:	ff 1f       	adc	r31, r31
+    188c:	e4 52       	subi	r30, 0x24	; 36
+    188e:	fd 4f       	sbci	r31, 0xFD	; 253
+    1890:	40 81       	ld	r20, Z
+    1892:	51 81       	ldd	r21, Z+1	; 0x01
+    1894:	24 1b       	sub	r18, r20
+    1896:	35 0b       	sbc	r19, r21
 		if(delay<MINDELAY){
-    1894:	20 3f       	cpi	r18, 0xF0	; 240
-    1896:	42 e0       	ldi	r20, 0x02	; 2
-    1898:	34 07       	cpc	r19, r20
-    189a:	10 f4       	brcc	.+4      	; 0x18a0 <stepCalcAcc+0x94>
+    1898:	20 3f       	cpi	r18, 0xF0	; 240
+    189a:	42 e0       	ldi	r20, 0x02	; 2
+    189c:	34 07       	cpc	r19, r20
+    189e:	10 f4       	brcc	.+4      	; 0x18a4 <stepCalcAcc+0x94>
 			delay = MINDELAY;
-    189c:	20 ef       	ldi	r18, 0xF0	; 240
-    189e:	32 e0       	ldi	r19, 0x02	; 2
+    18a0:	20 ef       	ldi	r18, 0xF0	; 240
+    18a2:	32 e0       	ldi	r19, 0x02	; 2
 		}
 		steps++;
-    18a0:	01 96       	adiw	r24, 0x01	; 1
+    18a4:	01 96       	adiw	r24, 0x01	; 1
 		CurAcc[steps] = MAXACC;
-    18a2:	fc 01       	movw	r30, r24
-    18a4:	ee 0f       	add	r30, r30
-    18a6:	ff 1f       	adc	r31, r31
-    18a8:	e4 52       	subi	r30, 0x24	; 36
-    18aa:	fd 4f       	sbci	r31, 0xFD	; 253
-    18ac:	40 ef       	ldi	r20, 0xF0	; 240
-    18ae:	50 e0       	ldi	r21, 0x00	; 0
-    18b0:	51 83       	std	Z+1, r21	; 0x01
-    18b2:	40 83       	st	Z, r20
-			CurAcc[steps] = MAXACC;
-		}
-	}//Increase Acc
+    18a6:	fc 01       	movw	r30, r24
+    18a8:	ee 0f       	add	r30, r30
+    18aa:	ff 1f       	adc	r31, r31
+    18ac:	e4 52       	subi	r30, 0x24	; 36
+    18ae:	fd 4f       	sbci	r31, 0xFD	; 253
+    18b0:	40 ef       	ldi	r20, 0xF0	; 240
+    18b2:	50 e0       	ldi	r21, 0x00	; 0
+    18b4:	51 83       	std	Z+1, r21	; 0x01
+    18b6:	40 83       	st	Z, r20
+	}//Increase Acceleration
 	
+	
+	//Second Stage: Constant Acceleration
 	CurAcc[steps] = MAXACC;
 	while((delay -MAXACC -JERK*JERKSTEPS*JERKSTEPS/2)>MINDELAY){
-    18b4:	a9 01       	movw	r20, r18
-    18b6:	40 5d       	subi	r20, 0xD0	; 208
-    18b8:	52 40       	sbci	r21, 0x02	; 2
-    18ba:	41 3f       	cpi	r20, 0xF1	; 241
+    18b8:	a9 01       	movw	r20, r18
+    18ba:	40 5d       	subi	r20, 0xD0	; 208
     18bc:	52 40       	sbci	r21, 0x02	; 2
-    18be:	00 f7       	brcc	.-64     	; 0x1880 <stepCalcAcc+0x74>
-    18c0:	2a c0       	rjmp	.+84     	; 0x1916 <stepCalcAcc+0x10a>
-		steps++;
+    18be:	41 3f       	cpi	r20, 0xF1	; 241
+    18c0:	52 40       	sbci	r21, 0x02	; 2
+    18c2:	00 f7       	brcc	.-64     	; 0x1884 <stepCalcAcc+0x74>
+    18c4:	2a c0       	rjmp	.+84     	; 0x191a <stepCalcAcc+0x10a>
 		CurAcc[steps] = MAXACC;
-	}//Constant Acc
+	}//Constant Acceleration
 	
+	//Third Stage: Negative jerk to Max Speed -> MINDELAY
 	while(delay >MINDELAY){
 		steps++;
-    18c2:	ac 01       	movw	r20, r24
-    18c4:	4f 5f       	subi	r20, 0xFF	; 255
-    18c6:	5f 4f       	sbci	r21, 0xFF	; 255
+    18c6:	ac 01       	movw	r20, r24
+    18c8:	4f 5f       	subi	r20, 0xFF	; 255
+    18ca:	5f 4f       	sbci	r21, 0xFF	; 255
 		
 		delay -=CurAcc[steps-1];
-    18c8:	fc 01       	movw	r30, r24
-    18ca:	ee 0f       	add	r30, r30
-    18cc:	ff 1f       	adc	r31, r31
-    18ce:	e4 52       	subi	r30, 0x24	; 36
-    18d0:	fd 4f       	sbci	r31, 0xFD	; 253
-    18d2:	60 81       	ld	r22, Z
-    18d4:	71 81       	ldd	r23, Z+1	; 0x01
-    18d6:	26 1b       	sub	r18, r22
-    18d8:	37 0b       	sbc	r19, r23
+    18cc:	fc 01       	movw	r30, r24
+    18ce:	ee 0f       	add	r30, r30
+    18d0:	ff 1f       	adc	r31, r31
+    18d2:	e4 52       	subi	r30, 0x24	; 36
+    18d4:	fd 4f       	sbci	r31, 0xFD	; 253
+    18d6:	60 81       	ld	r22, Z
+    18d8:	71 81       	ldd	r23, Z+1	; 0x01
+    18da:	26 1b       	sub	r18, r22
+    18dc:	37 0b       	sbc	r19, r23
 		if(JERK> CurAcc[steps-1]){
-    18da:	60 81       	ld	r22, Z
-    18dc:	71 81       	ldd	r23, Z+1	; 0x01
-    18de:	6c 33       	cpi	r22, 0x3C	; 60
-    18e0:	71 05       	cpc	r23, r1
-    18e2:	48 f4       	brcc	.+18     	; 0x18f6 <stepCalcAcc+0xea>
+    18de:	60 81       	ld	r22, Z
+    18e0:	71 81       	ldd	r23, Z+1	; 0x01
+    18e2:	6c 33       	cpi	r22, 0x3C	; 60
+    18e4:	71 05       	cpc	r23, r1
+    18e6:	48 f4       	brcc	.+18     	; 0x18fa <stepCalcAcc+0xea>
 			CurAcc[steps] = 0;
-    18e4:	fa 01       	movw	r30, r20
-    18e6:	ee 0f       	add	r30, r30
-    18e8:	ff 1f       	adc	r31, r31
-    18ea:	e4 52       	subi	r30, 0x24	; 36
-    18ec:	fd 4f       	sbci	r31, 0xFD	; 253
-    18ee:	11 82       	std	Z+1, r1	; 0x01
-    18f0:	10 82       	st	Z, r1
-		steps++;
+    18e8:	fa 01       	movw	r30, r20
+    18ea:	ee 0f       	add	r30, r30
+    18ec:	ff 1f       	adc	r31, r31
+    18ee:	e4 52       	subi	r30, 0x24	; 36
+    18f0:	fd 4f       	sbci	r31, 0xFD	; 253
+    18f2:	11 82       	std	Z+1, r1	; 0x01
+    18f4:	10 82       	st	Z, r1
 		CurAcc[steps] = MAXACC;
-	}//Constant Acc
+	}//Constant Acceleration
 	
+	//Third Stage: Negative jerk to Max Speed -> MINDELAY
 	while(delay >MINDELAY){
 		steps++;
-    18f2:	ca 01       	movw	r24, r20
+    18f6:	ca 01       	movw	r24, r20
 		
 		delay -=CurAcc[steps-1];
 		if(JERK> CurAcc[steps-1]){
 			CurAcc[steps] = 0;
 			break;
-    18f4:	14 c0       	rjmp	.+40     	; 0x191e <stepCalcAcc+0x112>
+    18f8:	14 c0       	rjmp	.+40     	; 0x1922 <stepCalcAcc+0x112>
 			}else{
 			CurAcc[steps] = CurAcc[steps-1]-JERK;
-    18f6:	88 0f       	add	r24, r24
-    18f8:	99 1f       	adc	r25, r25
-    18fa:	fc 01       	movw	r30, r24
-    18fc:	e4 52       	subi	r30, 0x24	; 36
-    18fe:	fd 4f       	sbci	r31, 0xFD	; 253
-    1900:	80 81       	ld	r24, Z
-    1902:	91 81       	ldd	r25, Z+1	; 0x01
-    1904:	cc 97       	sbiw	r24, 0x3c	; 60
-    1906:	fa 01       	movw	r30, r20
-    1908:	ee 0f       	add	r30, r30
-    190a:	ff 1f       	adc	r31, r31
-    190c:	e4 52       	subi	r30, 0x24	; 36
-    190e:	fd 4f       	sbci	r31, 0xFD	; 253
-    1910:	91 83       	std	Z+1, r25	; 0x01
-    1912:	80 83       	st	Z, r24
-		steps++;
+    18fa:	88 0f       	add	r24, r24
+    18fc:	99 1f       	adc	r25, r25
+    18fe:	fc 01       	movw	r30, r24
+    1900:	e4 52       	subi	r30, 0x24	; 36
+    1902:	fd 4f       	sbci	r31, 0xFD	; 253
+    1904:	80 81       	ld	r24, Z
+    1906:	91 81       	ldd	r25, Z+1	; 0x01
+    1908:	cc 97       	sbiw	r24, 0x3c	; 60
+    190a:	fa 01       	movw	r30, r20
+    190c:	ee 0f       	add	r30, r30
+    190e:	ff 1f       	adc	r31, r31
+    1910:	e4 52       	subi	r30, 0x24	; 36
+    1912:	fd 4f       	sbci	r31, 0xFD	; 253
+    1914:	91 83       	std	Z+1, r25	; 0x01
+    1916:	80 83       	st	Z, r24
 		CurAcc[steps] = MAXACC;
-	}//Constant Acc
+	}//Constant Acceleration
 	
+	//Third Stage: Negative jerk to Max Speed -> MINDELAY
 	while(delay >MINDELAY){
 		steps++;
-    1914:	ca 01       	movw	r24, r20
-		}
+    1918:	ca 01       	movw	r24, r20
 		steps++;
 		CurAcc[steps] = MAXACC;
-	}//Constant Acc
+	}//Constant Acceleration
 	
+	//Third Stage: Negative jerk to Max Speed -> MINDELAY
 	while(delay >MINDELAY){
-    1916:	21 3f       	cpi	r18, 0xF1	; 241
-    1918:	42 e0       	ldi	r20, 0x02	; 2
-    191a:	34 07       	cpc	r19, r20
-    191c:	90 f6       	brcc	.-92     	; 0x18c2 <stepCalcAcc+0xb6>
-			
+    191a:	21 3f       	cpi	r18, 0xF1	; 241
+    191c:	42 e0       	ldi	r20, 0x02	; 2
+    191e:	34 07       	cpc	r19, r20
+    1920:	90 f6       	brcc	.-92     	; 0x18c6 <stepCalcAcc+0xb6>
 		}
 
-	}//Decrease Acc
+	}//Decrease Acceleration
 	
+	//Record how many steps it take to reach maximum speed from rest
 	Steps2Acc = steps;
-    191e:	80 93 14 02 	sts	0x0214, r24	; 0x800214 <Steps2Acc>
-    1922:	08 95       	ret
+    1922:	80 93 14 02 	sts	0x0214, r24	; 0x800214 <Steps2Acc>
+    1926:	08 95       	ret
 
-00001924 <stepCalibrate>:
-	TCCR3B &=~_BV(CS30);
-}//stepStop
+00001928 <stepCalibrate>:
 
 
 int8_t stepCalibrate(void){
-	stepCalcAcc();
-    1924:	73 df       	rcall	.-282    	; 0x180c <stepCalcAcc>
 	
+	//Calculate the acceleration profile
+	stepCalcAcc();
+    1928:	73 df       	rcall	.-282    	; 0x1810 <stepCalcAcc>
+	
+	//set stepper to slowest speed
 	CurDelay = MAXDELAY;
-    1926:	80 e0       	ldi	r24, 0x00	; 0
-    1928:	9a e0       	ldi	r25, 0x0A	; 10
-    192a:	90 93 75 02 	sts	0x0275, r25	; 0x800275 <CurDelay+0x1>
-    192e:	80 93 74 02 	sts	0x0274, r24	; 0x800274 <CurDelay>
-	HALLSENSOR = 0;//reset HALLSENSOR
-    1932:	10 92 70 02 	sts	0x0270, r1	; 0x800270 <HALLSENSOR>
+    192a:	80 e0       	ldi	r24, 0x00	; 0
+    192c:	9a e0       	ldi	r25, 0x0A	; 10
+    192e:	90 93 75 02 	sts	0x0275, r25	; 0x800275 <CurDelay+0x1>
+    1932:	80 93 74 02 	sts	0x0274, r24	; 0x800274 <CurDelay>
 	CurPosition = 0;//set CurPosition
     1936:	10 92 11 02 	sts	0x0211, r1	; 0x800211 <CurPosition>
-	Parts[0] = 50;//Set motor to spin 360
+	
+	//move 50 steps to align poles and steps
+	Parts[0] = 50;//Set stepper to move 50 steps
     193a:	82 e3       	ldi	r24, 0x32	; 50
     193c:	80 93 78 02 	sts	0x0278, r24	; 0x800278 <Parts>
-
-	stepStart();//Start stepTimer
-    1940:	45 df       	rcall	.-374    	; 0x17cc <stepStart>
+	stepStart();//Start stepper
+    1940:	47 df       	rcall	.-370    	; 0x17d0 <stepStart>
 	while(CurError !=0)
-    1942:	03 c0       	rjmp	.+6      	; 0x194a <stepCalibrate+0x26>
+    1942:	03 c0       	rjmp	.+6      	; 0x194a <stepCalibrate+0x22>
 	{
+		//prevent stepper from accelerating
 		DECELFLAG = 1;
     1944:	81 e0       	ldi	r24, 0x01	; 1
     1946:	80 93 6c 02 	sts	0x026C, r24	; 0x80026c <DECELFLAG>
-	HALLSENSOR = 0;//reset HALLSENSOR
 	CurPosition = 0;//set CurPosition
-	Parts[0] = 50;//Set motor to spin 360
-
-	stepStart();//Start stepTimer
+	
+	//move 50 steps to align poles and steps
+	Parts[0] = 50;//Set stepper to move 50 steps
+	stepStart();//Start stepper
 	while(CurError !=0)
     194a:	80 91 72 02 	lds	r24, 0x0272	; 0x800272 <CurError>
     194e:	90 91 73 02 	lds	r25, 0x0273	; 0x800273 <CurError+0x1>
     1952:	89 2b       	or	r24, r25
-    1954:	b9 f7       	brne	.-18     	; 0x1944 <stepCalibrate+0x20>
-	{
+    1954:	b9 f7       	brne	.-18     	; 0x1944 <stepCalibrate+0x1c>
+		//prevent stepper from accelerating
 		DECELFLAG = 1;
 	}
+	
+	//move until HE triggers ISR(INT3_vect)
 	HALLSENSOR = 0;
     1956:	10 92 70 02 	sts	0x0270, r1	; 0x800270 <HALLSENSOR>
 	CurPosition = 0;
     195a:	10 92 11 02 	sts	0x0211, r1	; 0x800211 <CurPosition>
-	while(!HALLSENSOR){
-    195e:	11 c0       	rjmp	.+34     	; 0x1982 <stepCalibrate+0x5e>
+	while(!HALLSENSOR)
+    195e:	11 c0       	rjmp	.+34     	; 0x1982 <stepCalibrate+0x5a>
+	{
+		//keep stepper moving forwards
 		if(abs(CurError)<30 && !HALLSENSOR){
     1960:	80 91 72 02 	lds	r24, 0x0272	; 0x800272 <CurError>
     1964:	90 91 73 02 	lds	r25, 0x0273	; 0x800273 <CurError+0x1>
     1968:	99 23       	and	r25, r25
-    196a:	1c f4       	brge	.+6      	; 0x1972 <stepCalibrate+0x4e>
+    196a:	1c f4       	brge	.+6      	; 0x1972 <stepCalibrate+0x4a>
     196c:	91 95       	neg	r25
     196e:	81 95       	neg	r24
     1970:	91 09       	sbc	r25, r1
     1972:	4e 97       	sbiw	r24, 0x1e	; 30
-    1974:	34 f4       	brge	.+12     	; 0x1982 <stepCalibrate+0x5e>
+    1974:	34 f4       	brge	.+12     	; 0x1982 <stepCalibrate+0x5a>
     1976:	80 91 70 02 	lds	r24, 0x0270	; 0x800270 <HALLSENSOR>
     197a:	81 11       	cpse	r24, r1
-    197c:	02 c0       	rjmp	.+4      	; 0x1982 <stepCalibrate+0x5e>
+    197c:	02 c0       	rjmp	.+4      	; 0x1982 <stepCalibrate+0x5a>
 			CurPosition = 0;
     197e:	10 92 11 02 	sts	0x0211, r1	; 0x800211 <CurPosition>
-	{
-		DECELFLAG = 1;
 	}
+	
+	//move until HE triggers ISR(INT3_vect)
 	HALLSENSOR = 0;
 	CurPosition = 0;
-	while(!HALLSENSOR){
+	while(!HALLSENSOR)
     1982:	80 91 70 02 	lds	r24, 0x0270	; 0x800270 <HALLSENSOR>
     1986:	88 23       	and	r24, r24
-    1988:	59 f3       	breq	.-42     	; 0x1960 <stepCalibrate+0x3c>
-		if(abs(CurError)<30 && !HALLSENSOR){
+    1988:	59 f3       	breq	.-42     	; 0x1960 <stepCalibrate+0x38>
 			CurPosition = 0;
 		}
 	}//Wait for hall sensor to trigger
+	
+	//move stepper to face black region
 	Parts[0] = B_ID;
     198a:	82 e3       	ldi	r24, 0x32	; 50
     198c:	80 93 78 02 	sts	0x0278, r24	; 0x800278 <Parts>
-
 	return 1;
 }
     1990:	81 e0       	ldi	r24, 0x01	; 1

@@ -1,31 +1,77 @@
 #include "main.h"
 //FLAGS
-volatile char HALLSENSOR=0;
-volatile char ENABLE=1;
-volatile char RAMPDOWN=0;
-volatile char EXFLAG=0;
-volatile char ORFLAG = 1;
-volatile char MOTORFLAG = 0;
-volatile char DECELFLAG = 0;
+volatile char HALLSENSOR=0; //Set when HE sensor is active
+volatile char ENABLE=1; //reset/set with PAUSE button push
+volatile char RAMPDOWN=0;// Set with RAMPDOWN button push
+volatile char EXFLAG=0;//Set when part is within EX sensor
+volatile char ORFLAG = 1;//Reset when part is within OR sensor
+volatile char MOTORFLAG = 0;//Set when the motor is running
+volatile char DECELFLAG = 0;//Set when stepper must decelerate
+
+/*Set when a part leave EX before the 
+stepper has reached the corresponding drop zone*/
 volatile char HOLDFLAG = 0;
+
+/*Set when stepper is within Steps2Acc of the target position
+ and the part is NOT already dropping into the bin */
 volatile char TARGETFLAG = 0;
+
+/*Set when the stepper need to slow down to allow a part to fall into the bin */
 volatile char PAUSEFLAG = 0;
+
+//Set when the belt motor speed need to be updated
 volatile char CALCFLAG = 0;
 
+//Set when a piece is off the belt and falling towards the bin
 volatile char DROPFLAG = 0;
+
+//Set when a part enters EX and need to be sorted
 volatile char SORTFLAG = 0;
 
+
 //GLOBALS
+
+
+
+/*
+This array records all the parts detected by the system.
+The parts are stored as a stepper position. The array is
+parsed by 2 counters which indicate how many parts have been
+detected and how many have been sorted
+*/
 uint8_t Parts[PARTS_SIZE];
+
+
+
+/*The 2 counters below need to 'roll over' when they approach PARTS_SIZE
+The size of the array limits how many parts are stored in the system at any time*/
+
+
+/* 
+This counter indicates the number of parts scanned and classified
+by the system. It is incremented every time a new part enters OR
+*/
 volatile uint8_t countPart =0;
+/*
+This counter indicates which part is currently being sorted.
+It is incremented every time a part leaves EX.
+*/
 volatile uint8_t countSort =0;
 
+
+
+//ADC variables
 volatile uint16_t adcValue = 1023;
 volatile uint16_t adcPart =1023;
 volatile uint16_t adcTemp =1023;
 volatile uint16_t adcDisp =1023;
 volatile uint16_t countADC=0;
 
+
+/*
+Variables used to record timing of events based on the
+system timer which updates runtTime_d every 1ms.
+*/
 volatile uint16_t runTime_d =0;
 volatile uint16_t refreshTime =0;
 volatile uint16_t rampTime_d =0;
@@ -46,29 +92,32 @@ extern volatile int8_t Dir;
 
 
 int main(int argc, char *argv[]){
-
+//INITIALIZATION	
+	//Limit Clock to 8MHz
 	CLKPR = 0x80;
 	CLKPR = 0x01;
-	//INITIALIZATION
+
 	
 	cli();//Disable Interrupts
 	
 	//GPIO setup
-	DDRA = 0xFF; //OUTPUT
-	DDRB = 0xFF; //OUTPUT
-	DDRC = 0xFF; //OUTPUT
-	DDRD = 0x00;//INPUT
+	DDRA = 0xFF; //OUTPUT for stepper
+	DDRB = 0xFF; //OUTPUT for motor
+	DDRC = 0xFF; //OUTPUT for LCD
+	DDRD = 0x00;//INPUT for EX, OR, HE, PAUSE
 	DDRJ &= ~_BV(PINJ0); //INPUT
+	
 	//EXT INTERRUPTS
 	EICRA |= _BV(ISC01);//PAUSE
 	EICRA |= _BV(ISC11) |_BV(ISC10);//OR
 	EICRA |= _BV(ISC21);//EX
 	EICRA |= _BV(ISC31) | _BV(ISC30);//HE
 	
-	PCICR |= _BV(PCIE1);
+	PCICR |= _BV(PCIE1);//Enable PCINT1
 	PCMSK1 |= _BV(PCINT9);//RAMPDOWN
-	PCICR |= _BV(PCIE0);
-	PCMSK0 |= _BV(PCINT4);//Time Calculator
+	
+	PCICR |= _BV(PCIE0);//Enable PCINT 0
+	PCMSK0 |= _BV(PCINT4);//Motor Controller
 
 
 	ADC_Init();
@@ -76,50 +125,61 @@ int main(int argc, char *argv[]){
 	stepTimer_init();
 	InitLCD(LS_BLINK|LS_ULINE);
 	LCDClear();
-	EIMSK |= 0x08;
+	EIMSK |= 0x08;//Enable HE
 	sei();// Enable global interrupts
-
-	//CALIBRATION
-	
+	// Calculate the stepper acceleration profile and calibrate position
 	stepCalibrate();
-	EIMSK |= 0x07;
-	EIMSK &= ~(0x08);
+	EIMSK |= 0x07;//Enable OR, EX, and PAUSE
+	EIMSK &= ~(0x08);//Disable HE
+	
+	//Initialize the belt motor PWM and pins
 	Motor_init();
 	
-	//MAIN OPERATION
+
+	//reset counters
 	countPart=0;
 	countSort = 0;
-
-	startMotor();//Start Belt
+	startMotor();//Start Belt motor
 	runTimerStart();//Start System Timer
 	
+//MAIN OPERATION
 
-STANDBY:
-	//Handle Specific Processes and Display Data
+/************************************************************************/
+/* MAIN OPERATION: The following code contained in the labels STANDBY, DISABLE, and SHUTDOWN
+	handle the user interface which includes the LCD screen and 2 buttons. 
+	
+					It DOES NOT perform sorting or control any other hardware.
+					
+The sorting algorithm is handle entirely by ISR's which can be found below main() in this file.                                                                 */
+/************************************************************************/
+
+
+STANDBY://Display the system status and handle button push events
+
 	while (1)
 	{				
 		if(ENABLE)
-		{
+		{//if the system is enabled
 			if((runTime_d-refreshTime)>REFRESH_PERIOD)
-			{
-				dispStatus();
-				refreshTime = runTime_d;	
+			{//if LCD needs to be updated
+				dispStatus();//display system information
+				refreshTime = runTime_d;//control refresh rate of LCD
 			}	
 		}else
-		{
+		{//else go to disabled state
 			goto DISABLE;
 		}
 
 
 		if(RAMPDOWN)
-		{
+		{//if RAMPDOWN button is pushed
 			if(countSort != countPart)
-			{
-				rampTime_d = runTime_d;	
+			{//if there are parts which need sorting
+				rampTime_d = runTime_d;//reset RAMPDOWN timer
 				
 			}else if((runTime_d-rampTime_d)>RAMPDOWN_DELAY)
-			{
-				goto SHUTDOWN;
+			{//else if the belt has been cleared of parts				
+				goto SHUTDOWN;//shutdown the system
 			}
 		}
 				
@@ -127,42 +187,45 @@ STANDBY:
 	
 	
 	
-DISABLE:
-	brakeMotor();
-	while((PIND & 0x01) == 0x00);
-	stepStop();
-	runTimerStop();
-	uint8_t INTState = EIMSK;
+DISABLE:// when the ENABLE is reset by ISR(INT0_vect)
+	brakeMotor();//stop the belt
+	while((PIND & 0x01) == 0x00);//wait for PAUSE button to be released
+	stepStop();//stop the stepper motor
+	runTimerStop();//stop the run timer
+	uint8_t INTState = EIMSK; //save current interrupt state
+	
+	//Disable all interrupts except PAUSE button
 	EIMSK = 0x01;
 	PCMSK1 &= ~_BV(PCINT9);
 	PCMSK0 &= ~_BV(PCINT4);
-	brakeMotor();
-	stepRes();
-	dispPause();
+	
+	brakeMotor();//insure motor is stopped (for edge case)
+	stepRes();//Reset the stepper acceleration
+	dispPause();//Display pause information
+	
+	//Wait for PAUSE button to be pushed again
 	while(!ENABLE);
-	while((PIND & 0x01) == 0x00);
+	while((PIND & 0x01) == 0x00);//wait for PAUSE button release
+	
+	//return interrupts to previous state
 	EIMSK = INTState;
 	PCMSK1 |= _BV(PCINT9);
 	PCMSK0 |= _BV(PCINT4);
-	runTimerResume();
-	stepStart();
-	runMotor();
-	runTimerResume();
+	runTimerResume();//start system timer
+	stepStart();//start stepper
+	runMotor();//start motor
 	
-goto STANDBY;
-	
+goto STANDBY;//return to STANDBY mode
 	
 	
-	
-	
-SHUTDOWN:
-	cli();
-	PORTB = 0x00;
-	PORTA = 0x00;
-	dispComplete();
+SHUTDOWN://When RAMPDOWN has been pushed and no part is on belt
+	cli();//disable all interrupts
+	PORTB = 0x00;//disable belt motor
+	PORTA = 0x00;//disable stepper motor
+	dispComplete();//display complete information
 	while(1)
 	{
-		
+		//wait until hardware reset
 	}
 	
 	
@@ -176,46 +239,68 @@ SHUTDOWN:
 //*************ISR***************//
 
 
+/************************************************************************/
+/* DECRIPTION: This ISR handles events with the OR sensor.
+Initially, the interrupt is triggered on a rising edge which occurs when 
+a part enters OR. It is then configured for a falling edge to detect when
+the part leaves. This cycle repeats.
 
-//OR ISR
-ISR(INT1_vect){
-	if(ORFLAG){
+This ISR controls detecting and classifying parts. It also starts the ADC.
+
+It takes an average 300cc to run.
+                                                                  */
+/************************************************************************/
+ISR(INT1_vect)
+{//OR has triggered falling or rising edge
+	if(ORFLAG)
+	{// if set to rising edge
 		
-		if(debounce(1, 1, NOISECHECK)){
+		//FILTER noise
+		if(debounce(1, 1, NOISECHECK))
+		{//if not noise
+			
 			ORFLAG  = 0; //Part has entered OR
+			
+			//set to falling edge
 			EIMSK &= ~_BV(INT1);
-			EICRA &= ~_BV(ISC10); //Falling Edge
-			EIMSK |= _BV(INT1); // Enable Interrupt
+			EICRA &= ~_BV(ISC10);
+			EIMSK |= _BV(INT1); 
 
-
+			//reset adc variables
 			countADC = 0;
 			adcPart = 1023;
 		
-			ADCSRA |=_BV(ADSC);
-		
-			//motorTimerStart();//slow down motor on approach
-			ORTime_s = runTime_d;
-
+			ADCSRA |=_BV(ADSC);//start first ADC conversion
+			
+			ORTime_s = runTime_d;//record time part entered
+			EIFR |= _BV(INT1);//reset interrupt flag (for edge case)
 		}//HI
 		
 	}else//!ORFLAG
-	{
+	{//if set falling edge
 		
-		if(debounce(1, 0, NOISECHECK) && ((runTime_d - ORTime_s) > PARTTIME)){
+		//FILTER noise and doulbe edge detection
+		if(debounce(1, 0, NOISECHECK) && ((runTime_d - ORTime_s) > PARTTIME))
+		{//if not noise and part has had time to pass through sensor
 			ORFLAG  = 1;//Part has cleared OR	
-			EIMSK &= ~_BV(INT1); // Disable Interrupt
-			EICRA |= _BV(ISC10);//Turn on rising edge
-			EIMSK |= _BV(INT1); // Enable Interrupt
+			
+			//Turn on rising edge
+			EIMSK &= ~_BV(INT1); 
+			EICRA |= _BV(ISC10);
+			EIMSK |= _BV(INT1); 
 
-			adcDisp = adcPart;
-			if((adcPart<HI_Reflect) && countADC>50){
-				Parts[countPart] = classify(adcPart);//classify the part and add to the step position
+			adcDisp = adcPart;//set display ADC variable
+			
+			//FILTER bad reads from ADC
+			if((adcPart<HI_Reflect) && countADC>50)
+			{//if a reflect value was recorded and the adc got more than minimum reads
+				Parts[countPart] = classify(adcPart);//classify the part and add to array
 				Parts[countPart+1] = Parts[countPart];//Initialize next array index
 				countPart +=1;//increment part counter
 			}
+			EIFR |= _BV(INT1);//reset interrupt flag (for edge case) 
 		}//LO	
 	}//else
-	EIFR |= _BV(INT1); 
 }//OR
 
 
