@@ -33,11 +33,12 @@ void motorTimerStop(void);
 void ADC_Init(void);
 uint8_t classify(uint16_t reflectVal);
 
+uint8_t updateCount(uint8_t pos);
 
 uint8_t debounce(uint8_t pin, uint8_t level, uint16_t checkNum);
 uint8_t debouncePINJ(uint8_t pin, uint8_t level, uint16_t checkNum);
 uint8_t getregion(uint8_t pos);
-
+void dispPause(void);
 
 void mTimer_init();
 void mTimer(int count);
@@ -73,40 +74,36 @@ void dispFLAGS(void);
 #define SPIN_ROUND_LIMIT 90
 
 
-//Test speed = 3510, one battery, fails with 2
-#define MAXACC 0x00A0 //0x00FF
-#define MINDELAY 0x0300//0x02A4
+
+#define MAXACC 0x00F0 //0x00FF
+#define MINDELAY 0x02F0//0x02A4
 #define MAXDELAY 0x0A00//0x0900
 #define JERKSTEPS 4//3
 
-//EXIT times, Increase if you are dropping late
-#define DROP_TIME 0x6000
-
-//ENTER times, Decrease if you are dropping early
-#define ENTER_DROP_TIME 0x2000
-#define BRAKE_DROP_TIME 0x3400
-#define DROP_REGION 15
+#define DROP_TIME 18000
 
 
-#define MOTOR_START_SPEED 220
-#define MOTOR_SPEED 170
-#define MOTOR_SLOW_SPEED 110
+#define ENTER_DROP_TIME 22500
+#define BRAKE_DROP_TIME 23000
+#define DROP_REGION 14
+
+
+#define MOTOR_START_SPEED 150
+#define MOTOR_SPEED 150
+#define MOTOR_SLOW_SPEED 100
 
 #define MOTOR_TIMER 0x00F0
 #define MOTOR_DEC 2
 #define MOTOR_DEC_RATE  0x0003
 #define MOTOR_ACC_TIME 100
 
-#define BOUNCECHECK 0x0030
-#define NOISECHECK 60
+#define BOUNCECHECK 500
+#define NOISECHECK 8
 
-
-
-#define PARTTIME 30
-#define SORTTIME 30
+#define PARTTIME 5
+#define SORTTIME 5
 
 #define REFRESH_PERIOD 50
-#define RAMPDOWN_DELAY 4000
-
+#define RAMPDOWN_DELAY 2000
 
 #endif

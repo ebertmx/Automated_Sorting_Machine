@@ -74,22 +74,17 @@ int main(int argc, char *argv[]){
 	ADC_Init();
 	mTimer_init();
 	stepTimer_init();
-//	InitLCD(LS_BLINK|LS_ULINE);
-//	LCDClear();
+	InitLCD(LS_BLINK|LS_ULINE);
+	LCDClear();
 	EIMSK |= 0x08;
 	sei();// Enable global interrupts
 
 	//CALIBRATION
 	
 	stepCalibrate();
-	//mTimer(2000);
-	//testStep();
-	//while(1);
-	//cli();
 	EIMSK |= 0x07;
 	EIMSK &= ~(0x08);
 	Motor_init();
-	//sei();
 	
 	//MAIN OPERATION
 	countPart=0;
@@ -107,8 +102,7 @@ STANDBY:
 		{
 			if((runTime_d-refreshTime)>REFRESH_PERIOD)
 			{
-               //dispFLAGS();
-			//	dispStatus();
+				dispStatus();
 				refreshTime = runTime_d;	
 			}	
 		}else
@@ -135,7 +129,6 @@ STANDBY:
 	
 DISABLE:
 	brakeMotor();
-	
 	while((PIND & 0x01) == 0x00);
 	stepStop();
 	runTimerStop();
@@ -144,13 +137,9 @@ DISABLE:
 	PCMSK1 &= ~_BV(PCINT9);
 	PCMSK0 &= ~_BV(PCINT4);
 	brakeMotor();
-	//stopMotor();
 	stepRes();
-	//dispStatus();
-	while(!ENABLE)
-	{
-	}
-	
+	dispPause();
+	while(!ENABLE);
 	while((PIND & 0x01) == 0x00);
 	EIMSK = INTState;
 	PCMSK1 |= _BV(PCINT9);
@@ -170,7 +159,6 @@ SHUTDOWN:
 	cli();
 	PORTB = 0x00;
 	PORTA = 0x00;
-	
 	dispComplete();
 	while(1)
 	{
@@ -226,13 +214,9 @@ ISR(INT1_vect){
 				countPart +=1;//increment part counter
 			}
 		}//LO	
-		
 	}//else
 	EIFR |= _BV(INT1); 
 }//OR
-
-
-
 
 
 
@@ -268,6 +252,7 @@ ISR(INT2_vect){
 				EIMSK |= _BV(INT2); //Enable Interrupt
 				EIFR |= _BV(INT2);
                 
+				updateCount(Parts[countSort]);
 				if(countSort<countPart)
 				{//if we won't overrun the array
 					countSort+=1;//go to next part
@@ -282,7 +267,6 @@ ISR(INT2_vect){
 					runMotor();
 				}
 				
-			
                 PAUSEFLAG=0;
 				SORTFLAG = 0;
 				DROPFLAG = 1;
@@ -302,10 +286,8 @@ ISR(TIMER3_COMPA_vect){
 	stepUpdateDelay(); //update the stepper speed
 //CONTROL STEPPER
 //CONTROL MOTOR
-	
 	CALCFLAG = 1;
 	PORTB ^= _BV(PINB4);
-	
 }//stepTimer
 
 

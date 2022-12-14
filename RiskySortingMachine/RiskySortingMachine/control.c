@@ -8,14 +8,12 @@ volatile uint8_t countS=0;
 volatile uint8_t countA =0;
 volatile char PULSEFLAG=0;
 volatile uint8_t motorDecSpeed =MOTOR_SPEED;
-
 volatile uint16_t exitTime =0;
 volatile uint16_t enterTime =0;
-
 volatile uint16_t dropTime = DROP_TIME;
 volatile uint16_t enterdropTime = ENTER_DROP_TIME;
-
 volatile uint16_t motorTime_d = 0;
+
 
 //EXTERNALS
 extern volatile uint16_t runTime_d;
@@ -262,19 +260,19 @@ void ADC_Init(void){
 
 uint8_t classify(uint16_t reflectVal){
 	if(reflectVal >= B_Reflect){
-		countB+=1;
+		//countB+=1;
 		return B_ID;
 	}
 	else if((reflectVal >= W_Reflect)){
-		countW+=1;
+		//countW+=1;
 		return W_ID;
 	}
 	else if(reflectVal >= S_Reflect){
-		countS+=1;
+		//countS+=1;
 		return S_ID;
 	}else
 	{
-		countA+=1;
+		//countA+=1;
 		return A_ID;
 	}
 }
@@ -316,29 +314,22 @@ uint8_t debouncePINJ(uint8_t pin, uint8_t level, uint16_t checkNum){
 }
 
 
-
-
-
-uint8_t getregion(uint8_t pos){
+uint8_t updateCount(uint8_t pos){
 	
-	if(pos>210){
-		return 0x01;
-	}else if(pos>160)
+	if(pos==200)
 	{
-		return 0x04;
-	}else if(pos>110)
+		countS++;
+	}else if(pos==150)
 	{
-		return 0x03;
-	}else if(pos>60)
+		countW++;
+	}else if(pos==100)
 	{
-		return 0x02;
-	}else if(pos>10)
-	{
-		return 0x01;
+		countA++;	
 	}else
 	{
-		return 0x04;
+		countB++;	
 	}
+	return 1;
 }
 
 
@@ -400,36 +391,30 @@ ISR(TIMER4_COMPA_vect){
 ISR(BADISR_vect)
 {
 	PORTC = 0xFF;
-	//mTimer(1000);
 }//BADISR
 
 
 
 
 //DISPLAY
-
 void dispComplete (void)
 {
-	
 	LCDClear();
-	LCDWriteIntXY(0,0, countB, 2);
-	LCDWriteString(",");
-	LCDWriteInt( countA, 2);
-	LCDWriteString(",");
-	LCDWriteInt( countW, 2);
-	LCDWriteString(",");
-	LCDWriteInt(countS, 2);
-	LCDWriteString("->");
-	LCDWriteInt(countSort, 2);
-	LCDWriteStringXY(0,1, "T=");
-	LCDWriteInt(runTime_d/1000, 2);
-	LCDWriteString( ".");
-	LCDWriteInt(runTime_d%10 , 1);
-	LCDWriteString("s Complete");
-	
+	LCDClear();
+	LCDWriteString("B  A  W  S  C");
+	LCDWriteIntXY(0,1, countB, 2);
+	LCDWriteString(" ");
+	LCDWriteIntXY(0,1, countA, 2);
+	LCDWriteString(" ");
+	LCDWriteIntXY(0,1, countW, 2);
+	LCDWriteString(" ");
+	LCDWriteIntXY(0,1, countS, 2);
+	LCDWriteString(" ");
+	LCDWriteIntXY(0,1,countSort, 2);	
 }
 
 void dispStatus(void){
+	
 	LCDClear();
 	LCDWriteIntXY(0, 0, countSort, 2);
 	LCDWriteStringXY(2,0,"/");
@@ -442,21 +427,9 @@ void dispStatus(void){
 	LCDWriteStringXY(10,0, ")");
 	LCDWriteStringXY(12,0, "T");
 	LCDWriteIntXY(13,0, runTime_d/100, 3);
-
-
-	//LCDWriteStringXY(0,1,"N=" );
-	//LCDWriteInt(enterTime,8);
-	//LCDWriteString(" X=");
-	//LCDWriteInt(exitTime,6);
-
 	LCDWriteIntXY(0, 1, CurPosition, 3);
 	LCDWriteStringXY(3,1, ">");
 	LCDWriteIntXY(4, 1, Parts[countSort], 3);
-	//
-	// 	LCDWriteIntXY(8,1, PAUSEFLAG,1);
-	// 	LCDWriteInt(HOLDFLAG,1);
-	//  	LCDWriteInt(TARGETFLAG,1);
-	//  	LCDWriteInt(DECELFLAG,1);
 	LCDWriteIntXY(12, 1, adcDisp, 4);
 
 }
@@ -478,4 +451,20 @@ void dispFLAGS(void){
 	LCDWriteInt(HOLDFLAG,1);
 
 
+}
+
+
+void dispPause(void)
+{
+	LCDClear();
+	LCDWriteString("B  A  W  S  O");
+	LCDWriteIntXY(0,1, countB, 2);
+	LCDWriteString(" ");
+	LCDWriteIntXY(0,1, countA, 2);
+	LCDWriteString(" ");
+	LCDWriteIntXY(0,1, countW, 2);
+	LCDWriteString(" ");
+	LCDWriteIntXY(0,1, countS, 2);
+	LCDWriteString(" ");
+	LCDWriteIntXY(0,1, countPart - countSort, 2);	
 }
