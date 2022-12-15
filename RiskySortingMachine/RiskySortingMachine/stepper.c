@@ -94,7 +94,6 @@ uint8_t stepUpdateError(void)
 		}else
 		{
 			CurError = Parts[countSort-1] - CurPosition;
-			
 		}
 	}else
 	{
@@ -203,14 +202,11 @@ uint8_t stepUpdateDelay(void)
 		if (CurDelay > MAXDELAY)
 		{
 			accSteps = 0;
-			if(PAUSEFLAG && (Steps2Exit<3))
-			{//do nothing
-			}else
-			{
-				CurDelay = MAXDELAY;
-				DECELFLAG = 0;
-			}
-			}else if(accSteps>0){
+			CurDelay = MAXDELAY;
+			DECELFLAG = 0;
+		
+		}else if(accSteps>0)
+		{
 			accSteps--;
 		}
 		
