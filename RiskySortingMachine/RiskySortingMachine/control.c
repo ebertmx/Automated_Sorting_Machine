@@ -2,32 +2,34 @@
 
 
 //GLOBALS
-volatile uint8_t countB =0;
-volatile uint8_t countW =0;
-volatile uint8_t countS=0;
-volatile uint8_t countA =0;
-volatile char PULSEFLAG=0;
-volatile uint8_t motorDecSpeed =MOTOR_SPEED;
-volatile uint16_t exitTime =0;
-volatile uint16_t enterTime =0;
-volatile uint16_t dropTime = DROP_TIME;
-volatile uint16_t enterdropTime = ENTER_DROP_TIME;
-volatile uint16_t motorTime_d = 0;
+volatile uint8_t countB =0;//counts number of black parts sorted
+volatile uint8_t countW =0;//counts number of white parts sorted
+volatile uint8_t countS=0;//counts number of steel parts sorted
+volatile uint8_t countA =0;//counts number of aluminum parts sorted
 
+volatile uint8_t motorDecSpeed =MOTOR_SPEED;//motor speed while decelerating
+volatile uint16_t exitTime =0;//time for stepper to exit drop zone
+volatile uint16_t enterTime =0;//time for stepper to enter drop zone
+volatile uint16_t dropTime = DROP_TIME;//time for part to hit bucket from leaving EX
+volatile uint16_t enterdropTime = ENTER_DROP_TIME;//Time for part to hit bucket from entering EX
+volatile uint16_t motorTime_d = 0;//current running time of motor
+
+
+volatile uint8_t Steps2Exit = 0;//number of steps until stepper exits drop zone
+volatile uint8_t Steps2MIN = 0;//number of steps until stepper is at max speed
+volatile uint8_t Steps2Enter = 0;//number of steps until stepper enters drop zone
 
 //EXTERNALS
 extern volatile uint16_t runTime_d;
-extern volatile char MOTORFLAG; //needs to be false
+extern volatile char MOTORFLAG;
 extern volatile uint8_t countPart;
 extern volatile uint8_t countSort;
 extern uint8_t Parts[PARTS_SIZE];
 extern volatile uint16_t adcDisp;
-
 extern volatile char PAUSEFLAG;
 extern volatile char TARGETFLAG;
 extern volatile char DECELFLAG;
 extern volatile char HOLDFLAG;
-
 extern volatile uint8_t Steps2Acc;
 extern volatile uint16_t CurDelay;
 extern volatile uint8_t accSteps;
@@ -37,7 +39,10 @@ extern volatile int8_t Dir;
 extern volatile char EXFLAG;
 
 
-
+/************************************************************************/
+/* DESCRIPTION: Initializes the PWM and pins for belt motor
+                                                                  */
+/************************************************************************/
 void Motor_init(void){
 	//Set control register to fast PWM mode
 	//Clear OC0A on compare match, set at BOTTOM
@@ -53,10 +58,24 @@ void Motor_init(void){
 }
 
 
-volatile uint8_t Steps2Exit = 0;
-volatile uint8_t Steps2MIN = 0;
+/************************************************************************/
+/* DESCRIPTION: This function calculates the time until the stepper motor exits
+the drop region defined by DROP_REGION. The function uses the current speed
+and direction of the stepper to calculate the EXACT time it will take for
+the stepper to reach an edge of the drop region.
 
+The function returns a 1 if the stepper motor will exit the drop region before the
+current part hits the bucket. It returns a 0 if the parts will hit before the
+stepper exits.
 
+The part drop time is estimated based on calibrated variables and updated every time
+ISR(PCINT0_vect) runs if necessary. This time is stored in the variable
+dropTime.
+NOTE: dropTime is an approximation and of the actual part drop time which will
+vary with every drop.We cannot know the exact time the part will take to drop
+since we do not know the precise speed and position of the part past the EX sensor.
+                                                                  */
+/************************************************************************/
 uint8_t CalcExitTime(void)
 {
 	if(HOLDFLAG)
@@ -97,10 +116,23 @@ uint8_t CalcExitTime(void)
 }
 
 
-volatile uint8_t Steps2Enter = 0;
-volatile int16_t EXCurError=0;
-volatile int16_t EnCurError=0;
 
+/************************************************************************/
+/* DESCRIPTION: This function calculates the time until the stepper motor enters
+the drop region defined by DROP_REGION. The function uses the current speed
+and direction of the stepper to calculate the EXACT time it will take for
+the stepper to reach an edge of the drop region.
+
+The function returns a 1 if the stepper motor will enter the drop region after the
+current part hits the bucket. It returns a 0 if the parts will hit after the
+stepper enters.
+
+The enterdropTime is an approximation of the time it will take the part to hit the bucket
+when it enters or is in EX. This variable is set to 1 of two values which are calibrated
+outside of regular run time. enterdropTime is set to ENTER_DROP_TIME if the belt is running
+when its drop sequence begins or to BRAKE_DROP_TIME if the belt is stopped in the same situation.
+                                                                  */
+/************************************************************************/
 uint8_t CalcEnterTime(void)
 {
 	
@@ -156,7 +188,12 @@ uint8_t CalcEnterTime(void)
 	}
 }
 
-
+/************************************************************************/
+/* DESCRIPTION: Starts the motor belt if required. Sets up a timer which will
+decelerate the motor when it reaches the MOTOR_START_DELAY value.
+Reset the motor timer and counter variables. This function should only be called
+on startup or after an extended pause. Use runMotor() in other cases.                                                            */
+/************************************************************************/
 uint8_t startMotor(){
 	PORTB &= 0x80;
 	PORTB |= 0b00001011;
@@ -166,14 +203,19 @@ uint8_t startMotor(){
 	if(!MOTORFLAG)
 	{
 		MOTORFLAG = 1;
-		motorTimerStart();
-		OCR5A = 0x2400;
+		motorTimerStart();//start the motor timer to handle deceleration
+		OCR5A =MOTOR_START_DELAY ;//Initial delay of the motor before deceleration
 		motorTime_d = runTime_d;
 	}
 	TCNT5 = 0x0000;//restart max motor run time
 	return MOTORFLAG;
 }
 
+
+/************************************************************************/
+/* DESCRIPTION: Runs belt motor is required. Starts motor timer if motor is off.
+Sets MOTORFLAG to indicate belt is running.                                                          */
+/************************************************************************/
 uint8_t runMotor(){
 	
 	PORTB &= 0x80;
@@ -191,6 +233,11 @@ uint8_t runMotor(){
 	
 }
 
+
+/************************************************************************/
+/* DESCRIPTION: brakes belt motor. Resets MOTORFLAG to indicate motor
+stopped.                                                      */
+/************************************************************************/
 uint8_t brakeMotor(){
 	PORTB &= 0x80;
 	PORTB |= 0b00001111;
@@ -199,14 +246,21 @@ uint8_t brakeMotor(){
 	return MOTORFLAG;
 }
 
+
+/************************************************************************/
+/* DESCRIPTION: stops belt motor. Resets MOTORFLAG to indicate motor
+stopped.                                                      */
+/************************************************************************/
 uint8_t stopMotor(){
-	//TCCR0B &= ~_BV(CS01) &~_BV(CS02)&~_BV(CS00);
+
 	PORTB = 0x00;
 	MOTORFLAG = 0;
 	return MOTORFLAG;
 }
 
-
+/************************************************************************/
+/* DESCRIPTION: set up the motor timer which handles motor deceleration.                                                   */
+/************************************************************************/
 void motorTimerStart(void){
 	TCCR5B |= _BV(WGM52); // Configure counter for CTC mode;
 	OCR5A = MOTOR_TIMER; //1s timer
@@ -217,12 +271,21 @@ void motorTimerStart(void){
 	motorDecSpeed = MOTOR_SPEED;
 }//mTimer_init
 
-
+/************************************************************************/
+/* DESCRIPTION: Disables the motor timer                                                     */
+/************************************************************************/
 void motorTimerStop(void){
 	TCCR5B &= ~_BV(CS52)& ~_BV(CS50);
 }
 
 
+/************************************************************************/
+/* DESCRIPTION: Decelerates the motor based on the control parameters.
+When the motor timer is active, the motor will run for a given period. This ISR
+will then run and slow down the motor by an increment. This will repeat until the
+motor reaches a certain speed. This gives a motor response with an initial fast pulse before
+rapidly decelerating to a constant speed.                                                     */
+/************************************************************************/
 ISR(TIMER5_COMPA_vect){
 	//if motor needs to slow down
 	motorDecSpeed -= MOTOR_DEC;
@@ -230,17 +293,17 @@ ISR(TIMER5_COMPA_vect){
 	if(motorDecSpeed < MOTOR_SLOW_SPEED){//if less than slowest motor speed
 		motorDecSpeed = MOTOR_SLOW_SPEED; //set as lowest speed
 		MOTORFLAG = 0;
-		motorTimerStop();
+		motorTimerStop();//disable timer
 	}
+	
+	//Change motor speed by adjusting the PWM
 	TCNT0 = 0;
 	OCR0A = motorDecSpeed;
 }//ISR
 
-
-
-
-
-
+/************************************************************************/
+/* DESCRIPTION: Initializes the ADC                                                    */
+/************************************************************************/
 void ADC_Init(void){
 	
 	// Set reference voltage to internal 5V (need capacitor)
@@ -257,7 +320,9 @@ void ADC_Init(void){
 }
 
 
-
+/************************************************************************/
+/* DESCRIPTION: Returns a part classification based on ADC value                                                    */
+/************************************************************************/
 uint8_t classify(uint16_t reflectVal){
 	if(reflectVal >= B_Reflect){
 		//countB+=1;
@@ -313,7 +378,11 @@ uint8_t debouncePINJ(uint8_t pin, uint8_t level, uint16_t checkNum){
 	return 1;//return true
 }
 
-
+/************************************************************************/
+/* DESCRIPTION: Updates part count based on input position value.
+Usually called as updateCount(Parts[countSort]) to update the counter of the
+part being sorted.                                                */
+/************************************************************************/
 uint8_t updateCount(uint8_t pos){
 	
 	if(pos==200)
@@ -334,7 +403,9 @@ uint8_t updateCount(uint8_t pos){
 
 
 
-
+/************************************************************************/
+/* DESCRIPTION: Initialize mTimer. This function is only used for debugging.                                                   */
+/************************************************************************/
 void mTimer_init(){
 	TCCR1B |= _BV(CS11);//Set prescaler to 8
 	TCCR1B |= _BV(WGM12); // Configure counter for CTC mode;
@@ -343,6 +414,9 @@ void mTimer_init(){
 
 
 
+/************************************************************************/
+/* DESCRIPTION: This is a millisecond timer. This function is only used for debugging.                                                   */
+/************************************************************************/
 void mTimer(int count){
 	int i; //counter for ms
 	i = 0;
@@ -359,7 +433,10 @@ void mTimer(int count){
 
 
 
-//Starts System Timer
+
+/************************************************************************/
+/* DESCRIPTION: Initialize system timer which counts in ms                                                  */
+/************************************************************************/
 void runTimerStart(void){
 	TCCR4B |= _BV(WGM42); // Configure counter for CTC mode;
 	OCR4A = 0x0007; //0.01s timer
@@ -374,15 +451,15 @@ void runTimerStart(void){
 void runTimerStop(void){
 	TCCR4B &= ~_BV(CS42)& ~_BV(CS40);
 }
+
+//resumes system timer
 void runTimerResume(void){
 	TCCR4B |= _BV(CS42) | _BV(CS40);
 }
 
-//System Timer
+//Updates System time
 ISR(TIMER4_COMPA_vect){
-
-	runTime_d +=1;//add 1/1000 seconds to system time
-	
+	runTime_d +=1;//add 1/1000 seconds to system time	
 }//ISR
 
 
@@ -394,9 +471,9 @@ ISR(BADISR_vect)
 }//BADISR
 
 
+//////////////////////////////////////////////////////////////////////////
+//DISPLAY FUNCTIONS
 
-
-//DISPLAY
 void dispComplete (void)
 {
 	LCDClear();
@@ -413,8 +490,8 @@ void dispComplete (void)
 	LCDWriteIntXY(0,1,countSort, 2);	
 }
 
-void dispStatus(void){
-	
+void dispStatus(void)
+{
 	LCDClear();
 	LCDWriteIntXY(0, 0, countSort, 2);
 	LCDWriteStringXY(2,0,"/");
@@ -435,13 +512,11 @@ void dispStatus(void){
 }
 
 void dispFLAGS(void){
-	
 	LCDClear();
 	LCDWriteString("M");
 	LCDWriteInt(MOTORFLAG,1);
 	LCDWriteString(" P");
 	LCDWriteInt(PAUSEFLAG,1);
-	
 	LCDWriteString(" T");
 	LCDWriteInt(TARGETFLAG,1);
 	LCDWriteStringXY(0,1," ");
@@ -449,8 +524,6 @@ void dispFLAGS(void){
 	LCDWriteInt(DECELFLAG,1);
 	LCDWriteString(" S");
 	LCDWriteInt(HOLDFLAG,1);
-
-
 }
 
 

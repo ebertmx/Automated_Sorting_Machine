@@ -238,7 +238,6 @@ SHUTDOWN://When RAMPDOWN has been pushed and no part is on belt
 
 //*************ISR***************//
 
-
 /************************************************************************/
 /* DESCRIPTION: This ISR handles events with the OR sensor.
 Initially, the interrupt is triggered on a rising edge which occurs when 
