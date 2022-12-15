@@ -1,4 +1,17 @@
-
+/*
+ * stepper.c
+ *
+ * Created: 2022-12-09
+ * Author: Matthew Ebert V00884117; Scott Griffioen V00884133
+ * For: Sorting Machine, MECH 458, University of Victoria
+ *
+ * Dependencies: main.h
+ * 
+ * BOARD: ATMEGA 2560
+ *
+ * Description: This file contains functions used in main.c
+ *
+ */
 
 #include "main.h"
 

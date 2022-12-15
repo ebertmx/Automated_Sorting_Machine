@@ -1,3 +1,18 @@
+/*
+ * control.c
+ *
+ * Created: 2022-12-09
+ * Author: Matthew Ebert V00884117; Scott Griffioen V00884133
+ * For: Sorting Machine, MECH 458, University of Victoria
+ *
+ * Dependencies: main.h
+ * 
+ * BOARD: ATMEGA 2560
+ *
+ * Description: This file contains functions used in main.c
+ *
+ */
+
 #include "main.h"
 
 
@@ -79,37 +94,39 @@ since we do not know the precise speed and position of the part past the EX sens
 uint8_t CalcExitTime(void)
 {
 	if(HOLDFLAG)
-	{
+	{//if part is past EX
 		return 0;
 	}
 	
+	//Calculate the number of steps to edge of drop zone 
 	Steps2Exit = DROP_REGION - abs(CurPosition - Parts[countSort-1]);
+	//Calculate number of steps until maximum acceleration
 	Steps2MIN = Steps2Acc-accSteps;
 	
 	if(((CurError*Dir)>0) || (CurDelay>=MAXDELAY))
-	{
+	{//If the stepper is turning in the right direction or able to switch directions
 		
 		if(Steps2Exit<Steps2Acc)
-		{
+		{// if stepper will exit before reaching max speed
 			exitTime = (CurDelay - MINDELAY)/2 * Steps2Exit;
 		}else
-		{
+		{//if stepper will reach max speed before exiting drop region
 			exitTime = (CurDelay - MINDELAY)/2 * Steps2MIN + (Steps2Exit - Steps2Acc)*MINDELAY;
 		}
 		
 	}else
-	{
+	{//if stepper is turning in the wrong direction
 		
-		exitTime = (MAXDELAY - CurDelay)/2 * (Steps2Acc)
-		+(MAXDELAY-MINDELAY)/2 * Steps2Acc
-		+ (Steps2Exit -(Steps2Acc-Steps2MIN))*MINDELAY;
+		exitTime = (MAXDELAY - CurDelay)/2 * (Steps2Acc)//time to decelerate
+		+(MAXDELAY-MINDELAY)/2 * Steps2Acc//time to accelerate
+		+ (Steps2Exit -(Steps2Acc-Steps2MIN))*MINDELAY;//time to reach edge at max speed after acceleration
 	}
 
 	if(exitTime<dropTime)
-	{
+	{//if stepper will exit region before current part drops
 		return 1;
 	}else
-	{
+	{//else
 		return 0;
 	}
 
@@ -137,32 +154,33 @@ uint8_t CalcEnterTime(void)
 {
 	
 	if(abs(CurError)<DROP_REGION)
-	{
+	{//if stepper is within drop region
 		return 0;
 	}
 	
-	
+	//calculate steps to enter drop region
 	Steps2Enter = 	abs(CurError) - DROP_REGION;
+	//calculate steps to reach max speed
 	Steps2MIN = Steps2Acc-accSteps;
+	
 	if(Steps2Enter>40)
-	{
+	{//if stepper is far from the drop region
+	//this is needed else enterTime may exceed range of 16 bit number
 		return 1;
 	}
 	
 	if(((CurError*Dir)>0) || (CurDelay>=MAXDELAY))
-	{
+	{//if stepper is moving in the right direction or can change directions
 		
 		if(Steps2MIN > Steps2Enter)
-		{
-			
-			enterTime = (CurDelay - MINDELAY)/2 * Steps2MIN;
-			
+		{//if stepper will enter drop region before reaching max speed	
+			enterTime = (CurDelay - MINDELAY)/2 * Steps2MIN;	
 		}else
-		{
-			
-			enterTime =   (Steps2Enter- Steps2MIN);
+		{//if stepper will reach max speed before entering region
+			//Note: Calculation is broken up to prevent truncation and overflow
+			enterTime =   (Steps2Enter- Steps2MIN); //time to reach edge after acceleration
 			enterTime = enterTime*MINDELAY;
-			enterTime  += (CurDelay - MINDELAY)/2 * Steps2MIN;
+			enterTime  += (CurDelay - MINDELAY)/2 * Steps2MIN;//time to accelerate
 			
 		}
 		
@@ -178,13 +196,11 @@ uint8_t CalcEnterTime(void)
 	
 	
 	if(enterTime>enterdropTime)
-	{
+	{//if part will drop before stepper reaches region
 		return 1;
-		
 	}else
-	{
+	{//if stepper will reach region before part drops
 		return 0;
-		
 	}
 }
 
@@ -217,17 +233,18 @@ uint8_t startMotor(){
 Sets MOTORFLAG to indicate belt is running.                                                          */
 /************************************************************************/
 uint8_t runMotor(){
-	
+	//set to run forward, leave PWM signal as is.
 	PORTB &= 0x80;
 	PORTB |= 0b00001011;
-	TCNT0 = 0;
-	OCR0A = MOTOR_SPEED;
+	TCNT0 = 0;//reset PWM counter
+	OCR0A = MOTOR_SPEED;//set initial motor speed
 	
 	if(!MOTORFLAG)
 	{
+		//start motor time which handles deceleration
 		motorTimerStart();
 		MOTORFLAG = 1;
-		motorTime_d = runTime_d;
+		motorTime_d = runTime_d;//save motor run time
 	}
 	return MOTORFLAG;
 	
@@ -241,7 +258,6 @@ stopped.                                                      */
 uint8_t brakeMotor(){
 	PORTB &= 0x80;
 	PORTB |= 0b00001111;
-	//TCCR0B &= ~_BV(CS01) & ~_BV(CS02)& ~_BV(CS00);
 	MOTORFLAG = 0;
 	return MOTORFLAG;
 }
@@ -252,7 +268,6 @@ uint8_t brakeMotor(){
 stopped.                                                      */
 /************************************************************************/
 uint8_t stopMotor(){
-
 	PORTB = 0x00;
 	MOTORFLAG = 0;
 	return MOTORFLAG;
@@ -290,12 +305,12 @@ ISR(TIMER5_COMPA_vect){
 	//if motor needs to slow down
 	motorDecSpeed -= MOTOR_DEC;
 	OCR5A = MOTOR_DEC_RATE;
-	if(motorDecSpeed < MOTOR_SLOW_SPEED){//if less than slowest motor speed
+	if(motorDecSpeed < MOTOR_SLOW_SPEED)
+	{//if less than slowest motor speed
 		motorDecSpeed = MOTOR_SLOW_SPEED; //set as lowest speed
 		MOTORFLAG = 0;
 		motorTimerStop();//disable timer
 	}
-	
 	//Change motor speed by adjusting the PWM
 	TCNT0 = 0;
 	OCR0A = motorDecSpeed;
@@ -305,7 +320,6 @@ ISR(TIMER5_COMPA_vect){
 /* DESCRIPTION: Initializes the ADC                                                    */
 /************************************************************************/
 void ADC_Init(void){
-	
 	// Set reference voltage to internal 5V (need capacitor)
 	ADMUX |= _BV(REFS0);
 	// Set Channel to ADCC1 (channel 1)
@@ -349,21 +363,51 @@ uint8_t classify(uint16_t reflectVal){
 volatile uint16_t countCheck = 0;
 volatile uint8_t mask = 0;
 
+
+/************************************************************************/
+/* DESCRIPTION: This function is used as a debounce and filter. Unlike other
+debounce functionality this function DOES NOT use time delays. Instead, 
+consecutive reads of a pin on PORTD are taken. If the read is true, the program
+continues until number of reads equals checkNum. If the read if false, the program
+immediately returns false to the call function. 
+
+The logic behind this method take advantage of the fact that for this application,
+sensors or buttons change state relatively slowly compared to the processor speed.
+This means that should a button bounce and give a false reading when pushed,
+the program will revisit the calling function again (since all inputs are interrupt based),
+until button has stopped bouncing. 
+
+In the case of noise, this function acts like a low pass filter. Any frequency that
+changes value at a lower period than the time it take to run this function
+(controlled by checkNum) will be discarded. Any frequency or signal which has a
+period greater than this function time will be accepted.
+
+EX: An active high button is pushed by the user. The input signal begins bouncing. 
+The MCU reads a rising edge, enters this functions, and reads several true readings.
+Then a falling edge happens and a false reading is received. The program can now safely
+exit the calling interrupt because, since the button is actually pushed, there will 
+be another rising edge to trigger the interrupt and enter the debounce function again.
+When bouncing has stopped, the last rising edge will trigger the interrupt and
+this function will be called and return a true reading after reading the now stable
+input checkNum times.                                                */
+/************************************************************************/
 uint8_t debounce(uint8_t pin, uint8_t level, uint16_t checkNum){
 	mask = (1<<pin); //create pin read mask
 	level = (level<<pin);
 	countCheck = 0;
-	for(countCheck = 0; countCheck<checkNum; countCheck++)//read the pin a number of times
-	{
+	for(countCheck = 0; countCheck<checkNum; countCheck++)
+	{//read the pin a number of times
 		if((PIND & mask)!=level)//if any of the reads are false
 		{
 			return 0;//return false
+			//the next edge will trigger interrupt if actually true
+			//and this function will be called again
 		}
 	}
 	return 1;//return true
 }
 
-
+//same as above but on PORTJ
 uint8_t debouncePINJ(uint8_t pin, uint8_t level, uint16_t checkNum){
 	mask = (1<<pin); //create pin read mask
 	level = (level<<pin);
@@ -526,7 +570,7 @@ void dispFLAGS(void){
 	LCDWriteInt(HOLDFLAG,1);
 }
 
-
+extern volatile char ROLLFLAG;
 void dispPause(void)
 {
 	LCDClear();
@@ -539,5 +583,12 @@ void dispPause(void)
 	LCDWriteString(" ");
 	LCDWriteIntXY(0,1, countS, 2);
 	LCDWriteString(" ");
-	LCDWriteIntXY(0,1, countPart - countSort, 2);	
+	if(ROLLFLAG)
+	{
+		LCDWriteIntXY(0,1, countPart + (PARTS_SIZE- countSort), 2);	
+	}else
+	{
+		LCDWriteIntXY(0,1, countPart - countSort, 2);	
+	}
+	
 }

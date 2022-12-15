@@ -3,30 +3,31 @@
  *
  * Created: 2022-12-09
  * Author: Matthew Ebert V00884117; Scott Griffioen V00884133
+ * For: MECH 458, University of Victoria
  * 
  * Dependencies: main.h, control.c, stepper.c
  *
- *BOARD: ATMEGA 2560
+ * BOARD: ATMEGA 2560
  *
  * Description: This program operates the sorting machine used in
- the course MECH 458 at the University of Victoria. The task of
- the machine is to identify cylindrical parts of different 
- materials and sort them into labeled bins. A full description
- can be found in course documentation
- 
-This program is interrupt based. All functional code can be found in the ISRs
-at the bottom of this file. The main function is used for initialization
-and the user interface. Since all code related to sorting is contained within
-ISRs, it will receive priority over the any code in main. Consequently, the
-STANDBY section within main fill up 'idle' CPU time and should not effect the
-functionality or performance of the ISR processes.
+	 the course MECH 458 at the University of Victoria. The task of
+	 the machine is to identify cylindrical parts of different
+	 materials and sort them into labeled bins. A full description
+	 can be found in course documentation
+	 
+	 This program is interrupt based. All functional code can be found in the ISRs
+	 at the bottom of this file. The main function is used for initialization
+	 and the user interface. Since all code related to sorting is contained within
+	 ISRs, it will receive priority over the any code in main. Consequently, the
+	 STANDBY section within main fill up 'idle' CPU time and should not effect the
+	 functionality or performance of the ISR processes.
 
-The primary functionality of this program is contained within the following ISRs
+	 The primary functionality of this program is contained within the following ISRs
 
-ISR(INT1_vect): Handles functionality relating to OR and RL sensors
-ISR(INT2_vect): Handles functionality relating to EX sensor and Belt motion
-ISR(TIMER3_COMPA_vect): Controls stepper
-ISR(PCINT0_vect): Controls belt motor
+	 ISR(INT1_vect): Handles functionality relating to OR and RL sensors
+	 ISR(INT2_vect): Handles functionality relating to EX sensor and Belt motion
+	 ISR(TIMER3_COMPA_vect): Controls stepper
+	 ISR(PCINT0_vect): Controls belt motor
  * 
  */ 
 
@@ -40,7 +41,7 @@ volatile char EXFLAG=0;//Set when part is within EX sensor
 volatile char ORFLAG = 1;//Reset when part is within OR sensor
 volatile char MOTORFLAG = 0;//Set when the motor is running
 volatile char DECELFLAG = 0;//Set when stepper must decelerate
-
+volatile char ROLLFLAG = 0;//Indicates when roll over for Parts array is in progress
 /*Set when a part leave EX before the 
 stepper has reached the corresponding drop zone*/
 volatile char HOLDFLAG = 0;
@@ -72,7 +73,7 @@ The parts are stored as a stepper position. The array is
 parsed by 2 counters which indicate how many parts have been
 detected and how many have been sorted
 */
-uint8_t Parts[PARTS_SIZE];
+uint8_t Parts[PARTS_SIZE+1];// leave 1 extra space for rollover handling
 
 
 
@@ -334,6 +335,13 @@ ISR(INT1_vect)
 				Parts[countPart] = classify(adcPart);//classify the part and add to array
 				Parts[countPart+1] = Parts[countPart];//Initialize next array index
 				countPart +=1;//increment part counter
+				if(countPart==PARTS_SIZE)
+				{//roll over if at parts size
+					Parts[0] = Parts[countPart-1];
+					Parts[1] = Parts[0];
+					countPart = 1;
+					ROLLFLAG = 1;
+				}
 			}
 			EIFR |= _BV(INT1);//reset interrupt flag (for edge case) 
 		}//LO	
@@ -400,9 +408,16 @@ ISR(INT2_vect){
                 
 				updateCount(Parts[countSort]);//Update the sorted count for display
 				
-				if(countSort<countPart)
+				
+				
+				if(countSort<countPart || ROLLFLAG)
 				{//if still parts to sort
 					countSort+=1;//go to next part
+					if(countSort==PARTS_SIZE)
+					{//roll over if at parts size
+						countSort = 1;
+						ROLLFLAG = 0;
+					}
 					TARGETFLAG =0;//New target; reset flag
 				}
 				
@@ -570,25 +585,27 @@ ISR(PCINT0_vect)
 		
 		
 		if(DROPFLAG)
-		{//if a peice
+		{//if a part has left EX and is dropping
 			if(dropTime<CurDelay)
-			{
+			{//if the part will hit the bucket before the next step
+				//reset flags; the part is sorted or missed
 				DROPFLAG = 0;
 				PAUSEFLAG = 0;
 			}else
-			{
-				dropTime -=CurDelay;	
+			{//else	
+				dropTime -=CurDelay;//update the drop time
+				//calculate the time until the stepper leaves the drop zone	
 				if(CalcExitTime())
-				{
-					PAUSEFLAG = 1;
+				{//if the stepper will exit before the parts drop
+					PAUSEFLAG = 1;//slow down the stepper
 				}else
 				{
-					PAUSEFLAG = 0;
+					PAUSEFLAG = 0;//allow stepper to move as normal
 				}
 			}	
 		}	
 	}
-	CALCFLAG = 0;
+	CALCFLAG = 0;//reset flag for next call
 	
 }
 
