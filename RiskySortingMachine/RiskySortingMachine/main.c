@@ -1,3 +1,36 @@
+/*
+ * main.c
+ *
+ * Created: 2022-12-09
+ * Author: Matthew Ebert V00884117; Scott Griffioen V00884133
+ * 
+ * Dependencies: main.h, control.c, stepper.c
+ *
+ *BOARD: ATMEGA 2560
+ *
+ * Description: This program operates the sorting machine used in
+ the course MECH 458 at the University of Victoria. The task of
+ the machine is to identify cylindrical parts of different 
+ materials and sort them into labeled bins. A full description
+ can be found in course documentation
+ 
+This program is interrupt based. All functional code can be found in the ISRs
+at the bottom of this file. The main function is used for initialization
+and the user interface. Since all code related to sorting is contained within
+ISRs, it will receive priority over the any code in main. Consequently, the
+STANDBY section within main fill up 'idle' CPU time and should not effect the
+functionality or performance of the ISR processes.
+
+The primary functionality of this program is contained within the following ISRs
+
+ISR(INT1_vect): Handles functionality relating to OR and RL sensors
+ISR(INT2_vect): Handles functionality relating to EX sensor and Belt motion
+ISR(TIMER3_COMPA_vect): Controls stepper
+ISR(PCINT0_vect): Controls belt motor
+ * 
+ */ 
+
+
 #include "main.h"
 //FLAGS
 volatile char HALLSENSOR=0; //Set when HE sensor is active
@@ -426,13 +459,14 @@ ISR(TIMER3_COMPA_vect){
 
 
 
-
-
-	
-
-
-
-//ADC ISR
+/************************************************************************/
+/* DESCRIPTION: This ISR handles the ADC.
+after initially being triggered by OR, this function runs every time
+an ADC conversion completes. When it runs it compares the current ADC value
+to the lowest of the sequence and replaces it if it is lower. If the part being
+scanned is still within OR it triggers another conversion. Otherwise, it exits
+without restarting the ADC.                                                 */
+/************************************************************************/
 ISR(ADC_vect){
 
 	//if ADC is lower than value
@@ -450,7 +484,11 @@ ISR(ADC_vect){
 }//ADC
 
 
-//HE ISR
+/************************************************************************/
+/* DESCRIPTION: This ISR is connected to the HE sensor. When triggered
+it calibrates the stepper position to the known position of the HE sensors.
+Its also sets the HALLSENSOR flag                                            */
+/************************************************************************/
 ISR(INT3_vect){
 	if(debounce(3, 1, NOISECHECK)){
 		//stepStop();
@@ -460,7 +498,10 @@ ISR(INT3_vect){
 }//HE
 
 
-//ISR Stop Button
+/************************************************************************/
+/* DESCRIPTION: This ISR is connected to the PAUSE button. When pressed 
+it is debounced and then toggle enable                                         */
+/************************************************************************/
 ISR(INT0_vect){
 	if(debounce(0, 0, BOUNCECHECK)){
 		if(ENABLE)
@@ -473,6 +514,10 @@ ISR(INT0_vect){
 	}
 }//ISR Pause Button
 
+/************************************************************************/
+/* DESCRIPTION: This ISR is connected to the RAMPDOWN button. It begins
+then ramp down sequence by setting the RAMPDOWN flag.                                          */
+/************************************************************************/
 ISR(PCINT1_vect)
 {
 	if(debouncePINJ(0, 1, BOUNCECHECK)){
@@ -482,31 +527,50 @@ ISR(PCINT1_vect)
 }//ISR Ramp Button
 
 
+
+/************************************************************************/
+/* DESCRIPTION: This ISR is triggered by toggling the pin connected to 
+PCINT4 (PB4). This occurs every time ISR(TIMER3_COMPA_vect) runs.
+
+This function controls the belt motor. It determines when to start or stop
+a part drop based on the time it will take the stepper motor to reach a 
+drop zone and the time it will take the part to fall. Some of these timings are
+calibrated outside of run time.
+
+This function also can request the stepper motor to slow down should a part
+require more time to drop into the zone.   
+
+NOTE: The reason this function is separate from ISR(TIMER3_COMPA_vect) is 
+to allow the ADC ISR to run in between these functions. This achieves higher
+precision classification for each part by allowing more ADC reads.                                     */
+/************************************************************************/
 ISR(PCINT0_vect)
 {
 	if(CALCFLAG)
-	{
+	{//if motor control is requested (NOISE filter)
 		
 		if(SORTFLAG ^ HOLDFLAG)
-		{
+		{//If a piece needs sorting XOR a the stepper is holding target for a part
+			
+			//Calculate the time till stepper enters the drop zone
 			if(CalcEnterTime())
-			{
-				brakeMotor();
-				enterdropTime = BRAKE_DROP_TIME;
+			{//if stepper will not reach the drop zone before part falls
+				brakeMotor();//brake motor to slow or stop part
+				enterdropTime = BRAKE_DROP_TIME;//adjust new drop time
 			}else
-			{
-				SORTFLAG = 0;
-				runMotor();
+			{//else stepper will reach drop zone in time for the part to fall
+				SORTFLAG = 0;//the part will be sorted correctly, reset flag
+				runMotor();//start the motor
 			}
 		}else if(SORTFLAG && HOLDFLAG)
-		{
-			brakeMotor();
+		{//if a new pieces needs to be sorted and a part is currently dropping
+			brakeMotor();//stop the motor and wait for the part to finish dropping
 		}
 		
 		
 		
 		if(DROPFLAG)
-		{
+		{//if a peice
 			if(dropTime<CurDelay)
 			{
 				DROPFLAG = 0;
