@@ -328,7 +328,8 @@ void stepCalcAcc(void){
 
 	//FIRST STAGE: positive jerk
 	CurAcc[steps] = 0;
-	for(steps = 1; steps<JERKSTEPS; steps++){
+	for(steps = 1; steps<JERKSTEPS; steps++)
+	{
 		delay -=CurAcc[steps-1];
 		CurAcc[steps] = CurAcc[steps-1]+JERK;
 		if(CurAcc[steps]>MAXACC){
@@ -353,12 +354,13 @@ void stepCalcAcc(void){
 		steps++;
 		
 		delay -=CurAcc[steps-1];
-		if(JERK> CurAcc[steps-1]){
+		if(JERK> CurAcc[steps-1])
+		{
 			CurAcc[steps] = 0;
 			break;
-			}else{
-			CurAcc[steps] = CurAcc[steps-1]-JERK;
-			
+		}else	
+		{
+			CurAcc[steps] = CurAcc[steps-1]-JERK;	
 		}
 
 	}//Decrease Acceleration

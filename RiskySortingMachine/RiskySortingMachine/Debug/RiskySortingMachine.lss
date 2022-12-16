@@ -3622,10 +3622,11 @@ void stepCalcAcc(void){
 
 	//FIRST STAGE: positive jerk
 	CurAcc[steps] = 0;
-	for(steps = 1; steps<JERKSTEPS; steps++){
+	for(steps = 1; steps<JERKSTEPS; steps++)
     1888:	81 e0       	ldi	r24, 0x01	; 1
     188a:	90 e0       	ldi	r25, 0x00	; 0
     188c:	24 c0       	rjmp	.+72     	; 0x18d6 <stepCalcAcc+0x5a>
+	{
 		delay -=CurAcc[steps-1];
     188e:	fc 01       	movw	r30, r24
     1890:	31 97       	sbiw	r30, 0x01	; 1
@@ -3670,7 +3671,7 @@ void stepCalcAcc(void){
 
 	//FIRST STAGE: positive jerk
 	CurAcc[steps] = 0;
-	for(steps = 1; steps<JERKSTEPS; steps++){
+	for(steps = 1; steps<JERKSTEPS; steps++)
     18d4:	01 96       	adiw	r24, 0x01	; 1
     18d6:	84 30       	cpi	r24, 0x04	; 4
     18d8:	91 05       	cpc	r25, r1
@@ -3757,12 +3758,13 @@ void stepCalcAcc(void){
     1944:	71 81       	ldd	r23, Z+1	; 0x01
     1946:	26 1b       	sub	r18, r22
     1948:	37 0b       	sbc	r19, r23
-		if(JERK> CurAcc[steps-1]){
+		if(JERK> CurAcc[steps-1])
     194a:	60 81       	ld	r22, Z
     194c:	71 81       	ldd	r23, Z+1	; 0x01
     194e:	6c 33       	cpi	r22, 0x3C	; 60
     1950:	71 05       	cpc	r23, r1
     1952:	48 f4       	brcc	.+18     	; 0x1966 <stepCalcAcc+0xea>
+		{
 			CurAcc[steps] = 0;
     1954:	fa 01       	movw	r30, r20
     1956:	ee 0f       	add	r30, r30
@@ -3780,12 +3782,14 @@ void stepCalcAcc(void){
     1962:	ca 01       	movw	r24, r20
 		
 		delay -=CurAcc[steps-1];
-		if(JERK> CurAcc[steps-1]){
+		if(JERK> CurAcc[steps-1])
+		{
 			CurAcc[steps] = 0;
 			break;
     1964:	14 c0       	rjmp	.+40     	; 0x198e <stepCalcAcc+0x112>
-			}else{
-			CurAcc[steps] = CurAcc[steps-1]-JERK;
+		}else	
+		{
+			CurAcc[steps] = CurAcc[steps-1]-JERK;	
     1966:	88 0f       	add	r24, r24
     1968:	99 1f       	adc	r25, r25
     196a:	fc 01       	movw	r30, r24

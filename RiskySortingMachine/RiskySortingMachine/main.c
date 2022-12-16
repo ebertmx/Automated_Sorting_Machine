@@ -408,8 +408,6 @@ ISR(INT2_vect){
                 
 				updateCount(Parts[countSort]);//Update the sorted count for display
 				
-				
-				
 				if(countSort<countPart || ROLLFLAG)
 				{//if still parts to sort
 					countSort+=1;//go to next part
